@@ -68,13 +68,16 @@ export const LIBRARY = [
     body: "Say how you expect the next scene to open - usually whatever your character means to do - then roll one d10 against the Chaos Factor. Over it, and the scene runs as you pictured. At or under it, an odd roll alters the scene and an even roll interrupts it. The expectation has to exist before the roll, because both of the other outcomes are defined against it." },
 
   { id: "altered-scene", group: "scenes", title: "Altered scenes", cite: "GME2e",
-    body: "The scene still happens, but not as you saw it: take the next most likely version, or twist one element - someone missing, someone extra, more or less going on, an object changed. Mythic has a Scene Adjustment Table for this; its ranges are not in the source this app was built from, so the app offers the kinds of adjustment as choices and does not roll them. Asking the Game Master or rolling a meaning word are both fair ways to decide." },
+    body: "The scene still happens, but not as you saw it. Roll 1d10 on the Scene Adjustment Table: remove a character, add one, reduce or remove an activity, increase one, remove an object, add one - and on a 7 or more, make two adjustments, which means rolling twice more. Asking the Game Master or rolling a meaning word are both fair ways to settle what the adjustment actually means." },
 
   { id: "interrupt-scene", group: "scenes", title: "Interrupt scenes", cite: "GME2e",
-    body: "Your expectation is set aside and something else happens. An interrupt is built exactly like a random event - Mythic rolls an Event Focus first, then meaning. That focus table is not in the source here, so the app rolls the meaning words and leaves the focus to you, which is the same shape as One-Page Mythic's random events." },
+    body: "Your expectation is set aside and something else happens instead. An interrupt is built exactly like a random event: roll the Event Focus, then two Action words for its meaning, and read them into the situation you are in. Move Toward A Thread is called out in the book as especially useful here - the adventure has stalled and this is the push." },
 
   { id: "bookkeeping", group: "scenes", title: "The bookkeeping phase", cite: "GME2e",
     body: "When the action of a scene wraps up, two things happen before the next one. Update the lists: add what the scene introduced, give another line to anything prominent, cross out what is finished. Then move the Chaos Factor one step by whether the characters held control. The app fires both as one step with a summary and one undo." },
+
+  { id: "list-selection", group: "scenes", title: "Rolling on a list", cite: "GME2e",
+    body: "Sections go active as the lines fill, five lines at a time, top to bottom. Roll a die sized to the active sections - no roll for one section, a d4 for two, a d6 for three, a d8 for four, a d10 for five - then a d10 for the line inside it, two faces per line. Land on a blank line and the result is Choose: take whichever entry fits what is happening, or roll again. Because an element can hold three lines, the weighting decides how often it comes up." },
 
   { id: "threads-characters", group: "scenes", title: "Threads and Characters", cite: "GME2e",
     body: "Two lists of twenty-five lines each. Threads are the goals your character is chasing - Mythic never invents one for you. Characters are the people who matter, and anything else that should be able to walk into a scene: a place, an object, a recurring event. Something prominent earns another line, to a maximum of three, so the busiest parts of the story are likeliest to come back. When the lines fill up you clean up, and three-line elements come across with two." },
@@ -109,8 +112,11 @@ export const LIBRARY = [
   { id: "crafter-provenance", group: "crafter", title: "Where these tables came from", cite: "MM41:p14-15",
     body: "Three bands of the Minion column - 42-44, 68-69 and 75-76 - were unreadable in the text this app was first built from, and it shipped saying so rather than filling them in. Photographs of the page closed the gap: Soldier is one cell spanning 40-44, and On A Mission spans 68-76. Every band you can roll here is now read from the page." },
 
-  { id: "ask-chart", group: "oracle", title: "Ask the Game Master", cite: "OPM",
-    body: "A Yes/No question, an honest read of the odds, one d100. Nine odds rows run from Certain to Impossible with 50/50 in the middle, and each row splits the hundred into Exceptional Yes, Yes, No and Exceptional No. At 50/50 a Yes of some kind lands on 1-50; at Likely it is 1-65; at Unlikely, 1-35. The app shows you the bands for the odds you picked before you roll." },
+  { id: "fate-chart", group: "oracle", title: "The Fate Chart", cite: "GME2e",
+    body: "Nine odds rows from Certain to Impossible, nine Chaos Factor columns, one d100. Every cell gives three numbers: at or under the first is an Exceptional Yes, at or under the second a Yes, at or over the third an Exceptional No, and anything else is a No. The Chaos Factor moves you along the row - a 50 at 50/50 is a No at chaos 1 and a Yes at chaos 9 - which is the whole reason chaos exists. Some cells have an x: at Certain and high chaos you cannot fail exceptionally at all. The app shows the bands for your odds at your current chaos before you roll." },
+
+  { id: "ask-chart", group: "oracle", title: "Asking the question", cite: "GME2e",
+    body: "Form a Yes/No question and know what you expect the answer to be. Set the odds honestly - 50/50 is for even chances and for not knowing. Roll, read the chart at your Chaos Factor, and take the answer back into the fiction. One-Page Mythic's chart, which this app was first built on, turns out to be exactly the Fate Chart's chaos-5 column: the app checks that the two transcriptions agree, cell for cell." },
 
   { id: "ask-answers", group: "oracle", title: "The four answers", cite: "OPM",
     body: "Yes and No both send you back to the expectation you had when you asked - which is why the rules want you to have one. The Exceptional results go past that expectation in the same direction. If a No lands and you cannot see how it plays out, the rules send you to Discover Meaning rather than to a re-roll." },
@@ -118,8 +124,11 @@ export const LIBRARY = [
   { id: "ask-odds", group: "oracle", title: "Choosing odds", cite: "OPM",
     body: "50/50 covers even odds and, just as importantly, not knowing. The good side runs Likely, Very Likely, Nearly Certain, Certain; the bad side Unlikely, Very Unlikely, Nearly Impossible, Impossible. Reaching for Very Likely because you want a Yes is how an oracle stops being one - the app defaults to 50/50 every time you open the screen." },
 
-  { id: "random-events", group: "oracle", title: "Random events", cite: "OPM",
-    body: "A double-digit result on an Ask - 11, 22, 33 and so on up to 99 - also throws a random event into the moment. The answer you rolled still stands; the event happens as well. The app rolls one Action word for it and offers you another if one word is not enough. A flat 100 is not a double." },
+  { id: "random-events", group: "oracle", title: "Random events", cite: "GME2e",
+    body: "A double-digit result on an Ask - 11, 22, 33 up to 99 - throws a random event into the same moment. The answer still stands; the event happens as well. Mythic builds one in two rolls: the Event Focus says what kind of thing happens - a remote event, a new NPC, an NPC acting, a thread moving toward you or away from you, something good or bad for your character - and then two Action words say what it is. Where the focus names a thread or an NPC, roll on that list for which one. A flat 100 is not a double." },
+
+  { id: "action-tables", group: "oracle", title: "The Action meaning tables", cite: "GME2e",
+    body: "Two hundred-word columns rolled together: the first says what happens, the second what it happens to or about. This is the pair a random event's meaning is read from, and the table the Villain Crafter means when it tells you to roll for an archetype on Mythic's Action tables." },
 
   { id: "discover-meaning", group: "oracle", title: "Discover Meaning", cite: "OPM",
     body: "Detail without a question: fifty rows, two columns, one d100. The Action column says what an active part of the adventure does; the Description column says what something is like. One word is often enough - when it is not, roll another and read them together, for as long as it takes. Nothing rolls a second word for you." },

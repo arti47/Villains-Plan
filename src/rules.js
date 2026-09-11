@@ -16,9 +16,12 @@ import {
 } from "../data-villain-crafter.js";
 import { ELEMENT_TABLES, ELEMENTS_SOURCE, VILLAIN_DETAIL_TABLES } from "../data-elements.js";
 import {
-  CHAOS, SCENE_TEST, SCENE_ADJUSTMENTS, LISTS, BOOKKEEPING, NOT_SUPPLIED, SCENES_SOURCE
+  CHAOS, SCENE_TEST, LISTS, BOOKKEEPING, NOT_SUPPLIED, SCENES_SOURCE
 } from "../data-scenes.js";
-import { WEIGHTED_PICK } from "../data-house.js";
+import { FATE_CHART, FATE_LADDER, FATE_LADDER_OFFSETS } from "../data-fate-chart.js";
+import {
+  ACTION_TABLES, EVENT_FOCUS, SCENE_ADJUSTMENT_TABLE, LIST_SELECTION
+} from "../data-actions.js";
 
 const FOCUS = {
   phase: VILLAIN_PLAN_FOCUS,
@@ -68,12 +71,10 @@ export function lookupOpen(table, total) {
 // ---------------------------------------------------------------- scenes & chaos
 export const chaosRule = () => CHAOS;
 export const sceneTestRule = () => SCENE_TEST;
-export const sceneAdjustments = () => SCENE_ADJUSTMENTS;
 export const listsRule = () => LISTS;
 export const bookkeepingSteps = () => BOOKKEEPING.steps;
 export const notSupplied = () => NOT_SUPPLIED;
 export const scenesSource = () => SCENES_SOURCE;
-export const housePick = () => WEIGHTED_PICK;
 
 export function listKind(key) {
   return LISTS.kinds.find((k) => k.key === key) || LISTS.kinds[0];
@@ -126,22 +127,77 @@ export const mythicGuidance = (key) => MYTHIC_GUIDANCE[key] || null;
 export const mythicSource = () => MYTHIC_SOURCE;
 export const stillNotInSource = () => STILL_NOT_IN_SOURCE;
 
+export const fateChart = () => FATE_CHART;
+export const fateLadder = () => ({ ladder: FATE_LADDER, offsets: FATE_LADDER_OFFSETS });
+export const opmChart = () => ASK_ODDS;   // the corroborating chaos-5 transcription
+
 export function oddsRow(key) {
-  return ASK_ODDS.find((o) => o.key === key) || ASK_ODDS.find((o) => o.default) || ASK_ODDS[0];
+  return FATE_CHART.rows.find((o) => o.key === key) || FATE_CHART.rows.find((o) => o.default) || FATE_CHART.rows[0];
 }
-export function defaultOdds() { return (ASK_ODDS.find((o) => o.default) || ASK_ODDS[0]).key; }
+export function defaultOdds() { return (FATE_CHART.rows.find((o) => o.default) || FATE_CHART.rows[0]).key; }
+
+/** The four bands for one odds row at one Chaos Factor, as inclusive ranges. */
+export function fateBands(oddsKey, chaos) {
+  const row = oddsRow(oddsKey);
+  const level = Math.min(FATE_CHART.chaosRange[1], Math.max(FATE_CHART.chaosRange[0], Math.round(Number(chaos)) || 5));
+  const [exYes, yes, exNo] = row.cells[level - 1];
+  return {
+    row, chaos: level,
+    exYes: exYes ? [1, exYes] : null,
+    yes: [exYes ? exYes + 1 : 1, yes],
+    no: [yes + 1, exNo ? exNo - 1 : 100],
+    exNo: exNo ? [exNo, 100] : null
+  };
+}
 
 /** A double-digit d100 result, which also fires a Random Event (OPM). 100 is not one. */
 function isDouble(roll) { return RANDOM_EVENT.doubles.includes(roll); }
 
-/** Read one d100 against one odds row. Throws rather than guessing. */
-export function askResult(oddsKey, roll) {
-  const odds = oddsRow(oddsKey);
-  const band = ["exYes", "yes", "no", "exNo"].find((k) => roll >= odds[k][0] && roll <= odds[k][1]);
-  if (!band) throw new Error(`Ask The Game Master: roll ${roll} is outside the ${odds.label} row`);
+/**
+ * Read one d100 against one odds row at one Chaos Factor (GME2e Fate Chart).
+ * Chaos moves the odds: that is the whole point of the chart.
+ */
+export function askResult(oddsKey, roll, chaos = 5) {
+  if (!Number.isInteger(roll) || roll < 1 || roll > 100) {
+    throw new Error(`Ask The Game Master: ${roll} is not a d100 result`);
+  }
+  const bands = fateBands(oddsKey, chaos);
+  const band = ["exYes", "yes", "no", "exNo"].find((k) => bands[k] && roll >= bands[k][0] && roll <= bands[k][1]);
+  if (!band) throw new Error(`Ask The Game Master: roll ${roll} is outside the ${bands.row.label} row at chaos ${bands.chaos}`);
   const answerKey = { exYes: "exceptional-yes", yes: "yes", no: "no", exNo: "exceptional-no" }[band];
-  const answer = ASK_ANSWERS.find((a) => a.key === answerKey);
-  return { odds, roll, answer, double: isDouble(roll) };
+  return {
+    odds: bands.row, chaos: bands.chaos, bands, roll,
+    answer: ASK_ANSWERS.find((a) => a.key === answerKey),
+    double: isDouble(roll)
+  };
+}
+
+// ---------------------------------------------------------------- random events
+export const eventFocusTable = () => EVENT_FOCUS;
+export function eventFocus(roll) {
+  const row = EVENT_FOCUS.rows.find((r) => roll >= r.min && roll <= r.max);
+  if (!row) throw new Error(`Random Event Focus: roll ${roll} is outside the table`);
+  return { ...row, roll };
+}
+
+export const sceneAdjustmentTable = () => SCENE_ADJUSTMENT_TABLE;
+export function sceneAdjustment(roll) {
+  const row = SCENE_ADJUSTMENT_TABLE.rows.find((r) => roll >= r.min && roll <= r.max);
+  if (!row) throw new Error(`Scene Adjustment: roll ${roll} is outside the table`);
+  return { ...row, roll };
+}
+
+export const listSelectionRule = () => LIST_SELECTION;
+/** The section die for a list holding this many lines, and how many sections are active. */
+export function activeSections(lines) {
+  const sections = Math.min(LIST_SELECTION.sectionDice.length, Math.max(1, Math.ceil(lines / 5)));
+  return LIST_SELECTION.sectionDice.find((s) => s.sections === sections);
+}
+export function sectionFromRoll(roll) { return Math.ceil(roll / 2); }
+export function lineFromRoll(roll) {
+  const band = LIST_SELECTION.lineBands.find((b) => roll >= b.min && roll <= b.max);
+  if (!band) throw new Error(`Line roll ${roll} is outside 1-10`);
+  return band.line;
 }
 
 /**
@@ -160,6 +216,17 @@ const MEANING_TABLES = [
     cite: DISCOVER_MEANING.cite,
     span: 2,
     words: DISCOVER_MEANING.rows.map((row) => row[i])
+  })),
+  ...ACTION_TABLES.map((table) => ({
+    id: table.id,
+    key: table.id,
+    label: table.label,
+    short: table.label,
+    group: "Actions",
+    use: table.use,
+    cite: table.cite,
+    span: 1,
+    words: table.words
   })),
   ...ELEMENT_TABLES.map((table) => ({
     id: table.id,

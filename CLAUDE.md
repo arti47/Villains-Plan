@@ -13,11 +13,20 @@ Sources of record, in precedence order (§2.1):
    Supplies the villain, their organization, and their lieutenants and minions — the thing
    the reveal system reveals. Extracted into `data-villain-crafter.js`.
 5. **Scenes, the Chaos Factor and Bookkeeping**, *Mythic Game Master Emulator Second
-   Edition*. Cited `GME2e`, **supplied as a written summary rather than page images**, so
-   every value ships `provisional: true` and the app says so on the Scene screen (§2.1).
-   Extracted into `data-scenes.js`. What the summary names but does not specify — the Fate
-   Chart's odds, the Event Focus table, the Scene Adjustment Table's ranges, the Thread
-   Progress Track, the chaos variants — is listed, not built.
+   Edition*. Cited `GME2e`. Arrived first as a **written summary**, so the Chaos Factor
+   range, the bookkeeping steps and the list sizes still ship `provisional: true` and the
+   Scene screen says so (§2.1). The scene test has since been confirmed against a
+   photograph. In `data-scenes.js`.
+6. **The Fate Chart, the Action meaning tables, the Random Event Focus table and the Scene
+   Adjustment Table**, *GME2e*, supplied as **page photographs**. Cited `GME2e`. In
+   `data-fate-chart.js` and `data-actions.js`. The Fate Chart replaces One-Page Mythic's
+   chart as the engine, which is why the Chaos Factor now moves the odds (ruling A24,
+   revised). **Two independent cross-checks pass:** all 81 cells match the chart's own
+   thirteen-rung ladder, and its chaos-5 column is identical to the separately transcribed
+   One-Page Mythic chart. The list-selection procedure came as summary text and is marked
+   provisional, with its one inference (how the section die maps to sections) recorded.
+   Still unsupplied: the Thread Progress Track, the chaos variants, and the Fate Check if
+   the edition has one.
 4. **Meaning Tables: Elements**, *Mythic Game Master Emulator Second Edition* (Word Mill
    Games), supplied as page images. Cited `GME2e`. Twelve d100 word tables — the detail
    tables MM41:p5 sends you to for who the villain actually is. Extracted into
@@ -147,7 +156,7 @@ Oracle tab (Ask · Meaning), gated by one setting that is on by default.
 
 | Shape | Count | Rules |
 |---|---|---|
-| Lookup | 22 | Villain Plan Focus, End Goal Focus, Pivot Plan Focus, Plot Twists, Ask The Game Master (9 rows × 4 bands), Discover Meaning Action, Discover Meaning Description, Villain Archetype, Villain Organization, Lieutenants & Minions, and the twelve GME2e Elements tables behind one registry |
+| Lookup | 27 | Villain Plan Focus, End Goal Focus, Pivot Plan Focus, Plot Twists, Ask The Game Master (9 rows × 4 bands), Discover Meaning Action, Discover Meaning Description, Villain Archetype, Villain Organization, Lieutenants & Minions, the twelve GME2e Elements tables and both Action tables behind one registry, the Fate Chart (9 odds × 9 chaos), the Random Event Focus table, the Scene Adjustment Table, and the two-step list selection |
 | Threshold | 2 | `d10 + 2×phases ≥ 11` reveals the End Goal · `d10 > chaos` runs the scene as expected |
 | Escalation | 3 | +2 per known phase · the Crafter's modifiers carried archetype → organization → underlings · the Chaos Factor moving ±1 per scene within 1–9 |
 | Once-per-X | 2 | End Goal once per adventure; Pivot once per adventure |
@@ -156,7 +165,7 @@ Oracle tab (Ask · Meaning), gated by one setting that is on by default.
 | Permission | 5 | Earn a Discovery · interpret & revise freely · override a second Pivot · name the villain behind the villain · keep rolling Discover Meaning words until it comes clear |
 | Guidance only | 4 | every phase opens a lead · End Goal must unify prior phases · Pivot arc ≤3 scenes · reveal the Pivot immediately |
 
-| Cascade | 3 | Double Archetypes (roll two, combine; a nested Double is re-rolled) · Upscale (roll again bigger, re-rolling Upscale and Double) · Teamwork (roll a partner; a second Teamwork reads As Expected) |
+| Cascade | 4 | Double Archetypes (roll two, combine; a nested Double is re-rolled) · Upscale (roll again bigger, re-rolling Upscale and Double) · Teamwork (roll a partner; a second Teamwork reads As Expected) · Scene Adjustment 7-10, "make 2 adjustments", rolled twice more |
 
 Absent shapes: Modifier, Cost, Future cost, Compulsion, Substitution, Conversion, Blocker,
 Opposed. **There is no Future-cost rule in any of the three sources** — the one shape §15
@@ -184,15 +193,17 @@ see `docs/AUDIT.md` F28.
 | A14 | *Revises A7.* The Fate Question | With One-Page Mythic supplied, the app rolls it: the Arc screen offers odds and asks. The manual-record path stays for physical dice. Either way the answer is binding — a No blocks the pivot roll. |
 | A15 | "Keep rolling until it comes clear" | An unbounded, explicit repeat control. Nothing rolls a second word automatically. |
 | A16 | Crafter modifier accumulation | The archetype modifies the organization roll; archetype and organization together modify lieutenant and minion rolls. A Double Archetype adds both halves. The screen prints the arithmetic. |
-| A17 | Crafter "Meaning Table" results | Rolled on One-Page Mythic's Action column — the only Action meaning table this app has. With the oracle off, the row is reported without a word rather than faked. |
+| A17 | *Revised.* Crafter "Meaning Table" results | Now rolled on GME2e's **Action 1 + Action 2** pair, which is what "Mythic's Action Meaning Tables" means. With the oracle off, the row is reported without a word rather than faked. |
 | A18 | Nested Double / Upscale / Teamwork | Re-rolled at the draw, never expanded, exactly as the tables say. This is also what makes the cascades finite (F28). |
 | A19 | The three unreadable Minion bands | *Closed.* They shipped marked `unrecovered` and never invented; page photographs then supplied them (merged cells: Soldier 40–44, On A Mission 68–76). The gap-handling UI was removed with the gap rather than left inert. |
 | A20 | Lieutenant or minion | Chosen before the roll, as the article instructs, because the modifier differs. |
 | A21 | Modifiers past the ends of a table | No clamping: the Crafter's top and bottom bands are open-ended and are what absorb them. |
-| A23 | The Scene Adjustment Table | Named by the summary, never given ranges. The kinds of adjustment are offered as choices and the app does not roll them (`rollable: false`). |
-| A24 | Chaos and the ask odds | The Chaos Factor does **not** move Ask The Game Master. GME2e's Fate Chart varies by chaos, but that chart was not supplied and One-Page Mythic's — which ships — has no chaos in it. A test asserts the ask path never reads chaos. |
-| A25 | Picking from a list | GME2e's selection roll was not supplied, so the app's weighted pick is a **house aid** (§2.2): own file, `HOUSE_AID = true`, labelled in the UI. Every line is equally likely, which is what makes the book's weighting bite. |
-| A26 | The Interrupt's Event Focus | Not supplied. An interrupt rolls meaning words — the One-Page Mythic random-event shape — and the card says the focus is yours. |
+| A23 | *Revised.* The Scene Adjustment Table | The page arrived: 1d10, six single adjustments and 7–10 for two. The app rolls it. |
+| A24 | *Revised.* Chaos and the ask odds | The Fate Chart arrived, so chaos **does** move the odds: the ask reads the adventure's Chaos Factor and the chart column for it. One-Page Mythic's chart is retained as the corroborating transcription of the chaos-5 column, asserted cell for cell by test. |
+| A25 | *Revised.* Picking from a list | The book's procedure arrived: a section die sized to the active sections, then 1d10 for the line, with a blank line reading "Choose". The house aid and its file were deleted with the gap. |
+| A26 | *Revised.* The Interrupt's Event Focus | The table arrived. An interrupt — and any random event — rolls the Event Focus and then two Action words. Where the focus names a thread or an NPC, the app offers a list roll rather than making the choice for you. |
+| A27 | A nested "Make 2 Adjustments" | The table does not say what happens when a 7–10 comes up inside a 7–10. The app expands it the same way (roll two more), which converges: each roll spawns two with probability 0.4, a branching factor of 0.8, so the cascade terminates on its own. Guarded at depth 4. |
+| A28 | The section die's faces | The summary gives the die per active-section count but not how its faces map to sections. The app pairs them the way the line roll is explicitly paired — two faces per section, which is exactly what makes a d4 cover two sections and a d10 cover five. Recorded in the data as `inferred`; confirm from the page. |
 | A22 | Underlings before an organization | Allowed. The organization's contribution counts as 0 and the breakdown says "organization not rolled yet" rather than implying the modifier is complete. |
 
 **End Goal Roll thresholds** (the arithmetic the whole app turns on):
@@ -226,8 +237,9 @@ Storage is plain JSON, exported and re-imported in one tap, round-trip tested.
 | `data-mythic.js` | Second source (OPM): the odds chart, the four answers, the random-event rule, Discover Meaning, and what is still unsourced |
 | `data-villain-crafter.js` | Third source (MM41): villain archetypes with their modifiers, organizations, lieutenants and minions |
 | `data-elements.js` | Fourth source (GME2e): the twelve Elements meaning tables, and which seven MM41 names for villain details |
-| `data-scenes.js` | Fifth source (GME2e, summary): the scene test, the Chaos Factor, bookkeeping, the two lists — all marked provisional — and what was named but not supplied |
-| `data-house.js` | House aids (§2.2): the weighted list pick, flagged and labelled |
+| `data-scenes.js` | Fifth source (GME2e, summary): the Chaos Factor, the scene test, bookkeeping, the two lists — provisional where still summary-only |
+| `data-fate-chart.js` | Sixth source (GME2e, photograph): the Fate Chart's 81 cells, plus the ladder the harness checks them against |
+| `data-actions.js` | Sixth source (GME2e, photograph): Action 1 & 2, the Random Event Focus table, the Scene Adjustment Table, and the list-selection procedure |
 | `data-library.js` | Rules-library entries + tutorial steps + the two worked examples |
 | `firebase-config.js` | Placeholder + `FIREBASE_ENABLED` flag (Phase 5, not built) |
 | `database.rules.json` | RTDB rules for the Phase 5 shape |
@@ -376,6 +388,10 @@ box means no UI may be built against it.
 | The villain's details come from the Elements tables | Lookup | `ELEMENT_TABLES` | `rules.meaningWord` → `crafter.rollDetail` | Step 2 of the Villain screen, and each underling card | `all twelve Elements tables carry 100 unique words`, `Elements words sit at the rolls the page shows` |
 | MM41 names seven detail tables | — | `VILLAIN_DETAIL_TABLES` | `rules.villainDetailTables` | Those seven as chips, the rest behind a fold | `the seven tables The Villain Crafter names are all present` |
 | Every meaning table, both sources, one lookup | Lookup | registry in `rules.js` | `rules.meaningWord` (`span` 2 for OPM, 1 for Elements) | Meaning screen picker, grouped | `the meaning registry covers both sources, with the right span each` |
+| The Fate Chart: 81 cells, read at the adventure's chaos | Lookup | `FATE_CHART` | `rules.askResult` / `fateBands` | Ask screen bands, drawn at the current chaos | `all 81 cells match the chart's own ladder`, `the chaos-5 column IS the One-Page Mythic chart`, `the Fate Chart moves with the Chaos Factor` |
+| A random event is a Focus plus two Action words | Lookup | `EVENT_FOCUS`, `ACTION_TABLES` | `oracle.rollEvent` | Event block on the answer and on an interrupt scene | `the Random Event Focus table covers 1-100`, `an interrupt rolls a focus and two Action words` |
+| Scene Adjustment 1d10, 7-10 rolls twice more | Cascade | `SCENE_ADJUSTMENT_TABLE` | `scenes.rollAdjustments` | Altered-scene block | `rolling adjustments always yields at least one, and terminates` |
+| Section die, then 1d10 for the line; blank reads Choose | Lookup | `LIST_SELECTION` | `scenes.rollFromList` | Lists screen, with the table shown | `a list roll reads section then line`, `lands on a real entry or reports Choose` |
 | The oracle is one toggle, on by default | — | `Settings.mythicOracle` | `router` tab gating | Settings + a gated route that explains itself | `the oracle toggle hides its tab and its routes explain themselves` |
 
 ## 10. Process rules

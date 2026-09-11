@@ -4,9 +4,18 @@ Distilled from the One-Page Mythic Game Master Emulator (Word Mill Games), cited
 This is the second source, and it supplies exactly what the Villain's Plan article leans
 on and does not contain.
 
-## Ask The Game Master — Lookup
+## Ask The Game Master — the Fate Chart
 
-Form a Yes/No question, know what you expect, assign odds, roll 1d100, read the row.
+Form a Yes/No question, know what you expect, assign odds, roll 1d100, read the cell at
+your **Chaos Factor**. The engine reads `data-fate-chart.js` — 81 cells, nine odds rows by
+nine chaos columns, each cell `[exceptionalYes, yes, exceptionalNo]` with `null` for the
+chart's "x" (that result cannot happen at those odds and that chaos).
+
+Chaos moves the answer: a 50 at 50/50 is a No at chaos 1 and a Yes at chaos 9.
+
+**The chaos-5 column is the One-Page Mythic chart below**, cell for cell — two separate
+transcriptions of the same table, asserted against each other by test. The table that
+follows is therefore both the OPM chart *and* the Fate Chart's middle column.
 
 | Odds | Exceptional Yes | Yes | No | Exceptional No |
 |---|---|---|---|---|
@@ -20,8 +29,9 @@ Form a Yes/No question, know what you expect, assign odds, roll 1d100, read the 
 | Nearly Impossible | 1–3 | 4–15 | 16–83 | 84–100 |
 | Impossible | 1–2 | 3–10 | 11–82 | 83–100 |
 
-- Data: `ASK_ODDS`. Engine: `rules.askResult`. Surface: the Ask screen, with the bands
-  drawn to scale for the odds you picked, before you roll.
+- Data: `FATE_CHART` (engine), `ASK_ODDS` (retained as the corroborating chaos-5
+  transcription). Engine: `rules.askResult` / `rules.fateBands`. Surface: the Ask screen,
+  with the bands drawn to scale for your odds **at your current chaos**, before you roll.
 - Every row is asserted to cover 1–100 exactly once, and the published boundaries
   (10/11, 50/51, 90/91 at 50/50) are pinned by test.
 - 50/50 is the default on every visit, and unknown odds fall back to it rather than to a
@@ -38,10 +48,15 @@ to a re-roll — the app prints that route on every No.
 A double-digit result (11, 22 … 99) fires a Random Event as well as the answer. 100 is not
 a double (ruling A12).
 
-- Engine: `rules.askResult().double`; `oracle.ask` then rolls the event word.
-- The app rolls one **Action** word for the event and offers another (ruling A13): an event
-  is what happens, and "get more words" is the book's own escape hatch.
+Two rolls build one: the **Event Focus** (d100, twelve bands) says what kind of thing
+happens, then **Action 1 + Action 2** say what it is. Where the focus names a thread or an
+NPC, the app offers a roll on that list rather than choosing for you — which entry fits is
+a reading, not a lookup.
+
+- Engine: `rules.askResult().double` → `oracle.rollEvent`.
 - The answer still stands. The event is read into the same moment, not instead of it.
+- The focus table ships with the book's own "when you would choose this" note per row,
+  shown in a fold on the Ask screen.
 
 ## Discover Meaning — Lookup ×2 columns, with an unbounded repeat
 
@@ -51,6 +66,13 @@ as it takes.
 
 - Engine: `rules.discoverWord`, `oracle.discover`. Each roll is logged on its own.
 - Nothing rolls a second word automatically (ruling A15) — the repeat is a control.
+
+## The Action tables
+
+Two d100 columns rolled together: what happens, and what it happens to. They are a random
+event's meaning, and they are what The Villain Crafter means by "roll on Mythic's Action
+Meaning Tables" (ruling A17, revised — it used to route to One-Page Mythic's condensed
+Action column).
 
 ## Where this touches the Villain's Plan
 

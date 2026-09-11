@@ -1,13 +1,13 @@
 {
   "app": "Schemer",
   "schema": 1,
-  "exportedAt": "2026-09-11T15:36:34.699Z",
-  "activeAdventureId": "adv_8wcczmjt9uuw",
+  "exportedAt": "2026-09-11T15:59:39.994Z",
+  "activeAdventureId": "adv_1kjv8ze1dnaq4r",
   "adventures": [
     {
-      "id": "adv_8wcczmjt9uuw",
+      "id": "adv_1kjv8ze1dnaq4r",
       "name": "The General Who Did Not Go Home",
-      "createdAt": 1789140994691,
+      "createdAt": 1789142379987,
       "villain": {
         "name": "General Gorazon",
         "epithet": "the rogue general",
@@ -16,169 +16,156 @@
         "behind": "",
         "details": [
           {
-            "id": "det_1rr8iso14cgvdq",
+            "id": "det_6h5v1pjzpt2w",
             "tableId": "character-identity",
             "table": "Character Identity",
-            "roll": 3,
-            "word": "Adventurous",
-            "at": 1789140994696
+            "roll": 8,
+            "word": "Artist",
+            "at": 1789142379991
           },
           {
-            "id": "det_n3m692mkh3jm",
+            "id": "det_cgllh01gzqy1i",
             "tableId": "character-motivations",
             "table": "Character Motivations",
-            "roll": 58,
-            "word": "Loss",
-            "at": 1789140994696
+            "roll": 6,
+            "word": "Art",
+            "at": 1789142379991
           }
         ],
         "crafted": {
           "archetype": {
-            "id": "arch_17gasqn1idwg3",
-            "at": 1789140994695,
+            "id": "arch_1tv3z3n1trdeth",
+            "at": 1789142379990,
             "rolls": [
-              68
+              62
             ],
             "parts": [
               {
-                "key": "power",
-                "label": "Power",
-                "text": "They want far more power, and will do whatever getting it takes.",
+                "key": "making-a-point",
+                "label": "Making A Point",
+                "text": "The whole scheme is an argument: that everyone is wrong, that something is weaker than it looks.",
                 "special": null,
                 "mods": {
-                  "o": 10,
+                  "o": 0,
                   "l": 5,
-                  "m": 10
+                  "m": 5
                 }
               }
             ],
             "words": [],
             "mods": {
-              "o": 10,
+              "o": 0,
               "l": 5,
-              "m": 10
+              "m": 5
             },
             "note": ""
           },
           "organization": {
-            "id": "org_101fs1714v1uqk",
-            "at": 1789140994695,
+            "id": "org_9gtho1xlap3l",
+            "at": 1789142379990,
             "rolls": [
-              {
-                "roll": 41,
-                "mod": 10,
-                "total": 51
-              }
+              32
             ],
             "parts": [
               {
-                "key": "company",
-                "label": "The Company",
-                "text": "It runs like a profitable business, except that the business is the villain's goals.",
+                "key": "organized-crime",
+                "label": "Organized Crime",
+                "text": "A coordinated effort to profit outside the law - like a company, but clandestine.",
                 "special": null,
                 "mods": {
-                  "l": 10,
-                  "m": 10
+                  "l": 5,
+                  "m": 0
                 }
               }
             ],
             "words": [],
             "mods": {
-              "l": 10,
-              "m": 10
+              "l": 5,
+              "m": 0
             },
             "upscaled": 0,
-            "oMod": 10,
+            "oMod": 0,
             "note": ""
           },
           "lieutenants": [
             {
-              "id": "und_j4ppu1d82t1k",
-              "at": 1789140994696,
+              "id": "und_esnt5patauhy",
+              "at": 1789142379990,
               "kind": "lieutenant",
               "rolls": [
                 {
-                  "roll": 18,
-                  "mod": 15,
-                  "total": 33
+                  "roll": 33,
+                  "mod": 10,
+                  "total": 43
                 }
               ],
               "parts": [
                 {
-                  "key": "frenemy",
-                  "label": "Frenemy",
-                  "text": "They cannot stand the villain, and serve them anyway - for some reason.",
+                  "key": "tough-stuff",
+                  "label": "Tough Stuff",
+                  "text": "Intimidation and force are the whole approach.",
                   "special": null,
                   "mods": null
                 }
               ],
               "words": [],
               "teamwork": false,
-              "mod": 15,
+              "mod": 10,
               "name": "",
               "note": "",
               "details": [
                 {
-                  "id": "det_wju1sw1jc1y0a",
+                  "id": "det_1fgu00j7z7qun",
                   "tableId": "character-skills",
                   "table": "Character Skills",
-                  "roll": 53,
-                  "word": "Knowledge",
-                  "at": 1789140994696
+                  "roll": 42,
+                  "word": "Harm",
+                  "at": 1789142379991
                 }
               ]
             }
           ],
           "minions": [
             {
-              "id": "und_1bv4umm198yy71",
-              "at": 1789140994696,
+              "id": "und_txfww7lwhfrm",
+              "at": 1789142379991,
               "kind": "minion",
               "rolls": [
                 {
-                  "roll": 62,
-                  "mod": 20,
-                  "total": 82
+                  "roll": 52,
+                  "mod": 5,
+                  "total": 57
                 }
               ],
               "parts": [
                 {
-                  "key": "meaning-table",
-                  "label": "Meaning Table",
-                  "text": "Roll on a meaning table and read an underling out of the word.",
-                  "special": "meaning-table",
-                  "mods": null,
-                  "word": "Nature"
+                  "key": "functional",
+                  "label": "Functional",
+                  "text": "A specific mundane job - medic, signals, quartermaster - that the organization needs doing.",
+                  "special": null,
+                  "mods": null
                 }
               ],
-              "words": [
-                {
-                  "tableId": "meaning-action",
-                  "table": "Discover Meaning: Action",
-                  "roll": 72,
-                  "word": "Nature",
-                  "cite": "OPM"
-                }
-              ],
+              "words": [],
               "teamwork": false,
-              "mod": 20,
+              "mod": 5,
               "name": "",
               "note": "",
               "details": [
                 {
-                  "id": "det_18r6jm7fngl4i",
+                  "id": "det_t1h3nxa4t8rn",
                   "tableId": "character-skills",
                   "table": "Character Skills",
-                  "roll": 6,
-                  "word": "Assist",
-                  "at": 1789140994696
+                  "roll": 64,
+                  "word": "Move",
+                  "at": 1789142379991
                 }
               ]
             }
           ]
         }
       },
-      "updatedAt": 1789140994699,
+      "updatedAt": 1789142379994,
       "archivedAt": null,
       "arc": {
         "stage": "discovery",
@@ -189,10 +176,10 @@
       },
       "phases": [
         {
-          "id": "ph_5knv1pjg0nwa",
+          "id": "ph_jsytz06npn67",
           "kind": "phase",
-          "createdAt": 1789140994692,
-          "revisedAt": 1789140994695,
+          "createdAt": 1789142379988,
+          "revisedAt": 1789142379989,
           "earnedNote": "Followed the lead and got into the room.",
           "interpretation": "The agents are amassing relics, swords and a seized mine, and not one of them knows what any of it is for - which means the answer is being kept a long way above their heads.",
           "focus": {
@@ -204,40 +191,40 @@
             "text": "No extra context applies. Read the phase from the two keywords alone.",
             "table": "villain-plan-focus",
             "tableName": "Villain Plan Focus",
-            "roll": 91,
+            "roll": 87,
             "cite": "MM69:p21"
           },
           "keywords": [
             {
-              "roll": 39,
-              "word": "Idea",
+              "roll": 24,
+              "word": "Enhance",
               "table": "plot-twists",
               "cite": "MM69:p21"
             },
             {
-              "roll": 22,
-              "word": "Emotion",
+              "roll": 85,
+              "word": "Revenge",
               "table": "plot-twists",
               "cite": "MM69:p21"
             }
           ],
           "doubled": false,
           "check": {
-            "d10": 8,
+            "d10": 5,
             "modifier": 0,
-            "total": 8,
+            "total": 5,
             "threshold": 11,
             "needed": null,
             "fired": false
           },
           "leads": [
             {
-              "id": "lead_3yli45thkz7w",
+              "id": "lead_trut271hnt5tn",
               "text": "Lead 1 from phase 1: who is paying for all of this, and why here?",
               "resolved": false
             },
             {
-              "id": "lead_1c9m0w21r3qv1l",
+              "id": "lead_48pkyqwtwa37",
               "text": "Lead 2 from phase 1: who is paying for all of this, and why here?",
               "resolved": false
             }
@@ -246,55 +233,55 @@
           "ordinal": 1
         },
         {
-          "id": "ph_1dyawbt1u6mx5s",
+          "id": "ph_1a78knr1ab1jdp",
           "kind": "phase",
-          "createdAt": 1789140994693,
-          "revisedAt": 1789140994695,
+          "createdAt": 1789142379989,
+          "revisedAt": 1789142379989,
           "earnedNote": "Followed the lead and got into the room.",
           "interpretation": "The agents are amassing relics, swords and a seized mine, and not one of them knows what any of it is for - which means the answer is being kept a long way above their heads.",
           "focus": {
-            "min": 17,
-            "max": 24,
-            "key": "relocating",
-            "label": "Relocating",
-            "text": "The villain is leaving the place or position they normally occupy for somewhere else, for some reason.",
+            "min": 1,
+            "max": 16,
+            "key": "on-the-march",
+            "label": "On the March",
+            "text": "The villain, or their henchmen and armies, are mobilising for what looks like an ambitious offensive.",
             "table": "villain-plan-focus",
             "tableName": "Villain Plan Focus",
-            "roll": 20,
+            "roll": 15,
             "cite": "MM69:p21",
             "noContext": false
           },
           "keywords": [
             {
-              "roll": 99,
-              "word": "Urgent",
+              "roll": 25,
+              "word": "Enter",
               "table": "plot-twists",
               "cite": "MM69:p21"
             },
             {
-              "roll": 100,
-              "word": "Useful",
+              "roll": 54,
+              "word": "Missing",
               "table": "plot-twists",
               "cite": "MM69:p21"
             }
           ],
           "doubled": false,
           "check": {
-            "d10": 6,
+            "d10": 3,
             "modifier": 2,
-            "total": 8,
+            "total": 5,
             "threshold": 11,
             "needed": 9,
             "fired": false
           },
           "leads": [
             {
-              "id": "lead_1pvf6c71bjcn0i",
+              "id": "lead_4fwhhb1xib56h",
               "text": "Lead 1 from phase 2: who is paying for all of this, and why here?",
               "resolved": false
             },
             {
-              "id": "lead_qildk5829hbu",
+              "id": "lead_1gjt7xo9atcit",
               "text": "Lead 2 from phase 2: who is paying for all of this, and why here?",
               "resolved": false
             }
@@ -303,10 +290,10 @@
           "ordinal": 2
         },
         {
-          "id": "ph_uqyiqr14ht945",
+          "id": "ph_bt0wof1ekimy7",
           "kind": "phase",
-          "createdAt": 1789140994694,
-          "revisedAt": 1789140994695,
+          "createdAt": 1789142379989,
+          "revisedAt": 1789142379989,
           "earnedNote": "Followed the lead and got into the room.",
           "interpretation": "The agents are amassing relics, swords and a seized mine, and not one of them knows what any of it is for - which means the answer is being kept a long way above their heads.",
           "focus": {
@@ -323,35 +310,35 @@
           },
           "keywords": [
             {
-              "roll": 17,
-              "word": "Delay",
+              "roll": 27,
+              "word": "Evidence",
               "table": "plot-twists",
               "cite": "MM69:p21"
             },
             {
-              "roll": 93,
-              "word": "Tension",
+              "roll": 20,
+              "word": "Disaster",
               "table": "plot-twists",
               "cite": "MM69:p21"
             }
           ],
           "doubled": false,
           "check": {
-            "d10": 2,
+            "d10": 4,
             "modifier": 4,
-            "total": 6,
+            "total": 8,
             "threshold": 11,
             "needed": 7,
             "fired": false
           },
           "leads": [
             {
-              "id": "lead_1upc401pa54wd",
+              "id": "lead_m90kcx19te2mk",
               "text": "Lead 1 from phase 3: who is paying for all of this, and why here?",
               "resolved": false
             },
             {
-              "id": "lead_2xc49v3nt5w1",
+              "id": "lead_1bb02ry1kiejyr",
               "text": "Lead 2 from phase 3: who is paying for all of this, and why here?",
               "resolved": false
             }
@@ -369,176 +356,171 @@
       "fateAnswer": null,
       "record": [
         {
-          "ts": 1789140994691,
+          "ts": 1789142379987,
           "kind": "start",
           "text": "Adventure started against General Gorazon."
         },
         {
-          "ts": 1789140994693,
+          "ts": 1789142379988,
           "kind": "phase",
-          "text": "Phase 1 revealed: No Context + Idea, Emotion."
+          "text": "Phase 1 revealed: No Context + Enhance, Revenge."
         },
         {
-          "ts": 1789140994693,
-          "kind": "phase",
-          "text": "Phase 2 revealed: Relocating + Urgent, Useful."
-        },
-        {
-          "ts": 1789140994693,
+          "ts": 1789142379988,
           "kind": "endgoal",
-          "text": "End Goal revealed: Personal + Persuade, Unusual."
+          "text": "End Goal revealed: A New Order + Headquarters, Personal."
         },
         {
-          "ts": 1789140994694,
-          "kind": "endgoal",
-          "text": "End Goal revealed: Personal + Outcast, Leader."
-        },
-        {
-          "ts": 1789140994694,
+          "ts": 1789142379989,
           "kind": "phase",
-          "text": "Phase 3 revealed: No Context + Delay, Tension."
+          "text": "Phase 2 revealed: On the March + Enter, Missing."
         },
         {
-          "ts": 1789140994695,
+          "ts": 1789142379989,
+          "kind": "phase",
+          "text": "Phase 3 revealed: No Context + Evidence, Disaster."
+        },
+        {
+          "ts": 1789142379990,
           "kind": "crafter",
-          "text": "Villain Crafter - archetype: Power."
+          "text": "Villain Crafter - archetype: Making A Point."
         },
         {
-          "ts": 1789140994696,
+          "ts": 1789142379990,
           "kind": "crafter",
-          "text": "Villain Crafter - organization: The Company."
+          "text": "Villain Crafter - organization: Organized Crime."
         },
         {
-          "ts": 1789140994696,
+          "ts": 1789142379990,
           "kind": "crafter",
-          "text": "Villain Crafter - lieutenant: Frenemy."
+          "text": "Villain Crafter - lieutenant: Tough Stuff."
         },
         {
-          "ts": 1789140994696,
+          "ts": 1789142379991,
           "kind": "crafter",
-          "text": "Villain Crafter - minion: Meaning Table."
+          "text": "Villain Crafter - minion: Functional."
         },
         {
-          "ts": 1789140994697,
+          "ts": 1789142379992,
           "kind": "ask",
-          "text": "Asked \"Is the mine still guarded?\" at Likely: No (81)."
+          "text": "Asked \"Is the mine still guarded?\" at Likely, chaos 5: No (89)."
         },
         {
-          "ts": 1789140994697,
+          "ts": 1789142379992,
           "kind": "scene",
-          "text": "Scene 1: Altered Scene (d10 3 against chaos 5)."
+          "text": "Scene 1: Expected Scene (d10 8 against chaos 5)."
         },
         {
-          "ts": 1789140994698,
+          "ts": 1789142379993,
           "kind": "bookkeeping",
           "text": "Scene 1 ended out of control; chaos 5 → 6."
         },
         {
-          "ts": 1789140994698,
+          "ts": 1789142379993,
           "kind": "scene",
-          "text": "Scene 2: Altered Scene (d10 3 against chaos 6)."
+          "text": "Scene 2: Expected Scene (d10 8 against chaos 6)."
         },
         {
-          "ts": 1789140994699,
+          "ts": 1789142379993,
           "kind": "bookkeeping",
           "text": "Scene 2 ended in control; chaos 6 → 5."
         },
         {
-          "ts": 1789140994699,
+          "ts": 1789142379994,
           "kind": "scene",
-          "text": "Scene 3: Interrupt Scene (d10 4 against chaos 5)."
+          "text": "Scene 3: Altered Scene (d10 5 against chaos 5)."
         }
       ],
       "chaos": 5,
       "threads": [
         {
-          "id": "li_lfdxzamkwbzc",
+          "id": "li_19tgj6z58fjgv",
           "text": "Find out who is paying the diggers",
           "entries": 1,
           "removed": false,
-          "createdAt": 1789140994697
+          "createdAt": 1789142379992
         },
         {
-          "id": "li_8bgu3w12vjzv9",
+          "id": "li_z7cpk413yuz1h",
           "text": "Stop the ore shipment",
           "entries": 1,
           "removed": false,
-          "createdAt": 1789140994697
+          "createdAt": 1789142379992
         }
       ],
       "characters": [
         {
-          "id": "li_1whss5cg0f1qe",
+          "id": "li_xwfyur1upeo5h",
           "text": "General Gorazon",
           "entries": 3,
           "removed": false,
-          "createdAt": 1789140994697
+          "createdAt": 1789142379992
         },
         {
-          "id": "li_tn9d2v1lhci85",
+          "id": "li_120w2xw1f5b5d8",
           "text": "The seized mine",
           "entries": 1,
           "removed": false,
-          "createdAt": 1789140994697
+          "createdAt": 1789142379992
         },
         {
-          "id": "li_lkfron1pf1kiu",
+          "id": "li_1vzvd8p14r7l1m",
           "text": "A raid on the road",
           "entries": 1,
           "removed": false,
-          "createdAt": 1789140994697
+          "createdAt": 1789142379992
         }
       ],
       "scenes": [
         {
-          "id": "scene_1u0ov7k19yrlh8",
+          "id": "scene_1o1fglh1d6x9re",
           "n": 1,
           "test": {
-            "d10": 3,
+            "d10": 8,
             "chaos": 5,
-            "kind": "altered",
-            "label": "Altered Scene"
+            "kind": "expected",
+            "label": "Expected Scene"
           },
           "expectation": "The character follows the lead, 1.",
           "notes": "It went about as well as these things go: something learned, something else broken.",
           "adjustments": [],
           "words": [],
           "control": "out",
-          "startedAt": 1789140994697,
-          "endedAt": 1789140994698
+          "startedAt": 1789142379992,
+          "endedAt": 1789142379993
         },
         {
-          "id": "scene_tsl1hxvdoirx",
+          "id": "scene_1xx3ros1ti5vck",
           "n": 2,
           "test": {
-            "d10": 3,
+            "d10": 8,
             "chaos": 6,
-            "kind": "altered",
-            "label": "Altered Scene"
+            "kind": "expected",
+            "label": "Expected Scene"
           },
           "expectation": "The character follows the lead, 2.",
           "notes": "It went about as well as these things go: something learned, something else broken.",
           "adjustments": [],
           "words": [],
           "control": "in",
-          "startedAt": 1789140994698,
-          "endedAt": 1789140994698
+          "startedAt": 1789142379993,
+          "endedAt": 1789142379993
         },
         {
-          "id": "scene_fggak047f8yx",
+          "id": "scene_8w4ifg19k3a5p",
           "n": 3,
           "test": {
-            "d10": 4,
+            "d10": 5,
             "chaos": 5,
-            "kind": "interrupt",
-            "label": "Interrupt Scene"
+            "kind": "altered",
+            "label": "Altered Scene"
           },
           "expectation": "The PC reaches the mine and finds it guarded.",
           "notes": "",
           "adjustments": [],
           "words": [],
           "control": null,
-          "startedAt": 1789140994699,
+          "startedAt": 1789142379994,
           "endedAt": null
         }
       ]
@@ -546,223 +528,202 @@
   ],
   "rollLog": [
     {
-      "id": "log_b9yki6vuiglb",
-      "ts": 1789140994699,
-      "adventureId": "adv_8wcczmjt9uuw",
+      "id": "log_1t8sosk1c7qbar",
+      "ts": 1789142379994,
+      "adventureId": "adv_1kjv8ze1dnaq4r",
       "kind": "scene",
       "question": "The PC reaches the mine and finds it guarded.",
       "dice": [
         {
           "die": "d10",
-          "value": 4,
+          "value": 5,
           "table": "Scene test against chaos 5"
         }
       ],
-      "summary": "Interrupt Scene",
-      "outcome": "Scene 3: Interrupt Scene (4 vs chaos 5)"
+      "summary": "Altered Scene",
+      "outcome": "Scene 3: Altered Scene (5 vs chaos 5)"
     },
     {
-      "id": "log_1sznafb1amnsnu",
-      "ts": 1789140994698,
-      "adventureId": "adv_8wcczmjt9uuw",
+      "id": "log_1r91pyy9j0qew",
+      "ts": 1789142379993,
+      "adventureId": "adv_1kjv8ze1dnaq4r",
       "kind": "scene",
       "question": "The character follows the lead, 2.",
       "dice": [
         {
           "die": "d10",
-          "value": 3,
+          "value": 8,
           "table": "Scene test against chaos 6"
         }
       ],
-      "summary": "Altered Scene",
-      "outcome": "Scene 2: Altered Scene (3 vs chaos 6)"
+      "summary": "Expected Scene",
+      "outcome": "Scene 2: Expected Scene (8 vs chaos 6)"
     },
     {
-      "id": "log_ibbakky0v9t6",
-      "ts": 1789140994697,
-      "adventureId": "adv_8wcczmjt9uuw",
+      "id": "log_12u2dym1973vc",
+      "ts": 1789142379992,
+      "adventureId": "adv_1kjv8ze1dnaq4r",
       "kind": "scene",
       "question": "The character follows the lead, 1.",
       "dice": [
         {
           "die": "d10",
-          "value": 3,
+          "value": 8,
           "table": "Scene test against chaos 5"
         }
       ],
-      "summary": "Altered Scene",
-      "outcome": "Scene 1: Altered Scene (3 vs chaos 5)"
+      "summary": "Expected Scene",
+      "outcome": "Scene 1: Expected Scene (8 vs chaos 5)"
     },
     {
-      "id": "log_1litvym1dbrtpa",
-      "ts": 1789140994697,
-      "adventureId": "adv_8wcczmjt9uuw",
+      "id": "log_1cqshq8kcqimx",
+      "ts": 1789142379992,
+      "adventureId": "adv_1kjv8ze1dnaq4r",
       "kind": "ask",
       "question": "Is the mine still guarded?",
       "dice": [
         {
           "die": "d100",
-          "value": 81,
-          "table": "Ask The Game Master - Likely"
+          "value": 89,
+          "table": "Fate Chart - Likely at chaos 5"
         }
       ],
-      "summary": "Likely: No",
+      "summary": "Likely at chaos 5: No",
       "outcome": "No"
     },
     {
-      "id": "log_8p457upeeb07",
-      "ts": 1789140994696,
-      "adventureId": "adv_8wcczmjt9uuw",
+      "id": "log_vdxzhx16854ed",
+      "ts": 1789142379991,
+      "adventureId": "adv_1kjv8ze1dnaq4r",
+      "kind": "detail",
+      "question": "",
+      "dice": [
+        {
+          "die": "d100",
+          "value": 64,
+          "table": "Character Skills"
+        }
+      ],
+      "summary": "Move",
+      "outcome": "Character Skills: Move"
+    },
+    {
+      "id": "log_1p3f4qqpo58ul",
+      "ts": 1789142379991,
+      "adventureId": "adv_1kjv8ze1dnaq4r",
+      "kind": "detail",
+      "question": "",
+      "dice": [
+        {
+          "die": "d100",
+          "value": 42,
+          "table": "Character Skills"
+        }
+      ],
+      "summary": "Harm",
+      "outcome": "Character Skills: Harm"
+    },
+    {
+      "id": "log_1vu1pnq24w3xi",
+      "ts": 1789142379991,
+      "adventureId": "adv_1kjv8ze1dnaq4r",
       "kind": "detail",
       "question": "",
       "dice": [
         {
           "die": "d100",
           "value": 6,
-          "table": "Character Skills"
-        }
-      ],
-      "summary": "Assist",
-      "outcome": "Character Skills: Assist"
-    },
-    {
-      "id": "log_ip4ryskl42o7",
-      "ts": 1789140994696,
-      "adventureId": "adv_8wcczmjt9uuw",
-      "kind": "detail",
-      "question": "",
-      "dice": [
-        {
-          "die": "d100",
-          "value": 53,
-          "table": "Character Skills"
-        }
-      ],
-      "summary": "Knowledge",
-      "outcome": "Character Skills: Knowledge"
-    },
-    {
-      "id": "log_1s4lnav17ig9fx",
-      "ts": 1789140994696,
-      "adventureId": "adv_8wcczmjt9uuw",
-      "kind": "detail",
-      "question": "",
-      "dice": [
-        {
-          "die": "d100",
-          "value": 58,
           "table": "Character Motivations"
         }
       ],
-      "summary": "Loss",
-      "outcome": "Character Motivations: Loss"
+      "summary": "Art",
+      "outcome": "Character Motivations: Art"
     },
     {
-      "id": "log_4lh2zb1ekvpp0",
-      "ts": 1789140994696,
-      "adventureId": "adv_8wcczmjt9uuw",
+      "id": "log_hhr4qr1w54qs0",
+      "ts": 1789142379991,
+      "adventureId": "adv_1kjv8ze1dnaq4r",
       "kind": "detail",
       "question": "",
       "dice": [
         {
           "die": "d100",
-          "value": 3,
+          "value": 8,
           "table": "Character Identity"
         }
       ],
-      "summary": "Adventurous",
-      "outcome": "Character Identity: Adventurous"
+      "summary": "Artist",
+      "outcome": "Character Identity: Artist"
     },
     {
-      "id": "log_myewindesife",
-      "ts": 1789140994696,
-      "adventureId": "adv_8wcczmjt9uuw",
+      "id": "log_tf3sovszvg4n",
+      "ts": 1789142379991,
+      "adventureId": "adv_1kjv8ze1dnaq4r",
       "kind": "crafter",
-      "summary": "Meaning Table (Nature)",
+      "summary": "Functional",
+      "dice": [
+        {
+          "die": "d100",
+          "value": 52,
+          "table": "Villain Crafter - minion"
+        }
+      ],
+      "outcome": "minion: Functional"
+    },
+    {
+      "id": "log_12y27n11gv2f1m",
+      "ts": 1789142379990,
+      "adventureId": "adv_1kjv8ze1dnaq4r",
+      "kind": "crafter",
+      "summary": "Tough Stuff",
+      "dice": [
+        {
+          "die": "d100",
+          "value": 33,
+          "table": "Villain Crafter - lieutenant"
+        }
+      ],
+      "outcome": "lieutenant: Tough Stuff"
+    },
+    {
+      "id": "log_12i9cna1pv55lc",
+      "ts": 1789142379990,
+      "adventureId": "adv_1kjv8ze1dnaq4r",
+      "kind": "crafter",
+      "summary": "Organized Crime",
+      "dice": [
+        {
+          "die": "d100",
+          "value": 32,
+          "table": "Villain Crafter - organization"
+        }
+      ],
+      "outcome": "organization: Organized Crime"
+    },
+    {
+      "id": "log_siofwg1w04gwe",
+      "ts": 1789142379990,
+      "adventureId": "adv_1kjv8ze1dnaq4r",
+      "kind": "crafter",
+      "summary": "Making A Point",
       "dice": [
         {
           "die": "d100",
           "value": 62,
-          "table": "Villain Crafter - minion"
-        },
-        {
-          "die": "d100",
-          "value": 72,
-          "table": "Discover Meaning - Action"
-        }
-      ],
-      "outcome": "minion: Meaning Table"
-    },
-    {
-      "id": "log_12ufeqg9jwg7f",
-      "ts": 1789140994696,
-      "adventureId": "adv_8wcczmjt9uuw",
-      "kind": "crafter",
-      "question": "",
-      "dice": [
-        {
-          "die": "d100",
-          "value": 72,
-          "table": "Discover Meaning: Action"
-        }
-      ],
-      "summary": "Nature",
-      "outcome": "Discover Meaning: Action: Nature"
-    },
-    {
-      "id": "log_1b0pflu1iqyguf",
-      "ts": 1789140994696,
-      "adventureId": "adv_8wcczmjt9uuw",
-      "kind": "crafter",
-      "summary": "Frenemy",
-      "dice": [
-        {
-          "die": "d100",
-          "value": 18,
-          "table": "Villain Crafter - lieutenant"
-        }
-      ],
-      "outcome": "lieutenant: Frenemy"
-    },
-    {
-      "id": "log_bc1bij1bjxa3e",
-      "ts": 1789140994695,
-      "adventureId": "adv_8wcczmjt9uuw",
-      "kind": "crafter",
-      "summary": "The Company",
-      "dice": [
-        {
-          "die": "d100",
-          "value": 41,
-          "table": "Villain Crafter - organization"
-        }
-      ],
-      "outcome": "organization: The Company"
-    },
-    {
-      "id": "log_e79adk2z9tye",
-      "ts": 1789140994695,
-      "adventureId": "adv_8wcczmjt9uuw",
-      "kind": "crafter",
-      "summary": "Power",
-      "dice": [
-        {
-          "die": "d100",
-          "value": 68,
           "table": "Villain Crafter - archetype"
         }
       ],
-      "outcome": "archetype: Power"
+      "outcome": "archetype: Making A Point"
     },
     {
-      "id": "log_122n2gl1p56d0g",
-      "ts": 1789140994694,
-      "adventureId": "adv_8wcczmjt9uuw",
+      "id": "log_1d1v32o17dj5g8",
+      "ts": 1789142379989,
+      "adventureId": "adv_1kjv8ze1dnaq4r",
       "kind": "phase",
       "dice": [
         {
           "die": "d10",
-          "value": 2,
+          "value": 4,
           "table": "End Goal Roll"
         },
         {
@@ -772,137 +733,107 @@
         },
         {
           "die": "d100",
-          "value": 17,
+          "value": 27,
           "table": "Plot Twists"
-        },
-        {
-          "die": "d100",
-          "value": 93,
-          "table": "Plot Twists"
-        }
-      ],
-      "summary": "No Context + Delay, Tension",
-      "outcome": "Phase 3 (6 vs 11)"
-    },
-    {
-      "id": "log_1lulvqmryhzs4",
-      "ts": 1789140994694,
-      "adventureId": "adv_8wcczmjt9uuw",
-      "kind": "endgoal",
-      "dice": [
-        {
-          "die": "d10",
-          "value": 10,
-          "table": "End Goal Roll"
-        },
-        {
-          "die": "d100",
-          "value": 26,
-          "table": "End Goal Focus"
-        },
-        {
-          "die": "d100",
-          "value": 61,
-          "table": "Plot Twists"
-        },
-        {
-          "die": "d100",
-          "value": 46,
-          "table": "Plot Twists"
-        }
-      ],
-      "summary": "Personal + Outcast, Leader",
-      "outcome": "End Goal revealed (14 vs 11)"
-    },
-    {
-      "id": "log_uu1c2qf057qk",
-      "ts": 1789140994693,
-      "adventureId": "adv_8wcczmjt9uuw",
-      "kind": "endgoal",
-      "dice": [
-        {
-          "die": "d10",
-          "value": 7,
-          "table": "End Goal Roll"
-        },
-        {
-          "die": "d100",
-          "value": 33,
-          "table": "End Goal Focus"
-        },
-        {
-          "die": "d100",
-          "value": 66,
-          "table": "Plot Twists"
-        },
-        {
-          "die": "d100",
-          "value": 98,
-          "table": "Plot Twists"
-        }
-      ],
-      "summary": "Personal + Persuade, Unusual",
-      "outcome": "End Goal revealed (11 vs 11)"
-    },
-    {
-      "id": "log_182qq6pfmur0b",
-      "ts": 1789140994693,
-      "adventureId": "adv_8wcczmjt9uuw",
-      "kind": "phase",
-      "dice": [
-        {
-          "die": "d10",
-          "value": 6,
-          "table": "End Goal Roll"
         },
         {
           "die": "d100",
           "value": 20,
-          "table": "Villain Plan Focus"
-        },
-        {
-          "die": "d100",
-          "value": 99,
-          "table": "Plot Twists"
-        },
-        {
-          "die": "d100",
-          "value": 100,
           "table": "Plot Twists"
         }
       ],
-      "summary": "Relocating + Urgent, Useful",
-      "outcome": "Phase 2 (8 vs 11)"
+      "summary": "No Context + Evidence, Disaster",
+      "outcome": "Phase 3 (8 vs 11)"
     },
     {
-      "id": "log_5dngq6hem5xw",
-      "ts": 1789140994693,
-      "adventureId": "adv_8wcczmjt9uuw",
+      "id": "log_vb1pjtgiosi4",
+      "ts": 1789142379989,
+      "adventureId": "adv_1kjv8ze1dnaq4r",
       "kind": "phase",
       "dice": [
         {
           "die": "d10",
-          "value": 8,
+          "value": 3,
           "table": "End Goal Roll"
         },
         {
           "die": "d100",
-          "value": 91,
+          "value": 15,
           "table": "Villain Plan Focus"
         },
         {
           "die": "d100",
-          "value": 39,
+          "value": 25,
           "table": "Plot Twists"
         },
         {
           "die": "d100",
-          "value": 22,
+          "value": 54,
           "table": "Plot Twists"
         }
       ],
-      "summary": "No Context + Idea, Emotion",
-      "outcome": "Phase 1 (8 vs 11)"
+      "summary": "On the March + Enter, Missing",
+      "outcome": "Phase 2 (5 vs 11)"
+    },
+    {
+      "id": "log_3fo9e5gz5t6v",
+      "ts": 1789142379988,
+      "adventureId": "adv_1kjv8ze1dnaq4r",
+      "kind": "endgoal",
+      "dice": [
+        {
+          "die": "d10",
+          "value": 9,
+          "table": "End Goal Roll"
+        },
+        {
+          "die": "d100",
+          "value": 67,
+          "table": "End Goal Focus"
+        },
+        {
+          "die": "d100",
+          "value": 35,
+          "table": "Plot Twists"
+        },
+        {
+          "die": "d100",
+          "value": 65,
+          "table": "Plot Twists"
+        }
+      ],
+      "summary": "A New Order + Headquarters, Personal",
+      "outcome": "End Goal revealed (11 vs 11)"
+    },
+    {
+      "id": "log_1izdijm1gb12mu",
+      "ts": 1789142379988,
+      "adventureId": "adv_1kjv8ze1dnaq4r",
+      "kind": "phase",
+      "dice": [
+        {
+          "die": "d10",
+          "value": 5,
+          "table": "End Goal Roll"
+        },
+        {
+          "die": "d100",
+          "value": 87,
+          "table": "Villain Plan Focus"
+        },
+        {
+          "die": "d100",
+          "value": 24,
+          "table": "Plot Twists"
+        },
+        {
+          "die": "d100",
+          "value": 85,
+          "table": "Plot Twists"
+        }
+      ],
+      "summary": "No Context + Enhance, Revenge",
+      "outcome": "Phase 1 (5 vs 11)"
     }
   ]
 }

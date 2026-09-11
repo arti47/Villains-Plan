@@ -7,9 +7,11 @@ import {
   explain, actionBar, sectionTitle, citeLink, diePill, emptyState, showToast
 } from "./ui.js";
 import {
-  askOdds, askResult, defaultOdds, oddsRow, meaningWord, meaningTables, meaningTable,
-  askProcedure, randomEventRule, mythicGuidance, mythicSource, elementsSource
+  askResult, defaultOdds, oddsRow, fateChart, fateBands, meaningWord, meaningTables,
+  meaningTable, askProcedure, randomEventRule, mythicGuidance, mythicSource,
+  elementsSource, eventFocus, eventFocusTable
 } from "./rules.js";
+import { chaos as chaosOf } from "./derived.js";
 import * as store from "./store.js";
 import { Settings } from "./settings.js";
 import { refresh, go } from "./router.js";
@@ -20,25 +22,29 @@ import { refresh, go } from "./router.js";
  * result also fires a Random Event, which does not overturn the answer (OPM).
  */
 export function ask({ question = "", odds = defaultOdds(), expectation = "" } = {}) {
-  const roll = rollD100();
-  const result = askResult(odds, roll);
-  const event = result.double ? rollEventWord() : null;
-
   const adv = store.active();
-  const dice = [{ die: "d100", value: roll, table: `Ask The Game Master - ${result.odds.label}` }];
-  if (event) dice.push({ die: "d100", value: event.roll, table: "Discover Meaning - Action" });
+  const level = chaosOf(adv);
+  const roll = rollD100();
+  const result = askResult(odds, roll, level);
+  const event = result.double ? rollEvent() : null;
+
+  const dice = [{ die: "d100", value: roll, table: `Fate Chart - ${result.odds.label} at chaos ${level}` }];
+  if (event) {
+    dice.push({ die: "d100", value: event.focus.roll, table: "Random Event Focus" });
+    for (const word of event.words) dice.push({ die: "d100", value: word.roll, table: word.table });
+  }
 
   store.pushLog({
     adventureId: adv ? adv.id : null,
     kind: "ask",
     question: String(question || "").trim(),
     dice,
-    summary: `${result.odds.label}: ${result.answer.label}${event ? ` · random event: ${event.word}` : ""}`,
+    summary: `${result.odds.label} at chaos ${level}: ${result.answer.label}${event ? ` · random event: ${event.focus.label} - ${event.words.map((w) => w.word).join(", ")}` : ""}`,
     outcome: result.answer.label
   });
   if (adv) {
     store.record(adv.id, "ask",
-      `Asked${question ? ` "${String(question).trim()}"` : ""} at ${result.odds.label}: ${result.answer.label} (${roll})${event ? `, and a random event: ${event.word}` : ""}.`);
+      `Asked${question ? ` "${String(question).trim()}"` : ""} at ${result.odds.label}, chaos ${level}: ${result.answer.label} (${roll})${event ? `, and a random event - ${event.focus.label}: ${event.words.map((w) => w.word).join(", ")}` : ""}.`);
   }
   return { ...result, question: String(question || "").trim(), expectation, event, id: uid("ask"), at: now() };
 }
@@ -59,10 +65,15 @@ export function discover(tableId = "action", { logAs = "meaning", question = "" 
   return word;
 }
 
-/** The word a Random Event is read from — an Action, because an event is what happens. */
-function rollEventWord() {
-  const roll = rollD100();
-  return { ...meaningWord("action", roll), event: true };
+/**
+ * A random event: roll the Event Focus, then its meaning on the two Action tables
+ * (GME2e). The focus may point at the Threads or Characters list - the app offers that
+ * pick rather than making it for you, because which entry fits is a reading.
+ */
+export function rollEvent() {
+  const focus = eventFocus(rollD100());
+  const words = [meaningWord("action-1", rollD100()), meaningWord("action-2", rollD100())];
+  return { focus, words };
 }
 
 /** Ask the pivot question for the Arc screen, and record the answer where the gate reads it. */
@@ -99,7 +110,7 @@ export function renderAsk() {
   const oddsWrap = el("div", { class: "field" });
   add(oddsWrap, el("span", { class: "field-label", text: "Odds of a Yes" }));
   const chips = el("div", { class: "chip-row odds-row" });
-  for (const row of askOdds()) {
+  for (const row of fateChart().rows) {
     add(chips, el("button", {
       class: `chip ${draft.odds === row.key ? "on" : ""}`, type: "button",
       "aria-pressed": draft.odds === row.key ? "true" : "false",
@@ -110,15 +121,16 @@ export function renderAsk() {
   add(content, oddsWrap);
 
   const odds = oddsRow(draft.odds);
-  add(content, oddsCard(odds), procedureCard());
+  const level = chaosOf(store.active());
+  add(content, oddsCard(odds, level), procedureCard());
 
   if (lastAsk) add(content, sectionTitle("The answer"), askCard(lastAsk));
-  add(content, guidanceNote(mythicGuidance("odds"), "ask-odds"), guidanceNote(mythicGuidance("expectations"), "ask-odds"));
+  add(content, guidanceNote(mythicGuidance("odds"), "ask-odds"), guidanceNote(mythicGuidance("expectations"), "ask-odds"), focusTableCard());
   add(content, recentAsks());
 
   const action = actionBar({
     label: "Ask",
-    context: `${odds.label} · Yes on ${odds.exYes[0]}-${odds.yes[1]}`,
+    context: `${odds.label} · chaos ${level} · Yes on 1-${fateBands(odds.key, level).yes[1]}`,
     onClick: () => {
       lastAsk = ask({ question: draft.question, odds: draft.odds });
       refresh();
@@ -128,22 +140,23 @@ export function renderAsk() {
   return { content, action };
 }
 
-function oddsCard(odds) {
+function oddsCard(odds, level) {
+  const bands = fateBands(odds.key, level);
   const box = el("div", { class: "card" });
-  add(box, el("h2", { class: "card-title" }, odds.label, citeLink("ask-chart", "rule")));
-  const bands = [
-    ["Exceptional Yes", odds.exYes], ["Yes", odds.yes], ["No", odds.no], ["Exceptional No", odds.exNo]
-  ];
-  for (const [name, range] of bands) {
-    const width = range[1] - range[0] + 1;
+  add(box, el("h2", { class: "card-title" }, `${odds.label} at chaos ${bands.chaos}`, citeLink("fate-chart", "rule")));
+  for (const [name, range] of [
+    ["Exceptional Yes", bands.exYes], ["Yes", bands.yes], ["No", bands.no], ["Exceptional No", bands.exNo]
+  ]) {
     const row = el("div", { class: "band-row" });
     add(row,
       el("span", { class: "band-name", text: name }),
-      el("span", { class: `band-bar band-${name.toLowerCase().replace(/ /g, "-")}`, style: `width:${width}%` }),
-      el("span", { class: "band-range", text: `${range[0]}-${range[1]}` }));
+      range
+        ? el("span", { class: `band-bar band-${name.toLowerCase().replace(/ /g, "-")}`, style: `width:${range[1] - range[0] + 1}%` })
+        : el("span", { class: "band-none", text: "cannot happen" }),
+      range ? el("span", { class: "band-range", text: `${range[0]}-${range[1]}` }) : null);
     add(box, row);
   }
-  add(box, el("p", { class: "block-note", text: `A Yes of either kind on ${odds.exYes[0]}-${odds.yes[1]}: ${odds.yes[1]}%.` }));
+  add(box, el("p", { class: "block-note", text: `A Yes of either kind on 1-${bands.yes[1]}: ${bands.yes[1]}%. The Chaos Factor moves these bands - that is what it is for.` }));
   return box;
 }
 
@@ -155,8 +168,8 @@ function askCard(result) {
       el("span", { class: "phase-date", text: formatTime(result.at) })));
   if (result.question) add(box, el("p", { class: "ask-question", text: `"${result.question}"` }));
   const dice = el("div", { class: "dice-row" });
-  add(dice, diePill({ die: "d100", value: result.roll, table: `Ask The Game Master - ${result.odds.label}` }),
-    el("span", { class: "arith", text: `${result.odds.label}` }));
+  add(dice, diePill({ die: "d100", value: result.roll, table: `Fate Chart - ${result.odds.label}` }),
+    el("span", { class: "arith", text: `${result.odds.label} at chaos ${result.chaos}` }));
   add(box, dice, el("p", { class: "block-text", text: result.answer.text }));
 
   if (!result.answer.yes) {
@@ -167,18 +180,53 @@ function askCard(result) {
   return box;
 }
 
-function eventBlock(event) {
+export function eventBlock(event) {
   const box = el("div", { class: "block event-block" });
   add(box, el("h4", { class: "block-title" }, "Random event", citeLink("random-events", "rule")));
-  const dice = el("div", { class: "dice-row" });
-  add(dice, diePill({ die: "d100", value: event.roll, table: "Discover Meaning - Action" }),
-    el("span", { class: "keyword" }, el("span", { class: "keyword-word", text: event.word })));
-  add(box, dice,
-    el("p", { class: "block-note", text: randomEventRule().note }),
-    el("button", {
-      class: "btn btn-quiet", type: "button",
-      onclick: () => { go("#/meaning"); showToast("Roll another word to sharpen it."); }
-    }, "Add another word"));
+
+  const focusRow = el("div", { class: "dice-row" });
+  add(focusRow, diePill({ die: "d100", value: event.focus.roll, table: "Random Event Focus" }),
+    el("span", { class: "focus-label", text: event.focus.label }));
+  add(box, focusRow, el("p", { class: "block-note", text: event.focus.reason }));
+
+  const wordRow = el("div", { class: "dice-row" });
+  for (const word of event.words) {
+    add(wordRow, diePill({ die: "d100", value: word.roll, table: word.table }));
+    const pill = el("span", { class: "keyword", title: word.table });
+    add(pill, el("span", { class: "keyword-word", text: word.word }));
+    add(wordRow, pill);
+  }
+  add(box, wordRow, el("p", { class: "block-note", text: randomEventRule().note }));
+
+  if (event.focus.list) {
+    add(box, el("p", { class: "block-note" },
+      `This focus points at the ${event.focus.list} list. `,
+      el("a", { class: "cite", href: "#/lists" }, "Roll for an entry there"), "."));
+  }
+  add(box, el("button", {
+    class: "btn btn-quiet", type: "button",
+    onclick: () => { go("#/meaning"); showToast("Roll another word to sharpen it."); }
+  }, "Add another word"));
+  return box;
+}
+
+/**
+ * The Event Focus table, with the book's own note on when each focus is the one you would
+ * choose if you were choosing rather than rolling.
+ */
+function focusTableCard() {
+  const table = eventFocusTable();
+  const box = el("details", { class: "card fold" });
+  add(box, el("summary", { text: "The Random Event Focus table" }),
+    el("p", { class: "block-note", text: "A double on the ask rolls this, then two Action words. The reasons are the book's own: they say when a focus is the one you would pick if you were picking." }));
+  const list = el("dl", { class: "focus-list" });
+  for (const row of table.rows) {
+    add(list,
+      el("dt", {}, el("span", { class: "band-range", text: `${row.min}-${row.max}` }), " ", row.label,
+        row.list ? el("span", { class: "phase-open-leads", text: row.list }) : null),
+      el("dd", { text: row.reason }));
+  }
+  add(box, list, el("p", { class: "source-cite", text: table.cite }));
   return box;
 }
 

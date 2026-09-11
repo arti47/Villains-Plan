@@ -245,6 +245,7 @@ export function normalizeAdventure(raw) {
       expectation: sc.expectation || "",
       notes: sc.notes || "",
       adjustments: Array.isArray(sc.adjustments) ? sc.adjustments.filter(Boolean) : [],
+      event: sc.event && sc.event.focus ? sc.event : null,
       words: Array.isArray(sc.words) ? sc.words.filter(Boolean) : [],
       control: ["in", "out"].includes(sc.control) ? sc.control : null,
       startedAt: sc.startedAt || now(),

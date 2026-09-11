@@ -43,10 +43,11 @@ account, no server and no telemetry.
   Roll, the Focus table and the two keywords in the order the rules ask for.
 - **Arc** — Discovery → Foiling → Pivot → Concluded, with a summary and one-step undo at
   every boundary, and the Pivot gate the article defines.
-- **Oracle** — One-Page Mythic itself: Ask the Game Master (a Yes/No question, honest
-  odds, one d100 against the chart), random events on a double, and Discover Meaning for
-  detail without a question — plus all twelve Elements tables from Mythic Second Edition.
-  Switch it off in Settings if you roll the oracle by hand.
+- **Oracle** — Ask the Game Master on Mythic's full Fate Chart: a Yes/No question, honest
+  odds, one d100 read at your current Chaos Factor, so the same roll answers differently in
+  a calm adventure and a wild one. A double also throws a random event — an Event Focus and
+  two Action words. Discover Meaning covers detail without a question, across both Action
+  tables and all twelve Elements tables. Switch it off in Settings if you roll by hand.
 - **Log** — every die it has rolled, with a per-face distribution so you can check the app
   rather than argue with it.
 - **Rules** — one entry per automated rule in the app's own words, with the page cited, a
@@ -54,10 +55,14 @@ account, no server and no telemetry.
 
 ## What it does not do
 
-Five sources are in here: the Villain's Plan article, the One-Page Mythic Game Master
-Emulator, the Villain Crafter, Mythic Second Edition's Elements meaning tables, and its
-scene/Chaos Factor/bookkeeping rules. That last one arrived as a written summary rather
-than pages, so it ships marked provisional and the Scene screen says so. The Chaos Factor (which the one-page edition drops by
+Six sources are in here: the Villain's Plan article, the One-Page Mythic Game Master
+Emulator, the Villain Crafter, and from Mythic Second Edition the Elements and Action
+meaning tables, the Fate Chart, the Random Event Focus and Scene Adjustment tables, and the
+scene/Chaos Factor/bookkeeping rules. That last part arrived as a written summary rather
+than pages, so what still rests on it ships marked provisional and the Scene screen says so.
+
+Still not in: the Thread Progress Track and the alternative chaos rules. The app does not
+approximate them. The Chaos Factor (which the one-page edition drops by
 design), scene setup, the Bookkeeping phase and the Threads and Characters lists are in
 none of them, so the app does not roll them and does not approximate them. Villain
 statistics are also left alone: no game system is attached here.

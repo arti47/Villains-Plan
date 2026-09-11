@@ -4,7 +4,10 @@ From the Mythic Game Master Emulator Second Edition, cited `GME2e`.
 
 ## Provenance — read this first
 
-**This source was supplied as a written summary, not as page images.** Under §2.1 a
+**This subsystem arrived as a written summary first.** The scene test, the Scene
+Adjustment Table and the Event Focus table have since been confirmed or supplied as page
+photographs; the Chaos Factor range, the bookkeeping steps and the list sizes are still
+summary-only. Under §2.1 a
 summary corroborates and never decides, so everything below ships marked
 `provisional: true` in `data-scenes.js`, the Scene screen carries a fold saying where the
 rules came from, and a page image can confirm or correct any of it. What the summary
@@ -18,10 +21,9 @@ One to nine, starting at five. It is the number the scene test is rolled against
 - Data: `CHAOS`. Engine: `rules.clampChaos`, `scenes.endScene`.
 - Surface: the persistent header (it decides what the next scene does), and a nine-step
   track on the Scene screen.
-- **It does not touch the app's Ask The Game Master odds** (ruling A24). GME2e's Fate Chart
-  moves with chaos; One-Page Mythic's chart — the one that ships — has no Chaos Factor in
-  it, and the Fate Chart itself was not supplied. A test asserts the ask path never reads
-  chaos, and that the same roll gives the same answer at chaos 1 and chaos 9.
+- **It moves the ask odds** (ruling A24, revised). The Fate Chart arrived, so the ask reads
+  the adventure's Chaos Factor and the chart column for it: a 50 at 50/50 is a No at chaos
+  1 and a Yes at chaos 9.
 
 ## The scene test
 
@@ -39,16 +41,17 @@ Roll 1d10 against the Chaos Factor:
 
 ## Altered scenes
 
-Take the next most likely version, or twist one element. GME2e has a Scene Adjustment
-Table; **its ranges were not supplied**, so the app offers the kinds of adjustment the
-summary names as choices and does not roll them (ruling A23). "Ask the Game Master" and
-"roll a meaning word" are on that list and route to the engines the app already has.
+Roll 1d10 on the Scene Adjustment Table: remove a character (1), add one (2), reduce or
+remove an activity (3), increase one (4), remove an object (5), add one (6), and on 7–10,
+**make two adjustments** — roll twice more. The book does not say what a nested 7–10 does;
+the app expands it the same way, which converges (branching factor 0.8) and is guarded at
+depth 4 (ruling A27). Asking the Game Master and rolling a meaning word sit beside it.
 
 ## Interrupt scenes
 
-Built like a random event. Mythic rolls an Event Focus first; **that table was not
-supplied**, so the app rolls meaning words — the One-Page Mythic random-event shape — and
-says on the card that the focus is yours to decide.
+Built exactly like a random event: the Event Focus, then two Action words. *Move Toward A
+Thread* is the book's own suggestion for an interrupt — the adventure has stalled and this
+is the push.
 
 ## Bookkeeping
 
@@ -71,13 +74,16 @@ should be able to walk into a scene.
 - **Crossing out** frees every line an element held.
 - **Clean-up** when the sheet is full: live elements carry across and three-line ones come
   over with two.
-- **Picking at random is a house aid** (`data-house.js`, `HOUSE_AID = true`, labelled in
-  the UI): Mythic's own selection roll was not supplied. Every *line* is equally likely,
-  which is precisely what makes the book's weighting bite — a test asserts a three-line
-  element comes up about three times as often as a one-line element.
+- **Rolling on a list** is the book's own two-step procedure (ruling A25, revised — the
+  house aid that stood in for it was deleted with the gap): a section die sized to the
+  active sections (none / d4 / d6 / d8 / d10), then 1d10 for the line, two faces per line.
+  A blank line reads **Choose**: take what fits, or roll again. Weighting still decides how
+  often an element comes up, because it holds more lines.
+- One inference is recorded in the data (A28): the summary gives the section die but not
+  how its faces map to sections, so the app pairs them the way the line roll is explicitly
+  paired. Confirm from the page.
 
-## Named in the source, not supplied — so not built
+## Still not supplied — so still not built
 
-The Fate Chart's odds by Chaos Factor · the Event Focus table · the Scene Adjustment
-Table's ranges · the Thread Progress Track · the Mid-Chaos, No-Chaos and Random Chaos
-variants. All listed in the rules library and on the Scene screen.
+The Thread Progress Track · the Mid-Chaos, No-Chaos and Random Chaos variants · the Fate
+Check, if the edition offers one. Listed in the rules library and on the Scene screen.

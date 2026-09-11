@@ -339,9 +339,53 @@ same passes run against it.
   unsupplied pieces are listed in the app, and the adjustment options are flagged
   `rollable: false`.
 
+## Cycle 5 — after the Fate Chart and the Action tables
+
+### F39 · `rules.housePick` outlived the file it read from
+- **Target:** `src/rules.js`
+- **Fix:** deleted with the house aid it exposed.
+- **Why it mattered:** deleting `data-house.js` left an exported arrow function closing over
+  an identifier that no longer existed. It parses; it would have thrown a `ReferenceError`
+  the first time anything called it. The dead-data scan caught it in the same pass as the
+  deletion — which is the argument for running the scan on *every* change that removes
+  data, not only on ones that add it.
+
+### F40 · The Event Focus reasons were extracted and never shown
+- **Fix:** a fold on the Ask screen listing every focus with its range, the list it points
+  at, and the book's own note on when you would pick it rather than roll it.
+- **Why it mattered:** §0, for the fourth time in this project and the first in three
+  cycles. The table was in the data, the engine read its labels, and a whole column of the
+  page — the reasons — reached nothing. The scan flagged `eventFocusTable` as exported and
+  unimported, which is what pointed at it.
+
+## Verified clean (cycle 5) — the chart, two independent ways
+
+The Fate Chart is 81 cells of three numbers each, transcribed by eye. Two checks make that
+defensible:
+
+1. **Structural.** The chart is one thirteen-rung ladder read at an offset set by the odds
+   row and the Chaos Factor. Every one of the 81 cells is asserted against the ladder
+   prediction. A single mistyped digit anywhere fails it.
+2. **Cross-source.** The chaos-5 column is identical to the One-Page Mythic chart in
+   `data-mythic.js`, transcribed days earlier from a different page by a different route.
+   All nine rows, all four bands, all 36 boundaries. Two independent transcriptions of the
+   same underlying table agreeing exactly is the strongest evidence available short of the
+   publisher's own file.
+
+Also clean: every roll 1–100 resolves on every one of the 81 cells; the impossible cells
+behave (Certain at chaos 7 has no Exceptional No, Very Unlikely at chaos 1 has no
+Exceptional Yes); a non-d100 value throws; the Event Focus table covers 1–100 and names
+which list each focus points at; the Scene Adjustment table covers 1–10 and its 7–10
+cascade terminates over 300 runs; both Action tables are 100 unique words with their page
+anchors; the list roll reads section then line and reports Choose on a blank.
+
 ## Not yet run
 
-- **Cycle 5.** Cycle 4 found three, one of them a real arithmetic bug in the newest
+- **Cycle 6.** Cycle 5 found two, both from the dead-data scan, both from *removing* and
+  *adding* data in the same change. The stopping rule is still not met. Next: a full
+  rules read-through of `docs/rules/*.md` against the engine now that six sources are in —
+  the last one was three sources ago.
+- **Cycle 5 (historical).** Cycle 4 found three, one of them a real arithmetic bug in the newest
   subsystem and two of them repeats of earlier findings in new places (a gate in a tooltip,
   a fixed bar that clips). The habit to build next: when a screen gains a control that can
   refuse, write the refusal before the disable; when a fixed bar gains a cell, measure it.

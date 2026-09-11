@@ -313,11 +313,12 @@ test("an ask writes one log row, and a double writes the event die with it", () 
     if (result.double) withEvent = result; else withoutEvent = result;
   }
   assert(withEvent && withoutEvent, "both outcomes occur in 400 asks");
-  equal(withEvent.event.word.length > 0, true, "a double rolls an Action word");
+  assert(withEvent.event.focus.label, "a double rolls an Event Focus");
+  equal(withEvent.event.words.length, 2, "and its meaning on both Action tables");
   const rows = store.rollLog({ kind: "ask" });
-  const doubleRow = rows.find((r) => r.dice.length === 2);
+  const doubleRow = rows.find((r) => r.dice.length === 4);
   const plainRow = rows.find((r) => r.dice.length === 1);
-  assert(doubleRow && plainRow, "the log shows one die normally and two on a double");
+  assert(doubleRow && plainRow, "the log shows one die normally, and four on a double: the ask, the focus and two words");
   equal(plainRow.question, "Is the mine still guarded?", "the question is kept with the roll");
 });
 
@@ -350,7 +351,8 @@ test("Discover Meaning rolls one word at a time and logs each (A15)", () => {
 
 // ---------------------------------------------------------------- scenes & chaos (GME2e)
 const sceneData = await import("../data-scenes.js");
-const house = await import("../data-house.js");
+const fate = await import("../data-fate-chart.js");
+const actions = await import("../data-actions.js");
 const sceneEngine = await import("../src/scenes.js");
 
 test("the scene test reads the way the rule states, at every chaos level", () => {
@@ -427,18 +429,139 @@ test("a scene is logged with its die and its chaos, and recorded", () => {
   assert(store.sessionRecord(adv.id).some((r) => r.kind === "scene"), "and the session record shows it");
 });
 
-test("the Chaos Factor never touches the Ask The Game Master odds", () => {
-  // GME2e's Fate Chart moves with chaos; One-Page Mythic's chart does not have it, and
-  // that chart is what ships. Nothing in the ask path may read chaos (ruling A24).
-  const ask = readFileSync("src/oracle.js", "utf8");
-  const rulesSrc = readFileSync("src/rules.js", "utf8");
-  assert(!/askResult[\s\S]{0,400}chaos/i.test(rulesSrc), "askResult does not consult chaos");
-  assert(!/function ask\([\s\S]{0,600}chaos/i.test(ask), "neither does the ask engine");
+test("the Fate Chart moves with the Chaos Factor (ruling A24, revised)", () => {
+  // The same roll, the same odds, a different chaos: a different answer. That is the
+  // chart's whole purpose, and it is what the One-Page Mythic chart could not do.
+  equal(rules.askResult("50-50", 50, 9).answer.key, "yes", "at chaos 9 a 50 is a Yes");
+  equal(rules.askResult("50-50", 50, 1).answer.key, "no", "at chaos 1 the same 50 is a No");
+  equal(rules.askResult("50-50", 11, 5).answer.key, "yes", "chaos 5 keeps the familiar boundary");
+  equal(rules.askResult("50-50", 10, 5).answer.key, "exceptional-yes", "and the one above it");
+});
+
+test("the ask engine reads the adventure's chaos, not a constant", () => {
   const adv = freshAdventure();
-  store.setChaos(adv.id, 9);
-  const high = rules.askResult("50-50", 50).answer.key;
-  store.setChaos(adv.id, 1);
-  equal(rules.askResult("50-50", 50).answer.key, high, "the same roll gives the same answer at any chaos");
+  store.setChaos(adv.id, 2);
+  const low = oracle.ask({ question: "low", odds: "50-50" });
+  equal(low.chaos, 2, "the ask carried chaos 2");
+  store.setChaos(adv.id, 8);
+  equal(oracle.ask({ question: "high", odds: "50-50" }).chaos, 8, "and then chaos 8");
+  const rows = store.rollLog({ kind: "ask" });
+  assert(/chaos 8/.test(rows[0].dice[0].table), "the log records which column was read");
+});
+
+test("all 81 Fate Chart cells match the chart's own ladder", () => {
+  // The chart is one thirteen-rung ladder read at an offset. That is a structural fact,
+  // not how the app reads it - it is here to prove the transcription has no typo.
+  const { ladder, offsets } = rules.fateLadder();
+  for (const row of fate.FATE_CHART.rows) {
+    for (let cf = 1; cf <= 9; cf += 1) {
+      const index = Math.min(ladder.length - 1, Math.max(0, cf + offsets[row.key]));
+      deepEqual(row.cells[cf - 1], ladder[index], `${row.label} at chaos ${cf}`);
+    }
+  }
+});
+
+test("the Fate Chart's chaos-5 column IS the One-Page Mythic chart", () => {
+  // Two pages, transcribed separately, days apart. If either had a typo this fails.
+  for (const row of fate.FATE_CHART.rows) {
+    const opm = rules.opmChart().find((o) => o.key === row.key);
+    assert(opm, `${row.label} exists in both`);
+    const bands = rules.fateBands(row.key, 5);
+    deepEqual(bands.exYes, opm.exYes, `${row.label} Exceptional Yes`);
+    deepEqual(bands.yes, opm.yes, `${row.label} Yes`);
+    deepEqual(bands.no, opm.no, `${row.label} No`);
+    deepEqual(bands.exNo, opm.exNo, `${row.label} Exceptional No`);
+  }
+});
+
+test("every cell of the chart covers 1-100 exactly once, including the impossible ones", () => {
+  for (const row of fate.FATE_CHART.rows) {
+    for (let cf = 1; cf <= 9; cf += 1) {
+      const seen = new Array(101).fill(0);
+      for (let roll = 1; roll <= 100; roll += 1) seen[roll] += 1;
+      for (let roll = 1; roll <= 100; roll += 1) {
+        const answer = rules.askResult(row.key, roll, cf).answer;
+        assert(answer && answer.key, `${row.label} chaos ${cf} roll ${roll}`);
+      }
+      const bands = rules.fateBands(row.key, cf);
+      if (!bands.exYes) assert(bands.yes[0] === 1, "with no Exceptional Yes, Yes starts at 1");
+      if (!bands.exNo) assert(bands.no[1] === 100, "with no Exceptional No, No runs to 100");
+    }
+  }
+  assert(!rules.fateBands("certain", 7).exNo, "Certain at chaos 7 cannot fail exceptionally");
+  assert(!rules.fateBands("very-unlikely", 1).exYes, "Very Unlikely at chaos 1 cannot succeed exceptionally");
+});
+
+test("an impossible roll is an error, not an answer", () => {
+  for (const bad of [0, 101, 1.5]) {
+    let threw = false;
+    try { rules.askResult("50-50", bad, 5); } catch { threw = true; }
+    assert(threw, `${bad} is not a d100 result`);
+  }
+});
+
+test("the Random Event Focus table covers 1-100 and names its lists", () => {
+  for (let roll = 1; roll <= 100; roll += 1) {
+    const focus = rules.eventFocus(roll);
+    assert(focus.label && focus.reason, `roll ${roll}`);
+  }
+  equal(rules.eventFocus(1).key, "remote-event", "1-5");
+  equal(rules.eventFocus(21).key, "npc-action", "21-40 is the widest band");
+  equal(rules.eventFocus(40).key, "npc-action", "to 40");
+  equal(rules.eventFocus(86).key, "current-context", "86-100");
+  equal(rules.eventFocus(100).key, "current-context", "to 100");
+  equal(rules.eventFocus(11).list, "characters", "a New NPC points at the Characters list");
+  equal(rules.eventFocus(51).list, "threads", "a Thread focus points at the Threads list");
+  equal(rules.eventFocus(71).list, undefined, "PC Negative points at neither");
+});
+
+test("the Scene Adjustment table covers 1-10, and 7+ means two adjustments", () => {
+  for (let roll = 1; roll <= 10; roll += 1) assert(rules.sceneAdjustment(roll).label, `roll ${roll}`);
+  equal(rules.sceneAdjustment(1).key, "remove-character", "1");
+  equal(rules.sceneAdjustment(6).key, "add-object", "6");
+  for (const roll of [7, 8, 9, 10]) equal(rules.sceneAdjustment(roll).special, "double", `${roll} doubles`);
+});
+
+test("rolling adjustments always yields at least one real adjustment, and terminates", () => {
+  const adv = freshAdventure();
+  let sawTwo = false;
+  for (let i = 0; i < 300; i += 1) {
+    sceneEngine.testScene(store.active(), {});
+    const scene = store.active().scenes.slice(-1)[0];
+    const results = sceneEngine.rollAdjustments(store.active(), scene);
+    assert(results.length >= 1, "something came out of it");
+    assert(results.length <= 16, `the cascade ran away: ${results.length}`);
+    for (const r of results) assert(r.label && r.special !== "double", "no Make 2 Adjustments survives in the result");
+    if (results.length > 1) sawTwo = true;
+    sceneEngine.endScene(store.active(), "in");
+  }
+  assert(sawTwo, "a 7-10 produces more than one adjustment");
+});
+
+test("an interrupt rolls a focus and two Action words, and keeps them on the scene", () => {
+  const adv = freshAdventure();
+  sceneEngine.testScene(store.active(), {});
+  const scene = store.active().scenes.slice(-1)[0];
+  const event = sceneEngine.interruptEvent(store.active(), scene);
+  assert(event.focus.label, "a focus");
+  equal(event.words.length, 2, "and two words");
+  const saved = store.active().scenes.slice(-1)[0];
+  equal(saved.event.focus.key, event.focus.key, "stored on the scene");
+  const reloaded = store.__setState(JSON.parse(store.exportJSON()));
+  assert(reloaded.adventures[0].scenes.slice(-1)[0].event, "and it survives a reload");
+});
+
+test("both Action tables carry 100 unique words, at the rolls the page shows", () => {
+  for (const table of actions.ACTION_TABLES) {
+    equal(table.words.length, 100, `${table.label} rows`);
+    equal(new Set(table.words).size, 100, `${table.label} unique`);
+  }
+  equal(rules.meaningWord("action-1", 1).word, "Abandon", "Action 1 opens at Abandon");
+  equal(rules.meaningWord("action-1", 100).word, "Waste", "and closes at Waste");
+  equal(rules.meaningWord("action-2", 1).word, "Advantage", "Action 2 opens at Advantage");
+  equal(rules.meaningWord("action-2", 100).word, "Wound", "and closes at Wound");
+  equal(rules.meaningWord("action-1", 60).word, "Lure", "60 on Action 1");
+  equal(rules.meaningWord("action-2", 72).word, "Plot", "72 on Action 2");
 });
 
 test("scenes survive a reload and renumber from the store", () => {
@@ -511,32 +634,50 @@ test("the clean-up transfer drops crossed-out elements and reduces three to two"
   assert(!store.active().threads.some((t) => t.id === gone.id), "the crossed-out one did not travel");
 });
 
-test("the weighted pick is a labelled house aid, and weighting actually bites", () => {
-  equal(house.HOUSE_AID, true, "the file flags itself");
-  assert(/house aid/i.test(house.WEIGHTED_PICK.label), "and the control says so where it is used");
+test("a list roll reads section then line, the way the procedure says", () => {
+  const rule = rules.listSelectionRule();
+  deepEqual(rule.sectionDice.map((r) => r.die), [null, 4, 6, 8, 10], "the section die grows with the active sections");
+  deepEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => rules.lineFromRoll(n)), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5],
+    "a d10 pairs onto the five lines of a section");
+  deepEqual([1, 2, 3, 4, 9, 10].map((n) => rules.sectionFromRoll(n)), [1, 1, 2, 2, 5, 5],
+    "and the section die pairs the same way");
+  equal(rules.activeSections(1).die, null, "one section needs no roll");
+  equal(rules.activeSections(5).die, null, "five lines is still one section");
+  equal(rules.activeSections(6).die, 4, "six lines opens a second");
+  equal(rules.activeSections(25).die, 10, "and a full sheet uses a d10");
+});
+
+test("a list roll lands on a real entry or reports Choose, and is logged either way", () => {
   const adv = freshAdventure();
   const heavy = store.addListItem(adv.id, "characters", "Gorazon");
   store.setListEntries(adv.id, "characters", heavy.id, 3);
   store.addListItem(adv.id, "characters", "A passing merchant");
-  const counts = { Gorazon: 0, "A passing merchant": 0 };
-  for (let i = 0; i < 2000; i += 1) counts[sceneEngine.pickFromList(store.active(), "characters").item.text] += 1;
-  const ratio = counts.Gorazon / counts["A passing merchant"];
-  assert(ratio > 2.2 && ratio < 4, `three lines should come up about three times as often, got ${ratio.toFixed(2)}`);
-});
-
-test("an empty list picks nothing rather than throwing", () => {
-  const adv = freshAdventure();
-  equal(sceneEngine.pickFromList(store.active(), "threads"), null, "nothing to pick");
-});
-
-test("what the summary named but did not specify is recorded, not built", () => {
-  const missing = rules.notSupplied().join(" ");
-  for (const name of ["Fate Chart", "Event Focus", "Scene Adjustment", "Thread Progress", "Chaos"]) {
-    assert(new RegExp(name, "i").test(missing), `${name} is listed as not supplied`);
+  let hits = 0; let chooses = 0;
+  const counts = {};
+  for (let i = 0; i < 600; i += 1) {
+    const result = sceneEngine.rollFromList(store.active(), "characters");
+    assert(result.dice.length >= 1, "the dice are recorded");
+    if (result.choose) { chooses += 1; equal(result.item, null, "a Choose result has no entry"); }
+    else { hits += 1; counts[result.item.text] = (counts[result.item.text] || 0) + 1; }
   }
-  equal(rules.sceneAdjustments().rollable, false, "the adjustment options are offered, never rolled");
-  equal(rules.scenesSource().provenance, "summary", "and the whole subsystem is marked as summary-sourced");
-  assert(rules.scenesSource().provisional, "every value in it is provisional until a page confirms it");
+  assert(hits > 0 && chooses > 0, "four filled lines out of five means both outcomes occur");
+  // weighting bites: three lines against one, among the lines that were hit
+  const ratio = counts.Gorazon / counts["A passing merchant"];
+  assert(ratio > 2 && ratio < 4.5, `three lines should come up about three times as often, got ${ratio.toFixed(2)}`);
+  const logged = store.rollLog({ kind: "list" });
+  equal(logged.length, 200, "every roll is logged, and the log holds its cap of the newest");
+});
+
+test("what is still unsupplied is recorded, and what arrived is no longer listed", () => {
+  const missing = rules.notSupplied().join(" ");
+  for (const name of ["Thread Progress", "Chaos"]) {
+    assert(new RegExp(name, "i").test(missing), `${name} is still listed as not supplied`);
+  }
+  for (const name of ["Fate Chart", "Event Focus", "Scene Adjustment"]) {
+    assert(!new RegExp(name + " itself|" + name + " table", "i").test(missing),
+      `${name} arrived, so it must not still be listed as missing`);
+  }
+  assert(rules.scenesSource().provisional, "the summary-sourced values stay provisional until pages confirm them");
 });
 
 // ---------------------------------------------------------------- Elements (GME2e)
@@ -565,16 +706,17 @@ test("Elements words sit at the rolls the page shows", () => {
   for (const [id, roll, word] of anchors) equal(rules.meaningWord(id, roll).word, word, `${id} ${roll}`);
 });
 
-test("the meaning registry covers both sources, with the right span each", () => {
+test("the meaning registry covers every source, with the right span each", () => {
   const tables = rules.meaningTables();
   equal(tables.filter((t) => t.group === "Discover Meaning").length, 2, "the One-Page Mythic columns");
+  equal(tables.filter((t) => t.group === "Actions").length, 2, "the GME2e Action tables");
   equal(tables.filter((t) => t.group === "Elements").length, 12, "the GME2e Elements tables");
   equal(rules.meaningTable("meaning-action").span, 2, "OPM prints 50 rows over 100 numbers");
   equal(rules.meaningTable("character-identity").span, 1, "Elements print 100");
   for (const table of tables) {
     const seen = new Set();
     for (let roll = 1; roll <= 100; roll += 1) seen.add(rules.meaningWord(table.id, roll).word);
-    equal(seen.size, table.group === "Elements" ? 100 : 50, `${table.label} covers 1-100`);
+    equal(seen.size, table.group === "Discover Meaning" ? 50 : 100, `${table.label} covers 1-100`);
   }
 });
 
@@ -1068,12 +1210,13 @@ test("dead-data scan: every export is imported somewhere (§11.2.1)", () => {
     "firebaseConfig", "FIREBASE_ENABLED",   // Phase 5 shape, deliberately unconsumed (§1.1)
     "__setState",                            // test seam, named as one
     "rollKeywords",                          // engine API the unit harness exercises directly
+    "fateLadder", "opmChart",                // the chart's two cross-checks, harness-only
     // The Crafter's engine and its screen share one module, so these have no importer
     // outside it; the harness drives them directly and every one has a test.
     "rollArchetype", "rollOrganization", "rollUnderling",
     "modifierBreakdown", "canRollOrganization", "canRollUnderling",
     // The scene engine and its screens share one module, as the Crafter's do.
-    "testScene", "interruptWord", "endScene", "pickFromList",
+    "testScene", "endScene", "interruptEvent", "rollAdjustments", "rollFromList",
     "routes",                                // the layout probe's single source of routes
     "die", "d10", "d100",                    // dice primitives, reached through the roller
     "clearNode", "clearUndo", "deepClone",

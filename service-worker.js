@@ -1,6 +1,6 @@
 // service-worker.js — app shell cached, navigations network-first.
 // CACHE_VERSION is bumped on ANY shipped-file change (CLAUDE.md §10.7).
-const CACHE_VERSION = "schemer-v6";
+const CACHE_VERSION = "schemer-v7";
 const SHELL = [
   "./",
   "./index.html",
@@ -13,7 +13,8 @@ const SHELL = [
   "./data-villain-crafter.js",
   "./data-elements.js",
   "./data-scenes.js",
-  "./data-house.js",
+  "./data-fate-chart.js",
+  "./data-actions.js",
   "./firebase-config.js",
   "./src/core.js",
   "./src/ui.js",

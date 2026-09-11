@@ -13,9 +13,9 @@ export const SCENES_SOURCE = {
   section: "Scenes, the Chaos Factor and Bookkeeping",
   publisher: "Word Mill Games",
   cite: "GME2e",
-  provenance: "summary",
+  provenance: "summary, since confirmed in part",
   provisional: true,
-  note: "Supplied as a written summary rather than page images. The numbers below are the ones the summary states outright; everything it only names is unimplemented and listed as not supplied."
+  note: "This subsystem arrived as a written summary rather than page images. The scene test has since been confirmed against a photograph of the Testing The Expected Scene table, and the Scene Adjustment and Event Focus tables arrived as photographs too. The Chaos Factor range, the bookkeeping steps and the list sizes are still summary-only, so they stay marked provisional."
 };
 
 // T19 — the Chaos Factor. GME2e, via summary.
@@ -52,27 +52,6 @@ export const SCENE_TEST = {
   rule: "Roll over the Chaos Factor and the Expected Scene happens. Roll at or under it and an odd result alters the scene, an even result interrupts it."
 };
 
-// The ways the summary says an Altered Scene can be adjusted. The Scene Adjustment Table
-// itself is NOT supplied - its ranges are unknown - so these are offered as choices, not
-// rolled (ruling A23).
-export const SCENE_ADJUSTMENTS = {
-  cite: "GME2e",
-  provisional: true,
-  rollable: false,
-  note: "The summary names a Scene Adjustment Table but not its ranges, so the app offers these as choices and does not roll them.",
-  options: [
-    { key: "next-expected", label: "The next most expected thing", text: "Take the second thing you would have guessed, and start there." },
-    { key: "tweak", label: "Tweak one element", text: "One thing is different: an object present, a threat larger or smaller, someone absent." },
-    { key: "add-character", label: "Add a character", text: "Someone is here who you did not expect." },
-    { key: "remove-character", label: "Remove a character", text: "Someone you expected is not here." },
-    { key: "more-activity", label: "Increase activity", text: "More is happening than you pictured." },
-    { key: "less-activity", label: "Reduce activity", text: "Less is happening than you pictured." },
-    { key: "alter-object", label: "Alter an object", text: "Something present is changed, missing, or not what it seemed." },
-    { key: "fate-question", label: "Ask the Game Master", text: "Put the uncertainty as a Yes/No question and let the answer shape the opening." },
-    { key: "meaning", label: "Roll a meaning word", text: "Take a word from a meaning table and read the twist out of it." }
-  ]
-};
-
 // T21 — the Threads and Characters lists. GME2e, via summary.
 export const LISTS = {
   cite: "GME2e",
@@ -106,11 +85,11 @@ export const BOOKKEEPING = {
 };
 
 // Named by the summary, not specified by it. None of this is implemented or approximated.
+// Named by the summary and since supplied: the Fate Chart (data-fate-chart.js), the
+// Event Focus and Scene Adjustment tables (data-actions.js) and the list selection
+// procedure. What is still missing:
 export const NOT_SUPPLIED = [
-  "The Fate Chart itself - the odds by Chaos Factor. The app's Ask The Game Master is One-Page Mythic's chart, which has no Chaos Factor in it, so chaos does not move those odds here.",
-  "The Event Focus table, which a full Interrupt Scene or Random Event rolls first. The app runs the One-Page Mythic random-event procedure instead: meaning words, read in context.",
-  "The Scene Adjustment Table's ranges - only the kinds of adjustment are named.",
   "The Thread Progress Track.",
   "The Mid-Chaos, No-Chaos and Random Chaos variants.",
-  "How Mythic itself picks an entry from the lists. The app's weighted pick is a house aid (see data-house.js)."
+  "The Fate Check, if the edition offers it as an alternative to the Fate Chart."
 ];

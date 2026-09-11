@@ -12,13 +12,14 @@ import {
   promptModal, modal, inlineRow
 } from "./ui.js";
 import {
-  chaosRule, sceneTestRule, sceneOutcome, clampChaos, sceneAdjustments, listsRule,
-  listKind, bookkeepingSteps, notSupplied, scenesSource, housePick
+  chaosRule, sceneTestRule, sceneOutcome, clampChaos, listsRule, listKind,
+  bookkeepingSteps, notSupplied, scenesSource, sceneAdjustment, sceneAdjustmentTable,
+  listSelectionRule, activeSections, sectionFromRoll, lineFromRoll
 } from "./rules.js";
 import {
   chaos, currentScene, scenes, sceneCount, listItems, listLines, listFull, listNeedsCleanup
 } from "./derived.js";
-import { discover } from "./oracle.js";
+import { discover, rollEvent, eventBlock } from "./oracle.js";
 import * as store from "./store.js";
 import { refresh, go } from "./router.js";
 
@@ -52,11 +53,77 @@ export function testScene(adv, { expectation = "" } = {}) {
   return saved;
 }
 
-/** An Interrupt is generated like a random event; the Event Focus table is not in source. */
-export function interruptWord(adv, scene) {
-  const word = discover("action", { logAs: "scene" });
-  store.updateScene(adv.id, scene.id, { words: [...(scene.words || []), word] });
-  return word;
+/** An Interrupt is generated exactly like a random event: a Focus, then its meaning. */
+export function interruptEvent(adv, scene) {
+  const event = rollEvent();
+  store.pushLog({
+    adventureId: adv.id,
+    kind: "scene",
+    dice: [
+      { die: "d100", value: event.focus.roll, table: "Random Event Focus" },
+      ...event.words.map((w) => ({ die: "d100", value: w.roll, table: w.table }))
+    ],
+    summary: `${event.focus.label}: ${event.words.map((w) => w.word).join(", ")}`,
+    outcome: `Interrupt scene: ${event.focus.label}`
+  });
+  store.updateScene(adv.id, scene.id, { event });
+  store.record(adv.id, "scene", `Interrupt: ${event.focus.label} - ${event.words.map((w) => w.word).join(", ")}.`);
+  return event;
+}
+
+/** One roll on the Scene Adjustment Table. 7-10 is "make 2 adjustments" (ruling A27). */
+export function rollAdjustments(adv, scene) {
+  const rolls = [];
+  const results = [];
+  const expand = (depth) => {
+    if (depth > 4) return;
+    const roll = die(sceneAdjustmentTable().die);
+    rolls.push(roll);
+    const row = sceneAdjustment(roll);
+    if (row.special === "double") { expand(depth + 1); expand(depth + 1); return; }
+    results.push({ key: row.key, label: row.label, text: row.text, roll });
+  };
+  expand(0);
+  store.pushLog({
+    adventureId: adv.id,
+    kind: "scene",
+    dice: rolls.map((value) => ({ die: "d10", value, table: "Scene Adjustment" })),
+    summary: results.map((r) => r.label).join(" + "),
+    outcome: `Scene ${scene.n} altered: ${results.map((r) => r.label).join(" + ")}`
+  });
+  store.updateScene(adv.id, scene.id, { adjustments: [...(scene.adjustments || []), ...results] });
+  return results;
+}
+
+/**
+ * Picking an entry from a list, the book's way: a section die sized to the active
+ * sections, then 1d10 for the line inside it. A blank line is a "Choose" result.
+ */
+export function rollFromList(adv, kind) {
+  const rule = listSelectionRule();
+  const lines = [];
+  for (const item of listItems(adv, kind)) for (let i = 0; i < item.entries; i += 1) lines.push(item);
+  const sectionRule = activeSections(lines.length);
+  const dice = [];
+  let section = 1;
+  if (sectionRule.die) {
+    const roll = die(sectionRule.die);
+    dice.push({ die: `d${sectionRule.die}`, value: roll, table: `${listKind(kind).label} list - section` });
+    section = Math.min(sectionRule.sections, sectionFromRoll(roll));
+  }
+  const lineRoll = die(rule.lineDie);
+  dice.push({ die: "d10", value: lineRoll, table: `${listKind(kind).label} list - line` });
+  const index = (section - 1) * 5 + (lineFromRoll(lineRoll) - 1);
+  const item = lines[index] || null;
+
+  store.pushLog({
+    adventureId: adv.id,
+    kind: "list",
+    dice,
+    summary: item ? item.text : "Choose",
+    outcome: item ? `${listKind(kind).label}: ${item.text}` : `${listKind(kind).label}: blank line - Choose`
+  });
+  return { item, section, line: lineFromRoll(lineRoll), lines: lines.length, dice, choose: !item };
 }
 
 /**
@@ -84,24 +151,6 @@ export function endScene(adv, control) {
       : `The Chaos Factor moves ${before} to ${after}.`
   ];
   return { ok: true, summary, before, after, scene };
-}
-
-/** The house aid: every line is equally likely, so weighting bites (data-house.js). */
-export function pickFromList(adv, kind) {
-  const items = listItems(adv, kind);
-  const lines = [];
-  for (const item of items) for (let i = 0; i < item.entries; i += 1) lines.push(item);
-  if (!lines.length) return null;
-  const roll = rollD100();
-  const picked = lines[roll % lines.length];
-  store.pushLog({
-    adventureId: adv.id,
-    kind: "list",
-    dice: [{ die: "d100", value: roll, table: `${listKind(kind).label} list (house aid)` }],
-    summary: picked.text,
-    outcome: `${listKind(kind).label}: ${picked.text}`
-  });
-  return { item: picked, roll, lines: lines.length };
 }
 
 // ------------------------------------------------------------------ scene screen
@@ -228,30 +277,29 @@ function sceneCard(adv, scene) {
 function alteredBlock(adv, scene) {
   const box = el("div", { class: "block" });
   add(box, el("h4", { class: "block-title" }, "Alter it", citeLink("altered-scene", "rule")),
-    el("p", { class: "block-note", text: sceneAdjustments().note }));
-  const chosen = new Set(scene.adjustments || []);
-  const list = el("div", { class: "chip-row" });
-  for (const option of sceneAdjustments().options) {
-    add(list, el("button", {
-      class: `chip ${chosen.has(option.key) ? "on" : ""}`, type: "button",
-      "aria-pressed": chosen.has(option.key) ? "true" : "false",
-      title: option.text,
+    el("p", { class: "block-note", text: "One d10 on the Scene Adjustment Table. A 7 or more means two adjustments, so roll again twice." }));
+
+  const made = scene.adjustments || [];
+  if (made.length) {
+    const dice = el("div", { class: "dice-row" });
+    for (const adjustment of made) add(dice, diePill({ die: "d10", value: adjustment.roll, table: "Scene Adjustment" }));
+    add(box, dice);
+    for (const adjustment of made) {
+      add(box, el("p", { class: "block-text" }, el("strong", { text: `${adjustment.label}. ` }), adjustment.text));
+    }
+  }
+
+  add(box, el("div", { class: "row-actions" },
+    el("button", {
+      class: "btn btn-primary", type: "button",
       onclick: () => {
-        const next = chosen.has(option.key)
-          ? (scene.adjustments || []).filter((k) => k !== option.key)
-          : [...(scene.adjustments || []), option.key];
-        store.updateScene(adv.id, scene.id, { adjustments: next });
-        if (option.key === "meaning") { const word = interruptWord(adv, store.active().scenes.find((s) => s.id === scene.id)); showToast(`${word.table}: ${word.word}`); }
-        if (option.key === "fate-question") { go("#/ask"); return; }
+        rollAdjustments(adv, store.active().scenes.find((sc) => sc.id === scene.id));
         refresh();
+        showToast("Adjustment rolled.");
       }
-    }, option.label));
-  }
-  add(box, list);
-  for (const key of scene.adjustments || []) {
-    const option = sceneAdjustments().options.find((o) => o.key === key);
-    if (option) add(box, el("p", { class: "block-note", text: `${option.label}: ${option.text}` }));
-  }
+    }, made.length ? "Roll another adjustment" : "Roll the adjustment"),
+    el("a", { class: "btn btn-quiet", href: "#/ask" }, "Ask instead"),
+    el("a", { class: "btn btn-quiet", href: "#/meaning" }, "Roll a meaning word")));
   if ((scene.words || []).length) add(box, wordRow(scene.words));
   return box;
 }
@@ -259,16 +307,16 @@ function alteredBlock(adv, scene) {
 function interruptBlock(adv, scene) {
   const box = el("div", { class: "block" });
   add(box, el("h4", { class: "block-title" }, "What happens instead", citeLink("interrupt-scene", "rule")),
-    el("p", { class: "block-note", text: "An interrupt is built like a random event. Mythic rolls an Event Focus first; that table is not in the source this app was built from, so the app rolls meaning words and leaves the focus to you." }));
-  if ((scene.words || []).length) add(box, wordRow(scene.words));
+    el("p", { class: "block-note", text: "An interrupt is built exactly like a random event: roll the Event Focus, then its meaning on the two Action tables, and read them into the situation." }));
+  if (scene.event) add(box, eventBlock(scene.event));
   add(box, el("button", {
     class: "btn btn-primary", type: "button",
     onclick: () => {
-      const word = interruptWord(adv, store.active().scenes.find((s) => s.id === scene.id));
+      interruptEvent(adv, store.active().scenes.find((sc) => sc.id === scene.id));
       refresh();
-      showToast(`${word.table}: ${word.word}`);
+      showToast("Interrupt rolled.");
     }
-  }, (scene.words || []).length ? "Another word" : "Roll for the interrupt"));
+  }, scene.event ? "Roll a different interrupt" : "Roll for the interrupt"));
   return box;
 }
 
@@ -354,8 +402,28 @@ export function renderLists() {
   }
 
   for (const kind of listsRule().kinds) add(content, listCard(adv, kind));
-  add(content, el("p", { class: "block-note", text: housePick().text }));
+  add(content, selectionNote());
   return { content };
+}
+
+function selectionNote() {
+  const rule = listSelectionRule();
+  const box = el("details", { class: "guidance provisional" });
+  add(box, el("summary", { text: "How a random event picks from a list" }),
+    el("p", { text: "Sections go active as the lines fill, top to bottom. Roll a die sized to the active sections for which section, then a d10 for the line inside it: 1-2 is the first line, 3-4 the second, and so on. Land on a blank line and the result is Choose - take whichever entry fits, or roll again." }));
+  const table = el("table", { class: "ladder" });
+  const head = el("thead", {});
+  add(head, el("tr", {}, el("th", { text: "Lines" }), el("th", { text: "Sections" }), el("th", { text: "Section die" })));
+  const body = el("tbody", {});
+  for (const row of rule.sectionDice) {
+    add(body, el("tr", {}, el("td", { text: `${(row.sections - 1) * 5 + 1}-${row.sections * 5}` }),
+      el("td", { text: String(row.sections) }), el("td", { text: row.die ? `d${row.die}` : "no roll" })));
+  }
+  add(table, head, body);
+  add(box, el("div", { class: "scroll-x" }, table),
+    el("p", { class: "block-note", text: rule.inferred }),
+    el("p", { class: "source-cite", text: `${rule.cite} (summary)` }));
+  return box;
 }
 
 function listCard(adv, kind) {
@@ -393,11 +461,13 @@ function listCard(adv, kind) {
     items.length ? el("button", {
       class: "btn btn-quiet", type: "button",
       onclick: () => {
-        const picked = pickFromList(store.active(), kind.key);
+        const picked = rollFromList(store.active(), kind.key);
         refresh();
-        if (picked) showToast(`${picked.item.text} (1 of ${picked.lines} lines)`);
+        showToast(picked.choose
+          ? `Section ${picked.section}, line ${picked.line} is blank: Choose.`
+          : `${picked.item.text} (section ${picked.section}, line ${picked.line})`);
       }
-    }, housePick().label) : null);
+    }, "Roll for an entry") : null);
   add(box, actions);
 
   if (listFull(adv, kind.key)) {

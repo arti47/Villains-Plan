@@ -383,6 +383,10 @@ textarea { min-height: 5.5rem; resize: vertical; }
 .band-bar.band-no { background: var(--crimson); }
 .band-bar.band-exceptional-no { background: var(--crimson-soft); }
 .band-range { font-size: 0.75rem; color: var(--ink-faint); font-family: ui-monospace, Menlo, monospace; }
+.band-none { font-size: 0.75rem; color: var(--ink-faint); font-style: italic; }
+.focus-list { margin: 0.4rem 0; }
+.focus-list dt { display: flex; align-items: baseline; gap: 0.4rem; flex-wrap: wrap; font-weight: 700; margin-top: 0.5rem; }
+.focus-list dd { margin: 0.1rem 0 0; font-size: 0.85rem; color: var(--ink-soft); }
 .ask-card { border-left: 3px solid var(--ink-faint); }
 .ask-card.yes { border-left-color: var(--gold); }
 .ask-card.no { border-left-color: var(--crimson); }
