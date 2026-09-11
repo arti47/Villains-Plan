@@ -62,9 +62,14 @@ meaning tables, the Fate Chart, the Random Event Focus and Scene Adjustment tabl
 scene/Chaos Factor/bookkeeping rules. That last part arrived as a written summary rather
 than pages, so what still rests on it ships marked provisional and the Scene screen says so.
 
-Still not in: the Fate Check (the edition has one, but its procedure was not supplied),
-Mid-Chaos (its modifiers are written for that Check, not for the chart this app uses), and
-the Discovery Check. The app does not approximate any of them. The Chaos Factor (which the one-page edition drops by
+The Fate Check is in: an adventure resolves on the Fate Chart or on the Check, whichever
+you pick. Mid-Chaos comes with it — its Check modifiers are quoted, so the mode is offered
+there and refused on the chart, whose Mid-Chaos cells were not supplied. The Discovery
+Check is in too, with the caveat that four of its eight results are printed with no stated
+effect, so the app rolls them, names them and applies nothing.
+
+Still not in: the Mid-Chaos Fate Chart's cells, and what those four Discovery results do.
+The app does not approximate either. The Chaos Factor (which the one-page edition drops by
 design), scene setup, the Bookkeeping phase and the Threads and Characters lists are in
 none of them, so the app does not roll them and does not approximate them. Villain
 statistics are also left alone: no game system is attached here.

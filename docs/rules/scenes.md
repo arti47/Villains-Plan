@@ -99,8 +99,13 @@ involving it — is another 2.
 - **The Conclusion** is "a flashpoint with the plot armour removed": a random event with an
   **automatic** Event Focus of Current Context (no focus die) plus two Action words, read
   toward something that ends the thread — now, or next scene.
-- The **Discovery Check**, for when progress stalls, is named in the source but its
-  procedure is not supplied, so the app does not roll it.
+- The **Discovery Check** is for when forward momentum has stalled and you are out of
+  ideas: your character does something that gives a discovery a chance, and you ask whether
+  something is discovered at odds of **no less than 50/50**. On a Yes, roll 1d10 and add
+  your current progress points. Four of the eight results — Progress +2, Flashpoint +2,
+  Progress +3, Flashpoint +3 — award points. **The other four (Track +1, Track +2,
+  Strengthen Progress +1 and +2) are printed with no stated effect**, so the app rolls
+  them, names them, and applies nothing (ruling A33).
 
 ## Chaos variants
 
@@ -111,9 +116,13 @@ involving it — is another 2.
   "default, middle of the road percentiles").
 - **Random Chaos** — at the end of a scene roll a d10: equal-or-under drops the Chaos
   Factor by one, over raises it. Bookkeeping stops asking about control and rolls instead.
-- **Mid-Chaos is not offered** (ruling A32). Its modifiers are written for the Fate
-  **Check**; this app asks on the Fate **Chart**, and converting between them would be
-  inventing a rule.
+- **Mid-Chaos** trims the extremes: chaos pulls a question by +2 to −2 instead of +5 to
+  −5. Its **Check** modifiers are quoted, so the mode is offered whenever the adventure
+  resolves on the Fate Check. The book also has a Mid-Chaos Fate *Chart*, but its cells
+  were not supplied, so on the chart the app refuses the mode and says why (ruling A35).
+  Worth noting for whoever gets that page: the Mid-Chaos ladder (+2/+1/0/−1/−2) is exactly
+  the standard ladder at chaos 7/6/5/4/3, so the chart version is very likely a column
+  compression — but that is a hypothesis, not shipped behaviour.
 
 ## A question standing in for a game rule
 
@@ -123,5 +132,6 @@ not skewed by the story's tension.
 
 ## Still not supplied — so still not built
 
-The Thread Progress Track · the Mid-Chaos, No-Chaos and Random Chaos variants · the Fate
-Check, if the edition offers one. Listed in the rules library and on the Scene screen.
+The **Mid-Chaos Fate Chart's cells** — only its column groupings (1, 2-3, 4-6, 7-8, 9) are
+known — and **what Track +1, Track +2 and Strengthen Progress +1/+2 actually do** on the
+Discovery Check table. Listed in the rules library and on the Scene screen.
