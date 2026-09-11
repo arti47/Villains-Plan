@@ -706,9 +706,16 @@ test("what is still unsupplied is recorded, and what arrived is no longer listed
   for (const name of ["Mid-Chaos Fate CHART", "Track \\+1"]) {
     assert(new RegExp(name, "i").test(missing), `${name} is still listed as not supplied`);
   }
-  for (const name of ["Fate Chart", "Event Focus", "Scene Adjustment"]) {
-    assert(!new RegExp(name + " itself|" + name + " table", "i").test(missing),
-      `${name} arrived, so it must not still be listed as missing`);
+  // F45: this only ever read notSupplied(), so the OTHER gap list - the one the Rules
+  // screen prints first - stayed four sources out of date. Read both.
+  const both = missing + " " + rules.stillNotInSource().join(" ");
+  for (const name of ["Fate Chart", "Event Focus", "Scene Adjustment", "Thread Progress Track",
+                      "Villain Crafter", "Chaos Factor", "scene setup", "Bookkeeping"]) {
+    assert(!new RegExp("(" + name + ")\\s*(itself|table|is|are)?[^.]{0,40}(not |never |no )", "i").test(both),
+      `${name} arrived, so no gap list may still call it missing`);
+  }
+  for (const gap of rules.stillNotInSource()) {
+    assert(false, `STILL_NOT_IN_SOURCE is meant to be empty now; it holds: ${gap}`);
   }
   equal(rules.scenesSource().provisional, false, "the summary-sourced values were confirmed by quotation");
   for (const rule of [sceneData.CHAOS, sceneData.SCENE_TEST, sceneData.LISTS, sceneData.BOOKKEEPING]) {

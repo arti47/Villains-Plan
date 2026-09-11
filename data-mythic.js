@@ -107,13 +107,14 @@ export const MYTHIC_GUIDANCE = {
   }
 };
 
-// What is still not in either source, after One-Page Mythic (CLAUDE.md §1.2).
-// What remains unsourced after four sources. The scene loop, the Chaos Factor, the
-// bookkeeping phase and the two lists arrived with data-scenes.js (as a summary); what is
-// still missing from THOSE rules is listed in NOT_SUPPLIED there.
-export const STILL_NOT_IN_SOURCE = [
-  "The Fate Chart itself - Mythic's odds by Chaos Factor. This app asks on One-Page Mythic's chart, which has no Chaos Factor in it.",
-  "The Event Focus table that a full random event or interrupt rolls first.",
-  "The Scene Adjustment Table's ranges - the kinds of adjustment are known, the numbers are not.",
-  "The Thread Progress Track, and the Mid-Chaos, No-Chaos and Random Chaos variants."
-];
+// What One-Page Mythic left out, and where each of those things ended up.
+//
+// This list is EMPTY, and that is the point: every item it once held - the Fate Chart, the
+// Event Focus table, the Scene Adjustment Table's ranges, the Thread Progress Track and
+// the chaos variants - has since been supplied and built. It stayed stale through four
+// sources because the unit test only ever read NOT_SUPPLIED (docs/AUDIT.md F45), so the
+// Rules screen went on telling the reader that five shipped subsystems were missing.
+//
+// What is genuinely unsupplied now lives in NOT_SUPPLIED in data-scenes.js, which is the
+// one list to add to. If something goes here again, test it here too.
+export const STILL_NOT_IN_SOURCE = [];

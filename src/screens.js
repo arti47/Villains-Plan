@@ -285,14 +285,20 @@ function focusEntry(id) {
 
 function notInSourceCard() {
   const box = el("details", { class: "card fold not-in-source" });
-  add(box, el("summary", { text: "What this app does not do" }),
-    el("p", { text: "Two sources are in here: the Villain's Plan article and One-Page Mythic. These parts of Mythic are in neither, so the app does not roll them and does not approximate them:" }));
-  const list = el("ul", {});
-  for (const item of stillNotInSource()) add(list, el("li", { text: item }));
-  add(box, list, el("p", { class: "block-note", text: NOT_IN_SOURCE.fateQuestion.text }));
+  add(box, el("summary", { text: "What this app does not do" }));
+  const gaps = stillNotInSource();
+  if (gaps.length) {
+    add(box, el("p", { text: "These parts of Mythic are in none of the sources here, so the app does not roll them and does not approximate them:" }));
+    const list = el("ul", {});
+    for (const item of gaps) add(list, el("li", { text: item }));
+    add(box, list);
+  } else {
+    add(box, el("p", { text: "Everything One-Page Mythic left out has since been supplied from the Second Edition pages and is built: the Fate Chart, the Event Focus table, the Scene Adjustment Table, the Thread Progress Track and the chaos variants." }));
+  }
+  add(box, el("p", { class: "block-note", text: NOT_IN_SOURCE.fateQuestion.text }));
   const more = el("ul", {});
   for (const item of notSupplied()) add(more, el("li", { text: item }));
-  add(box, el("p", { class: "block-note", text: "The scene, chaos and list rules came from a written summary rather than pages, so they ship marked provisional - and these parts of them were named but never specified, so they are not built:" }), more);
+  add(box, el("p", { class: "block-note", text: "Two things are named in the book but never specified, so they are not built:" }), more);
   return box;
 }
 

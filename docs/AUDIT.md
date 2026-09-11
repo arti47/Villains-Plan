@@ -464,6 +464,23 @@ summary-only rule left and keeps its flag and its recorded inference (A28).
 - **The Discovery Check.** Every total from −5 to 60 finds a row; the four results with no
   stated effect award nothing and say so; the four that do award exactly the quoted 2/2/3/3.
 
+### F45 · A gap list four sources out of date, printed to the reader
+- **Target:** `STILL_NOT_IN_SOURCE` in `data-mythic.js`, rendered first on the Rules screen's
+  "What this app does not do" card.
+- **Symptom:** it still named the Fate Chart, the Event Focus table, the Scene Adjustment
+  Table's ranges, the Thread Progress Track and the chaos variants as missing. All five
+  have been supplied and built — two of them are the engine the oracle reads.
+- **Why it survived:** the test that guards this (`what is still unsupplied is recorded`)
+  read `notSupplied()` only. The app has **two** gap lists and the test knew about one, so
+  the other drifted with every source while the suite stayed green.
+- **Fix:** the list is now empty and says in its own comment why it is empty and where to
+  add instead; the card renders a positive line when it is empty rather than an empty `ul`;
+  the test reads **both** lists and asserts the list is empty. Verified by re-adding a
+  stale entry — the suite fails.
+- **The class:** this is the §0 defect inverted. Not data extracted and never called, but
+  data called and never re-examined — stale prose asserting a falsehood about the app,
+  surfaced in the UI, with a test nearby that looked like it covered it.
+
 ## Not yet run
 
 - **Cycle 8.** The rules read-through is now overdue by six sources and is the next

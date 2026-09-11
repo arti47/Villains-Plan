@@ -74,10 +74,13 @@ Omitted because neither source has such mechanics (never invented):
 character sheet · attributes/skills/derived stats · health/damage/death · rest · combat &
 initiative · inventory/encumbrance/wealth · powers · advancement · conditions · bestiary ·
 NPCs · pregens · GM tables · safety tools.
-Mythic parts still unsourced and still not approximated (`STILL_NOT_IN_SOURCE`): the Chaos
-Factor (the one-page edition drops it by design) · scene setup (Expected/Altered/Interrupt)
-· the Bookkeeping phase · Threads and Characters lists · the Villain Crafter (MM #41).
-Therefore absent by design: `data-monsters.js`, `data-npcs.js`, `data-pregens.js`,
+`STILL_NOT_IN_SOURCE` **is now empty**, and that list is itself a lesson: it went on naming
+the Chaos Factor, scene setup, Bookkeeping, the two lists and the Villain Crafter long after
+every one of them had been supplied and built, because the test guarding it read the *other*
+gap list (`docs/AUDIT.md` F45). What is genuinely unsupplied lives in one place now,
+`NOT_SUPPLIED` in `data-scenes.js`: the **Mid-Chaos Fate Chart's cells**, and **what Track
++1, Track +2 and Strengthen Progress +1/+2 do** on the Discovery Check.
+Still absent by design: `data-monsters.js`, `data-npcs.js`, `data-pregens.js`,
 `data-solo.js`, `power-automation.js`, `solo.js`, `gm.js`, `combat.js`, `wizard.js`'s
 character path (it builds an adventure dossier instead).
 
@@ -458,4 +461,5 @@ see README. Repository stays private while it carries a transcription.
 | 2026-09-11 | Sixth source (GME2e photographs: the Fate Chart, both Action tables, the Random Event Focus table, the Scene Adjustment Table): `data-fate-chart.js`, `data-actions.js`. The Fate Chart replaced One-Page Mythic's as the engine, so the Chaos Factor now moves the odds (A24 revised); the Scene Adjustment cascade arrived with it (A27) | The user supplied the pages; the chart is the one table the whole oracle reads | `npm test` 133, `npm run smoke` 508, `npm run interaction` 424; all 81 cells cross-checked two independent ways | `schemer-v7` |
 | 2026-09-11 | Direct quotations confirmed the scene, chaos, list and bookkeeping rules: provisional flags removed. **They also corrected the clean-up rule** the summary had blurred — two-entry elements carry across at one, not two (`docs/AUDIT.md` F41) | A summary corroborates but never decides (§2.1) | `npm test` 141, `npm run smoke` 523, `npm run interaction` 437 | `schemer-v8` |
 | 2026-09-11 | The Thread Progress Track, the three chaos variants, and the chaos-5 rule for questions standing in for a game rule. F42: that last one had been an inert data field since the scene work | The user supplied the quoted procedures | `npm test` 145, `npm run smoke` 536, `npm run interaction` 452 | `schemer-v9` |
+| 2026-09-11 | F45: `STILL_NOT_IN_SOURCE` had named five shipped subsystems as missing since the fifth source, printed first on the Rules screen. Emptied, with the card and §1.2 rewritten; its test now reads **both** gap lists and asserts emptiness | The test guarding it only ever read the other list, so the suite stayed green while the app asserted a falsehood about itself | `npm test` 155 (guard re-verified by re-adding a stale entry), `npm run smoke` 547 | `schemer-v11` |
 | 2026-09-11 | The Fate Check (2d10 + odds + chaos, quoted tables), Mid-Chaos on the Check, and the Discovery Check table. Four Discovery results have no stated effect and are rolled, named, and left alone. A28 corroborated by the printed Adventure Lists sheet. F44: a missing `inlineRow` import that only fired on the resolution chip, caught by the interaction audit | The last queries came back with exact tables | `npm test` 155, `npm run smoke` 547, `npm run interaction` 463 | `schemer-v10` |
