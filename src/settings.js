@@ -5,8 +5,12 @@ const KEY = "schemer.settings.v1";
 const DEFAULTS = {
   theme: "system",     // "system" | "light" | "dark"
   textScale: 1,        // pays back the zoom lock (§6.2)
-  showGuidance: true   // the book's own advice on the reveal card; on by default because
+  showGuidance: true,  // the book's own advice on the reveal card; on by default because
                        // the article's whole method is interpretation guidance (§10.15)
+  mythicOracle: true   // Ask The Game Master, Random Events and Discover Meaning. On by
+                       // default: the Villain's Plan procedure asks Fate Questions itself,
+                       // so off would mean a rule that never fires. Turn it off if you run
+                       // the oracle with physical dice or another emulator.
 };
 
 let cache = null;
@@ -31,7 +35,8 @@ export const Settings = {
 
   theme: () => load().theme,
   textScale: () => load().textScale,
-  showGuidance: () => load().showGuidance !== false
+  showGuidance: () => load().showGuidance !== false,
+  mythicOracle: () => load().mythicOracle !== false
 };
 
 /** Push display settings onto the document. Idempotent. */

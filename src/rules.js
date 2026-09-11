@@ -6,6 +6,10 @@ import {
   PLOT_TWISTS, ARC_STAGES, PIVOT_GATE, END_GOAL_ROLL, GUIDANCE, SOURCE, FATE_ANSWERS
 } from "../data.js";
 import { LIBRARY, LIBRARY_GROUPS, TUTORIAL, EXAMPLES } from "../data-library.js";
+import {
+  ASK_ODDS, ASK_ANSWERS, ASK_PROCEDURE, RANDOM_EVENT, DISCOVER_MEANING,
+  MYTHIC_GUIDANCE, MYTHIC_SOURCE, STILL_NOT_IN_SOURCE
+} from "../data-mythic.js";
 
 const FOCUS = {
   phase: VILLAIN_PLAN_FOCUS,
@@ -57,3 +61,40 @@ export function searchLibrary(query) {
 }
 export const tutorialSteps = () => TUTORIAL;
 export const examples = () => EXAMPLES;
+
+// ---------------------------------------------------------------- One-Page Mythic
+export const askOdds = () => ASK_ODDS;
+export const askProcedure = () => ASK_PROCEDURE;
+export const randomEventRule = () => RANDOM_EVENT;
+export const discoverMeaning = () => DISCOVER_MEANING;
+export const mythicGuidance = (key) => MYTHIC_GUIDANCE[key] || null;
+export const mythicSource = () => MYTHIC_SOURCE;
+export const stillNotInSource = () => STILL_NOT_IN_SOURCE;
+
+export function oddsRow(key) {
+  return ASK_ODDS.find((o) => o.key === key) || ASK_ODDS.find((o) => o.default) || ASK_ODDS[0];
+}
+export function defaultOdds() { return (ASK_ODDS.find((o) => o.default) || ASK_ODDS[0]).key; }
+
+/** A double-digit d100 result, which also fires a Random Event (OPM). 100 is not one. */
+function isDouble(roll) { return RANDOM_EVENT.doubles.includes(roll); }
+
+/** Read one d100 against one odds row. Throws rather than guessing. */
+export function askResult(oddsKey, roll) {
+  const odds = oddsRow(oddsKey);
+  const band = ["exYes", "yes", "no", "exNo"].find((k) => roll >= odds[k][0] && roll <= odds[k][1]);
+  if (!band) throw new Error(`Ask The Game Master: roll ${roll} is outside the ${odds.label} row`);
+  const answerKey = { exYes: "exceptional-yes", yes: "yes", no: "no", exNo: "exceptional-no" }[band];
+  const answer = ASK_ANSWERS.find((a) => a.key === answerKey);
+  return { odds, roll, answer, double: isDouble(roll) };
+}
+
+/** One word from one Discover Meaning column. */
+export function discoverWord(column, roll) {
+  const index = Math.floor((roll - 1) / 2);
+  const row = DISCOVER_MEANING.rows[index];
+  if (!row) throw new Error(`Discover Meaning: roll ${roll} is outside the table`);
+  const col = DISCOVER_MEANING.columns.findIndex((c) => c.key === column);
+  if (col < 0) throw new Error(`Discover Meaning: no column "${column}"`);
+  return { column, roll, word: row[col], cite: DISCOVER_MEANING.cite };
+}

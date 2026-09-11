@@ -192,24 +192,15 @@ export const GUIDANCE = {
   }
 };
 
-// Mythic core the subsystem leans on but this source does not contain. The app records
-// these and never rolls them (CLAUDE.md ruling A7).
+// The article leans on Mythic's core. One-Page Mythic (see data-mythic.js) supplies the
+// Fate Question, Random Events and Discover Meaning, so the app rolls those now; what
+// remains genuinely unsourced is listed in STILL_NOT_IN_SOURCE there (rulings A7, A14).
 export const NOT_IN_SOURCE = {
   fateQuestion: {
     label: "Fate Question",
-    text: "The surprise route to a pivot asks a Fate Question, whose odds live in Mythic's core rules - not in this article. Resolve it with your own Mythic tools and record the answer here.",
+    text: "The surprise route to a pivot asks a Fate Question. Its odds are not in this article - they come from One-Page Mythic, which this app now carries, so it can roll the question for you. You can still resolve it with physical dice and record the answer instead.",
     cite: "MM69:p26"
-  },
-  items: [
-    "Fate Questions, the Fate Chart and Fate Check odds",
-    "Chaos Factor",
-    "Scene setup: Expected, Altered and Interrupt scenes",
-    "The Bookkeeping phase",
-    "Discover Meaning (Action and Descriptor tables)",
-    "Random Events",
-    "Threads and Characters lists",
-    "The Villain Crafter (Mythic Magazine #41)"
-  ]
+  }
 };
 
 export const FATE_ANSWERS = [

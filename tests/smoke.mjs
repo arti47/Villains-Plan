@@ -2,7 +2,7 @@
 // (§6.7) on every route, in the fresh, mid-session and stress states.
 
 import { launch, openPage, strayText, horizontalOverflow, tapTargets, primaryAction,
-  buriedControls, explainNote, smallInputs, WIDTHS, PHONE } from "./browser.mjs";
+  buriedControls, explainNote, smallInputs, fixedBarFit, WIDTHS, PHONE } from "./browser.mjs";
 import { results, report } from "./harness.mjs";
 
 const { routes } = await import("../src/router.js").catch(() => ({ routes: null }));
@@ -17,7 +17,7 @@ function assert(cond, message) { if (!cond) throw new Error(message); }
 
 const ROUTES = [
   "#/dossier", "#/adventures", "#/record", "#/reveal", "#/arc",
-  "#/log", "#/rules", "#/tutorial", "#/settings", "#/new"
+  "#/ask", "#/meaning", "#/log", "#/rules", "#/tutorial", "#/settings", "#/new"
 ];
 
 const { url, browser, close } = await launch();
@@ -64,6 +64,13 @@ for (const seed of ["fresh", "mid-session", "stress"]) {
     await check(`${label}: nothing is buried under the fixed bars`, async () => {
       const buried = await buriedControls(page);
       assert(buried.length === 0, `buried: ${buried.join(" | ")}`);
+    });
+
+    await check(`${label}: the tab bar fits its labels at 320px`, async () => {
+      await page.setViewportSize({ width: 320, height: PHONE.height });
+      const fit = await fixedBarFit(page);
+      assert(fit.tight.length === 0, `tabs collide: ${fit.tight.join(" | ")}`);
+      await page.setViewportSize(PHONE);
     });
 
     for (const width of WIDTHS) {
@@ -142,6 +149,44 @@ await check("walk: a re-render never re-rolls (the stored dice are the dice)", a
   await page.waitForSelector("#screen .phase-card");
   const second = await page.textContent("#screen .phase-card .dice-row");
   assert(first === second, `dice changed on re-render: "${first}" then "${second}"`);
+  await context.close();
+});
+
+await check("walk: ask the Game Master, and the answer shows its die and its odds", async () => {
+  const { page, context, errors } = await openPage(browser, url, { seed: "mid-session", route: "#/ask" });
+  await page.fill('input[aria-label="Your question"]', "Is the mine still guarded?");
+  await page.click(".odds-row .chip >> nth=3");                 // Likely
+  await page.click(".btn-action");
+  await page.waitForSelector(".ask-card");
+  const card = await page.textContent(".ask-card");
+  assert(/Is the mine still guarded\?/.test(card), "the question is on the answer");
+  assert(/(Yes|No)/.test(card), "an answer landed");
+  assert(/d100/.test(card), "the die is shown");
+  assert(/Likely/.test(card), "so are the odds it was read against");
+  assert(errors.length === 0, `console errors: ${errors.join(" | ")}`);
+  await context.close();
+});
+
+await check("walk: Discover Meaning rolls one word at a time", async () => {
+  const { page, context } = await openPage(browser, url, { seed: "mid-session", route: "#/meaning" });
+  await page.click(".btn-action");
+  await page.waitForSelector(".reading-card .keyword");
+  assert((await page.$$(".reading-card .keyword")).length === 1, "one word after one roll");
+  await page.click(".btn-action");
+  await page.waitForFunction(() => document.querySelectorAll(".reading-card .keyword").length === 2, null, { timeout: 4000 });
+  await context.close();
+});
+
+await check("the oracle toggle hides its tab and its routes explain themselves", async () => {
+  const settings = { theme: "system", textScale: 1, showGuidance: true, mythicOracle: false };
+  const { page, context } = await openPage(browser, url, { seed: "mid-session", route: "#/dossier", settings });
+  const tabs = await page.$$eval(".tab-bar .tab", (n) => n.map((t) => t.textContent.trim()));
+  assert(!tabs.some((t) => /Oracle/i.test(t)), `Oracle tab still shown: ${tabs.join(",")}`);
+  await page.goto(`${url}#/ask`, { waitUntil: "domcontentloaded" });
+  await page.waitForSelector("#screen h1");
+  const body = await page.textContent("#screen");
+  assert(/switched off/i.test(body), "a gated route reached directly explains itself");
+  assert(await page.$("#screen .btn-primary"), "and offers to turn it on in place");
   await context.close();
 });
 

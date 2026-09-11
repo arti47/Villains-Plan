@@ -3,8 +3,12 @@
 Instantiated from *RPG Player-Character App — Autonomous Build Instructions v3*.
 This file is canonical. **Every code change updates it in the same change** (§10.1).
 
-Source of record: `docs/villains-plan.md` — the extracted text of "The Villain's Plan",
-*Mythic Magazine* Vol. 69, pp. 16–28. Cited in data files as `MM69:p<page>`.
+Sources of record, in precedence order (§2.1):
+1. `docs/villains-plan.md` — "The Villain's Plan", *Mythic Magazine* Vol. 69, pp. 16–28.
+   Cited `MM69:p<page>`. Supplies the reveal system.
+2. The **One-Page Mythic Game Master Emulator** (Word Mill Games), supplied as a page
+   image. Cited `OPM`. Supplies Ask The Game Master, Random Events and Discover Meaning —
+   the Mythic core the article leans on. Extracted into `data-mythic.js`.
 
 ---
 
@@ -13,10 +17,10 @@ Source of record: `docs/villains-plan.md` — the extracted text of "The Villain
 | | |
 |---|---|
 | **Game** | "The Villain's Plan" — a Mythic GME subsystem for revealing a villain's scheme in stages. **Not a full RPG.** |
-| **Scope decision** | Build the Villain's Plan tool only (user decision, Stage B). Mythic core (Fate Questions, Chaos Factor, scene setup, Discover Meaning, Random Events) is **not in the supplied source** and is therefore **not implemented and not invented** (§2 hard rule). |
+| **Scope decision** | Build the Villain's Plan tool only (user decision, Stage B), plus the Mythic oracle once One-Page Mythic was supplied. What is in neither source — Chaos Factor, scene setup, Bookkeeping, Threads/Characters lists — stays **not implemented and not invented** (§2 hard rule). |
 | **Audience** | A solo player/GM emulating a GM (Stage B: seat = solo). No GM screen. |
 | **Platforms** | Phone-first installable PWA; browser and desktop follow. |
-| **Core job** | Adventure/villain dossier · earned-Discovery reveal engine · End Goal Roll state machine · Pivot Plan coda · roll log · rules library · tutorial. |
+| **Core job** | Adventure/villain dossier · earned-Discovery reveal engine · End Goal Roll state machine · Pivot Plan coda · the Mythic oracle (Ask, random events, Discover Meaning) · roll log · rules library · tutorial. |
 | **Backend** | None built. `firebase-config.js` + `database.rules.json` ship as the Phase 5 schema only (Stage B: local-first, sync later). |
 | **Theme** | Dossier ink: aged paper light / near-black dark; crimson = villain & threat, gold = revealed knowledge. System default, in-app override. |
 
@@ -34,10 +38,13 @@ Source of record: `docs/villains-plan.md` — the extracted text of "The Villain
 
 ### 1.2 Scope exclusions — recorded, not forgotten
 
-Omitted because the source has no such mechanics (never invented):
+Omitted because neither source has such mechanics (never invented):
 character sheet · attributes/skills/derived stats · health/damage/death · rest · combat &
 initiative · inventory/encumbrance/wealth · powers · advancement · conditions · bestiary ·
-NPCs · pregens · official solo tables · GM tables · safety tools.
+NPCs · pregens · GM tables · safety tools.
+Mythic parts still unsourced and still not approximated (`STILL_NOT_IN_SOURCE`): the Chaos
+Factor (the one-page edition drops it by design) · scene setup (Expected/Altered/Interrupt)
+· the Bookkeeping phase · Threads and Characters lists · the Villain Crafter (MM #41).
 Therefore absent by design: `data-monsters.js`, `data-npcs.js`, `data-pregens.js`,
 `data-solo.js`, `power-automation.js`, `solo.js`, `gm.js`, `combat.js`, `wizard.js`'s
 character path (it builds an adventure dossier instead).
@@ -51,10 +58,13 @@ House aids (§2.2): **none.** No invented tables ship.
 Extraction is complete: the source is 11 pages and every table, formula and procedure in
 it is in `data.js`. See `docs/villains-plan.md` for the full extraction.
 
-**3.1 Core resolution.** The subsystem has no task resolution of its own. Its dice are:
-`d100` on three Focus tables, `d100` ×2 on Plot Twists (keywords), and `d10` for the End
-Goal Roll. No crit/fumble, no push economy, no advantage mechanism, no cascades.
-*Family (§15): narrative / Permission-dense — the risk is the app becoming a notepad.*
+**3.1 Core resolution.** The reveal subsystem has no task resolution of its own: `d100` on
+three Focus tables, `d100` ×2 on Plot Twists, `d10` for the End Goal Roll. One-Page Mythic
+adds the real resolution mechanic — **1d100 against a nine-row odds chart** yielding
+Exceptional Yes / Yes / No / Exceptional No, with a double-digit roll also firing a random
+event. No crit/fumble beyond that, no push economy, no cascades.
+*Family (§15): percentile oracle over a narrative, Permission-dense core — the risk is the
+app becoming a notepad, which is why the oracle earns its own tab.*
 
 **3.2 Opposed tests.** None in source.
 
@@ -100,8 +110,9 @@ phase, and the escalating modifier is its progress track. One tracker component 
 *illustrations*, shipped as read-only examples in the rules library, never instantiable
 adventures (they are setting content of the article's own invention — paraphrased, §12).
 
-**3.20 Solo rules.** The whole subsystem is a solo/GM-emulator aid, but it publishes no
-oracle of its own beyond the four tables. No separate solo tab.
+**3.20 Solo rules.** The whole app is a solo/GM-emulator aid. The article publishes no
+oracle beyond its four tables; One-Page Mythic publishes the oracle proper, which is the
+Oracle tab (Ask · Meaning), gated by one setting that is on by default.
 
 **3.21 GM tables.** The three Focus tables are the GM tables. No separate GM screen (seat = solo).
 
@@ -111,13 +122,13 @@ oracle of its own beyond the four tables. No separate solo tab.
 
 | Shape | Count | Rules |
 |---|---|---|
-| Lookup | 4 | Villain Plan Focus, End Goal Focus, Pivot Plan Focus, Plot Twists |
+| Lookup | 7 | Villain Plan Focus, End Goal Focus, Pivot Plan Focus, Plot Twists, Ask The Game Master (9 rows × 4 bands), Discover Meaning Action, Discover Meaning Description |
 | Threshold | 1 | `d10 + 2×phases ≥ 11` reveals the End Goal |
 | Escalation | 1 | +2 per known phase |
 | Once-per-X | 2 | End Goal once per adventure; Pivot once per adventure |
-| Gate | 1 | Pivot requires survival / underlings at large / a failsafe |
-| Exception | 2 | "No Context" branches (81–100 and 84–100) skip the Focus text |
-| Permission | 3 | Earn a Discovery · interpret & revise freely · override a second Pivot |
+| Gate | 2 | Pivot requires survival / underlings at large / a failsafe · a recorded or rolled No on the pivot question blocks it |
+| Exception | 3 | "No Context" branches (81–100 and 84–100) skip the Focus text; a double-digit Ask roll fires a random event as well as the answer |
+| Permission | 5 | Earn a Discovery · interpret & revise freely · override a second Pivot · name the villain behind the villain · keep rolling Discover Meaning words until it comes clear |
 | Guidance only | 4 | every phase opens a lead · End Goal must unify prior phases · Pivot arc ≤3 scenes · reveal the Pivot immediately |
 
 Absent shapes: Modifier, Cost, Future cost, Compulsion, Substitution, Cascade, Conversion,
@@ -138,6 +149,11 @@ every family forgets does not exist here, and that is recorded so no later pass 
 | A8 | Earned Discovery | A control, never a roll, never prompted for. Optional "why" note. |
 | A9 | End Goal coherence | The End Goal flow lists every prior phase for revision; phases stay editable. |
 | A10 | Phase cap | None. The escalating modifier is the only pressure. |
+| A11 | Default odds | 50/50 on every visit, and any unknown odds key falls back to it. The book gives 50/50 for "even or you don't know"; defaulting anywhere else would put a thumb on the scale. |
+| A12 | What counts as a double | 11, 22 … 99. A flat 100 is not a double-digit number and fires no event. |
+| A13 | Which column a random event rolls | One **Action** word — an event is what happens — with the book's own "get more words" control for the rest. |
+| A14 | *Revises A7.* The Fate Question | With One-Page Mythic supplied, the app rolls it: the Arc screen offers odds and asks. The manual-record path stays for physical dice. Either way the answer is binding — a No blocks the pivot roll. |
+| A15 | "Keep rolling until it comes clear" | An unbounded, explicit repeat control. Nothing rolls a second word automatically. |
 
 **End Goal Roll thresholds** (the arithmetic the whole app turns on):
 
@@ -167,6 +183,7 @@ Storage is plain JSON, exported and re-imported in one tap, round-trip tested.
 | `index.html` | Shell: app header, persistent header, screen mount, action bar, tab bar |
 | `styles.css` | Dossier-ink theme (light+dark) + components |
 | `data.js` | The four tables, the End Goal Roll constants, the procedure text (paraphrased, cited) |
+| `data-mythic.js` | Second source (OPM): the odds chart, the four answers, the random-event rule, Discover Meaning, and what is still unsourced |
 | `data-library.js` | Rules-library entries + tutorial steps + the two worked examples |
 | `firebase-config.js` | Placeholder + `FIREBASE_ENABLED` flag (Phase 5, not built) |
 | `database.rules.json` | RTDB rules for the Phase 5 shape |
@@ -187,6 +204,7 @@ Storage is plain JSON, exported and re-imported in one tap, round-trip tested.
 | `derived.js` | Phase counts, End Goal modifier/target/needed, arc stage, pivot legality, normalization/migration |
 | `store.js` | Adventures CRUD, active adventure, phases, roll log, session record, export/import, undo stack |
 | `roller.js` | The reveal engine: End Goal Roll, phase reveal, pivot reveal, roll-log writes |
+| `oracle.js` | The Mythic oracle: Ask The Game Master, random events, Discover Meaning, the pivot question, and both oracle screens |
 | `sheet.js` | The in-play screens: persistent header, dossier (phase timeline, leads, editing), Reveal, Arc |
 | `lifecycle.js` | Arc boundaries with confirmation summary + one-step undo |
 | `wizard.js` | New-adventure dossier flow |
@@ -218,8 +236,8 @@ schemer.v1 = {
     record: [ { ts, kind, text } ]
   } ],
   rollLog: [ { id, ts, adventureId, kind, dice: [ { die, value, table } ],
-               summary, outcome } ],   // capped 200
-  settings: { theme, textScale }
+               question, summary, outcome } ],   // capped 200; question only on asks
+  settings: { theme, textScale, showGuidance, mythicOracle }
 }
 ```
 Every schema addition ships a normalization path that back-fills old records, and a fixture
@@ -254,6 +272,10 @@ box means no UI may be built against it.
 | T7 | Rules-library entries (one per automated rule) | `data-library.js` | `screens.renderLibrary` | 18 | [x] |
 | T8 | Tutorial steps | `data-library.js` | `tutorial.js` | 10 | [x] |
 | T9 | Worked examples (paraphrased) | `data-library.js` | `screens.renderLibrary` | 2 | [x] |
+| T10 | Ask The Game Master chart (9 odds × 4 bands) | `data-mythic.js` | `rules.askResult` | 9 | [x] |
+| T11 | The four answers + the random-event rule | `data-mythic.js` | `oracle.ask` | 4+1 | [x] |
+| T12 | Discover Meaning (50 rows × 2 columns) | `data-mythic.js` | `rules.discoverWord` | 50 | [x] |
+| T13 | Ask procedure + oracle guidance + what is still unsourced | `data-mythic.js` | `oracle`, `screens` | 4+5+5 | [x] |
 
 ### 9.1a Rules Traceability Ledger
 
@@ -276,6 +298,13 @@ box means no UI may be built against it.
 | Villain behind the villain (End Goal 73-76) | Permission | `END_GOAL_FOCUS` row | `sheet.villainBehindStep` writing `villain.behind` | Control on the End Goal card + dossier field | `the villain behind the villain is a field` |
 | A read reveal collapses; the list pages | — (density) | — | `sheet.phaseLine` / `DOSSIER_PAGE` | Dossier | layout probe: 2.3 viewports under stress |
 | Roll log records every die | — | — | `store.pushLog` | Log screen + distribution | `every reveal writes one log row with its dice` |
+| 1d100 against the odds row gives one of four answers | Lookup | `ASK_ODDS`, `ASK_ANSWERS` | `rules.askResult` | Ask screen, bands drawn to scale | `every odds row covers 1-100 exactly once`, `boundaries land on the published numbers` |
+| Odds default to 50/50, unknown falls back to it | — | `ASK_ODDS[].default` | `rules.defaultOdds` / `oddsRow` | Odds chips | `unknown odds fall back to 50/50` |
+| A double-digit Ask roll fires a random event too | Exception | `RANDOM_EVENT.doubles` | `rules.askResult().double` → `oracle.ask` | Event block on the answer card | `doubles fire a random event; 100 does not` |
+| An event is read from one Action word, more on request | Permission | `DISCOVER_MEANING` | `oracle.discover` | Event block + "add another word" | `an ask writes one log row, and a double writes the event die with it` |
+| Discover Meaning: one word at a time, unbounded | Permission | `DISCOVER_MEANING` | `oracle.discover` | Meaning screen reading | `rolls one word at a time and logs each` |
+| The pivot question can be rolled, and binds | Gate | `ASK_ODDS`, `FATE_ANSWERS` | `oracle.askPivot` → `derived.canRevealPivot` | Arc screen ask row | `asking the pivot question writes the answer the gate reads` |
+| The oracle is one toggle, on by default | — | `Settings.mythicOracle` | `router` tab gating | Settings + a gated route that explains itself | `the oracle toggle hides its tab and its routes explain themselves` |
 
 ## 10. Process rules
 
@@ -311,3 +340,5 @@ see README. Repository stays private while it carries a transcription.
 | 2026-09-11 | Built Phases 0–4 and 6: data files, 14 `src/` modules, PWA shell, dossier/reveal/arc/log/rules/settings/tutorial screens | The build | `npm test` 67, `npm run smoke` 304, `npm run interaction` 215, probes read | `schemer-v1` |
 | 2026-09-11 | Audit cycle 1: F1–F22 fixed (see `docs/AUDIT.md`) | Findings from the parse gate, dead-data scan, rules read-through, interaction audit and layout/stress probes | all harnesses green after each fix | `schemer-v1` |
 | 2026-09-11 | Rules read-through found two inert rules: a recorded Fate Question answer read by nothing (F20) and the "villain behind the villain" permission with no control (F21) | §0 defect class | unit tests added for both | `schemer-v1` |
+| 2026-09-11 | Second source extracted (One-Page Mythic): `data-mythic.js`, `src/oracle.js`, an Oracle tab with Ask and Meaning, random events, and the pivot question wired to the gate that already honoured it | The user supplied the page; it unblocks everything ruling A7 had marked not-in-source | `npm test` 81, `npm run smoke` 403, `npm run interaction` 286, probes read, screenshots checked | `schemer-v2` |
+| 2026-09-11 | Audit cycle 2: F24–F27 (six tabs collided at 320px and the harness could not see it; the Settings gear was inert on Settings; a card written and never mounted; the citation check assumed one source) | New source, new passes | all harnesses green; `fixedBarFit` added so the tab bar is measured on every route | `schemer-v2` |

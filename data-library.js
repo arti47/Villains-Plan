@@ -9,6 +9,7 @@ export const LIBRARY_GROUPS = [
   { key: "endgoal", label: "The End Goal" },
   { key: "arc", label: "Arcs and foiling" },
   { key: "pivot", label: "The Pivot" },
+  { key: "oracle", label: "The Mythic oracle" },
   { key: "app", label: "How the app behaves" }
 ];
 
@@ -58,8 +59,23 @@ export const LIBRARY = [
   { id: "pivot-timing", group: "pivot", title: "Reveal it immediately, keep it short", cite: "MM69:p25",
     body: "Put the Plan B in the scene right after the plan falls - the celebration, the debrief - because a pivot you know is coming and are waiting for reads as padding. One to three scenes. If you would rather be surprised, ask a Fate Question in that cleanup scene instead and record the answer here." },
 
+  { id: "ask-chart", group: "oracle", title: "Ask the Game Master", cite: "OPM",
+    body: "A Yes/No question, an honest read of the odds, one d100. Nine odds rows run from Certain to Impossible with 50/50 in the middle, and each row splits the hundred into Exceptional Yes, Yes, No and Exceptional No. At 50/50 a Yes of some kind lands on 1-50; at Likely it is 1-65; at Unlikely, 1-35. The app shows you the bands for the odds you picked before you roll." },
+
+  { id: "ask-answers", group: "oracle", title: "The four answers", cite: "OPM",
+    body: "Yes and No both send you back to the expectation you had when you asked - which is why the rules want you to have one. The Exceptional results go past that expectation in the same direction. If a No lands and you cannot see how it plays out, the rules send you to Discover Meaning rather than to a re-roll." },
+
+  { id: "ask-odds", group: "oracle", title: "Choosing odds", cite: "OPM",
+    body: "50/50 covers even odds and, just as importantly, not knowing. The good side runs Likely, Very Likely, Nearly Certain, Certain; the bad side Unlikely, Very Unlikely, Nearly Impossible, Impossible. Reaching for Very Likely because you want a Yes is how an oracle stops being one - the app defaults to 50/50 every time you open the screen." },
+
+  { id: "random-events", group: "oracle", title: "Random events", cite: "OPM",
+    body: "A double-digit result on an Ask - 11, 22, 33 and so on up to 99 - also throws a random event into the moment. The answer you rolled still stands; the event happens as well. The app rolls one Action word for it and offers you another if one word is not enough. A flat 100 is not a double." },
+
+  { id: "discover-meaning", group: "oracle", title: "Discover Meaning", cite: "OPM",
+    body: "Detail without a question: fifty rows, two columns, one d100. The Action column says what an active part of the adventure does; the Description column says what something is like. One word is often enough - when it is not, roll another and read them together, for as long as it takes. Nothing rolls a second word for you." },
+
   { id: "not-in-source", group: "app", title: "What this app deliberately does not do", cite: "MM69:p26",
-    body: "This article is one subsystem, not the whole of Mythic. Fate Questions and their odds, the Chaos Factor, scene setup, Bookkeeping, Discover Meaning, Random Events and the Threads and Characters lists are all elsewhere, so the app does not roll them and does not guess at them. Where the subsystem calls for one - the surprise route to a pivot - the app asks you for the answer and records it." },
+    body: "Two sources are in here: the Villain's Plan article and One-Page Mythic, which supplies the Fate Question, random events and Discover Meaning. Still missing, and still never guessed at: the Chaos Factor - which the one-page edition drops by design - scene setup, the Bookkeeping phase, the Threads and Characters lists, and the Villain Crafter." },
 
   { id: "dice-honesty", group: "app", title: "About the dice", cite: null,
     body: "Every die uses the browser's cryptographic random source, never Math.random. Every roll shows its individual faces, which table it was read on, and what modified it, and the roll log keeps the record with a per-face distribution view so you can check the app instead of arguing with it. A roll happens once and is stored; nothing re-rolls behind your back." },
@@ -87,6 +103,8 @@ export const TUTORIAL = [
     body: "Once the End Goal is out, the Arc screen moves you to Foiling. Expect this arc to run as long as the Discovery arc did. When the plan actually falls, mark the plan defeated - the app summarises what changed and gives you one step of undo." },
   { id: "t9", title: "Decide about a pivot",
     body: "If the villain survived, or their lieutenants are loose, or they set a failsafe, tick it on the Arc screen and roll the Pivot Plan - or, if you would rather be surprised, ask a Fate Question in your cleanup scene and record the answer. Keep the pivot to a scene or three, then conclude the adventure." },
+  { id: "t9b", title: "Ask when you do not know",
+    body: "The Oracle tab is Mythic itself: type a Yes/No question, pick the odds honestly - 50/50 is for not knowing - and roll. Yes and No follow whatever you expected when you asked; the Exceptional results overshoot it. Roll a double and a random event lands in the same moment, on top of the answer. When you want detail rather than an answer, Discover Meaning rolls a word: Action for what something does, Description for what it is like." },
   { id: "t10", title: "Back it up",
     body: "Settings - Export exports every adventure as plain JSON you can read. Do that before you delete anything, and to carry your adventures to another device." }
 ];

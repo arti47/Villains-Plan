@@ -156,17 +156,23 @@ main#screen {
   padding-bottom: var(--safe-b);
 }
 .tab {
-  flex: 1 1 0; min-height: var(--tab-h);
+  position: relative;
+  flex: 1 1 0; min-width: 0; min-height: var(--tab-h);
   display: flex; align-items: center; justify-content: center; gap: 0.3rem;
   text-decoration: none; color: var(--ink-soft);
   font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;
   border-top: 2px solid transparent;
 }
 .tab.on { color: var(--crimson); border-top-color: var(--crimson); }
+.tab-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 380px) {
+  .tab { font-size: 0.68rem; letter-spacing: 0; padding: 0 0.15rem; }
+}
 .tab-badge {
-  min-width: 1.25rem; height: 1.25rem; padding: 0 0.3rem;
+  position: absolute; top: 5px; right: 6px;
+  min-width: 1.1rem; height: 1.1rem; padding: 0 0.25rem;
   border-radius: 999px; background: var(--crimson); color: var(--paper);
-  font-size: 0.7rem; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; display: inline-flex; align-items: center; justify-content: center;
 }
 
 /* ------------------------------------------------------------ section nav */
@@ -303,7 +309,9 @@ textarea { min-height: 5.5rem; resize: vertical; }
 .btn-icon {
   min-width: 44px; min-height: 44px; border: none; background: none;
   color: var(--ink-soft); font-size: 1.1rem; cursor: pointer; border-radius: var(--radius);
+  display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
 }
+.app-header-actions a[aria-current="page"] { color: var(--crimson); }
 .row-actions, .pivot-actions, .chip-row, .fate-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
 /* ------------------------------------------------------------ lists */
@@ -331,6 +339,24 @@ textarea { min-height: 5.5rem; resize: vertical; }
 .dist-face { flex: 0 0 4.5rem; font-size: 0.78rem; color: var(--ink-faint); font-family: ui-monospace, Menlo, monospace; }
 .dist-bar { height: 0.55rem; background: var(--crimson); border-radius: 999px; min-width: 2px; }
 .dist-count { font-size: 0.78rem; color: var(--ink-soft); }
+
+/* ------------------------------------------------------------ oracle */
+.odds-row { margin-bottom: 0.4rem; }
+.band-row { display: flex; align-items: center; gap: 0.5rem; min-height: 26px; }
+.band-name { flex: 0 0 8.2rem; font-size: 0.78rem; color: var(--ink-soft); }
+.band-bar { height: 0.6rem; border-radius: 999px; min-width: 3px; background: var(--ink-faint); }
+.band-bar.band-yes { background: var(--gold); }
+.band-bar.band-exceptional-yes { background: var(--gold-soft); }
+.band-bar.band-no { background: var(--crimson); }
+.band-bar.band-exceptional-no { background: var(--crimson-soft); }
+.band-range { font-size: 0.75rem; color: var(--ink-faint); font-family: ui-monospace, Menlo, monospace; }
+.ask-card { border-left: 3px solid var(--ink-faint); }
+.ask-card.yes { border-left-color: var(--gold); }
+.ask-card.no { border-left-color: var(--crimson); }
+.ask-card.exceptional { border-left-width: 6px; }
+.ask-question { font-style: italic; color: var(--ink-soft); }
+.event-block { border-top: 1px solid var(--rule); padding-top: 0.5rem; }
+.reading-card .keyword { font-size: 1rem; }
 
 /* ------------------------------------------------------------ arcs */
 .arc-list { list-style: none; counter-reset: arc; padding: 0; margin: 0.4rem 0 0; }

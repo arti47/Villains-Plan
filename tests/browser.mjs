@@ -136,6 +136,28 @@ export async function buriedControls(page) {
   });
 }
 
+/** The fixed bars are excluded from the document overflow check, so measure them here. */
+export async function fixedBarFit(page) {
+  return page.evaluate(() => {
+    const bar = document.querySelector(".tab-bar");
+    const tabs = Array.from(bar.querySelectorAll(".tab"));
+    const width = bar.getBoundingClientRect().width;
+    let content = 0;
+    const tight = [];
+    for (const tab of tabs) {
+      const label = tab.querySelector(".tab-label");
+      const badge = tab.querySelector(".tab-badge");
+      const inFlow = badge && getComputedStyle(badge).position !== "absolute";
+      const need = label.scrollWidth + (inFlow ? badge.getBoundingClientRect().width + 6 : 0);
+      content += need;
+      const box = tab.getBoundingClientRect();
+      // labels must not touch: at least 4px of slack inside each tab
+      if (need > box.width - 4) tight.push(`${label.textContent.trim()} needs ${Math.ceil(need)} in ${Math.floor(box.width)}`);
+    }
+    return { width: Math.round(width), content: Math.round(content), tabs: tabs.length, tight };
+  });
+}
+
 export async function explainNote(page) {
   return page.evaluate(() => {
     const note = document.querySelector("#screen details.explain");

@@ -11,6 +11,7 @@ import { headerStats, phaseCount } from "./derived.js";
 import * as store from "./store.js";
 import { Settings, apply as applySettings } from "./settings.js";
 import { NOT_IN_SOURCE, LOG_CAP } from "../data.js";
+import { stillNotInSource, mythicSource } from "./rules.js";
 import { refresh, go } from "./router.js";
 
 const PAGE = 25;   // lists page rather than grow without bound (§6.5)
@@ -285,9 +286,9 @@ function focusEntry(id) {
 function notInSourceCard() {
   const box = el("details", { class: "card fold not-in-source" });
   add(box, el("summary", { text: "What this app does not do" }),
-    el("p", { text: "This article is one subsystem of Mythic, not the whole of it. These are referenced by the rules but published elsewhere, so the app neither rolls them nor guesses at them:" }));
+    el("p", { text: "Two sources are in here: the Villain's Plan article and One-Page Mythic. These parts of Mythic are in neither, so the app does not roll them and does not approximate them:" }));
   const list = el("ul", {});
-  for (const item of NOT_IN_SOURCE.items) add(list, el("li", { text: item }));
+  for (const item of stillNotInSource()) add(list, el("li", { text: item }));
   add(box, list, el("p", { class: "block-note", text: NOT_IN_SOURCE.fateQuestion.text }));
   return box;
 }
@@ -312,9 +313,12 @@ function examplesCard() {
 
 function sourceCard() {
   const s = source();
+  const m = mythicSource();
   const box = el("div", { class: "card" });
-  add(box, el("h2", { class: "card-title", text: "Source" }),
-    el("p", { text: `${s.title}, ${s.publication} volume ${s.volume}, pages ${s.pages}. Every number, table and procedure in this app comes from those pages; every wording here is the app's own. Citations read ${s.cite}:p followed by the page.` }));
+  add(box, el("h2", { class: "card-title", text: "Sources" }),
+    el("p", { text: `${s.title}, ${s.publication} volume ${s.volume}, pages ${s.pages} - the reveal system, cited ${s.cite}:p followed by the page.` }),
+    el("p", { text: `${m.title}, ${m.publisher} - Ask The Game Master, Random Events and Discover Meaning, cited ${m.cite}.` }),
+    el("p", { class: "block-note", text: "Every number and table comes from those two; every wording here is the app's own." }));
   return box;
 }
 
@@ -333,6 +337,16 @@ export function renderSettings() {
       hint: "The interpretation advice that comes with each kind of reveal.",
       checked: Settings.showGuidance(),
       onChange: (v) => { Settings.set("showGuidance", v); refresh(); }
+    })
+  ]));
+
+  add(content, card([
+    el("h2", { class: "card-title", text: "The Mythic oracle" }),
+    el("p", { class: "block-note", text: "Ask The Game Master, Random Events and Discover Meaning, from One-Page Mythic. On by default, because the reveal system asks Fate Questions of its own. Turn it off if you run the oracle with physical dice or another emulator - the Oracle tab disappears and the app stops offering to roll." }),
+    checkRow({
+      label: "Roll the Mythic oracle in the app",
+      checked: Settings.mythicOracle(),
+      onChange: (v) => { Settings.set("mythicOracle", v); refresh(); }
     })
   ]));
 

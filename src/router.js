@@ -5,16 +5,18 @@ import { el, add, clear, $ } from "./core.js";
 import { renderDossier, renderReveal, renderArc, renderResourceHeader } from "./sheet.js";
 import { renderAdventures, renderRecord, renderLog, renderLibrary, renderSettings } from "./screens.js";
 import { renderWizard, resetWizard } from "./wizard.js";
+import { renderAsk, renderMeaning } from "./oracle.js";
 import { renderTutorial } from "./tutorial.js";
 import * as store from "./store.js";
 import { openLeads, endGoalRevealed, arcStageKey, pivotPhases, canRevealPivot } from "./derived.js";
+import { Settings } from "./settings.js";
 
 const TABS = [
   { key: "dossier", label: "Dossier", href: "#/dossier" },
   { key: "reveal", label: "Reveal", href: "#/reveal" },
+  { key: "oracle", label: "Oracle", href: "#/ask", gated: () => Settings.mythicOracle() },
   { key: "log", label: "Log", href: "#/log" },
-  { key: "rules", label: "Rules", href: "#/rules" },
-  { key: "settings", label: "Settings", href: "#/settings" }
+  { key: "rules", label: "Rules", href: "#/rules" }
 ];
 
 const ROUTES = [
@@ -23,10 +25,12 @@ const ROUTES = [
   { path: "/record", tab: "dossier", title: "Session record", render: renderRecord, inPlay: true, section: "Session record" },
   { path: "/reveal", tab: "reveal", title: "Reveal", render: renderReveal, inPlay: true, section: "Reveal" },
   { path: "/arc", tab: "reveal", title: "Arc", render: renderArc, inPlay: true, section: "Arc" },
+  { path: "/ask", tab: "oracle", title: "Ask the Game Master", render: renderAsk, inPlay: true, section: "Ask" },
+  { path: "/meaning", tab: "oracle", title: "Discover Meaning", render: renderMeaning, inPlay: true, section: "Meaning" },
   { path: "/log", tab: "log", title: "Roll log", render: renderLog, inPlay: true },
   { path: "/rules", tab: "rules", title: "Rules", render: renderLibrary, section: "Library" },
   { path: "/tutorial", tab: "rules", title: "A first session", render: renderTutorial, section: "Tutorial" },
-  { path: "/settings", tab: "settings", title: "Settings", render: renderSettings },
+  { path: "/settings", tab: "rules", title: "Settings", render: renderSettings, section: "Settings" },
   { path: "/new", tab: "dossier", title: "Start an adventure", render: renderWizard }   // gone into, not flicked between
 ];
 
@@ -69,6 +73,7 @@ function tabBar(activeTab) {
   clear(nav);
   const marks = badges();
   for (const tab of TABS) {
+    if (tab.gated && !tab.gated()) continue;
     const link = el("a", {
       class: `tab ${tab.key === activeTab ? "on" : ""}`,
       href: tab.href,
@@ -92,6 +97,13 @@ function sectionNav(route) {
     }, sib.section));
   }
   return nav;
+}
+
+function markCurrent(selector, isCurrent) {
+  const node = document.querySelector(selector);
+  if (!node) return;
+  if (isCurrent) node.setAttribute("aria-current", "page");
+  else node.removeAttribute("aria-current");
 }
 
 function render() {
@@ -121,12 +133,8 @@ function render() {
   }
 
   document.title = `${route.title} · Schemer`;
-  const brand = document.querySelector(".brand");
-  if (brand) {
-    const atBrandTarget = route.path === "/dossier";
-    if (atBrandTarget) brand.setAttribute("aria-current", "page");
-    else brand.removeAttribute("aria-current");
-  }
+  markCurrent(".brand", route.path === "/dossier");
+  markCurrent('.app-header-actions a[href="#/settings"]', route.path === "/settings");
   tabBar(route.tab);
   screen.scrollTop = 0;
   window.scrollTo(0, 0);

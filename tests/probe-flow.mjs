@@ -46,6 +46,20 @@ await count("switch to another adventure", "stress", "#/adventures", [
   click("#screen .adventure-row:nth-child(3) .btn-primary")
 ]);
 
+await count("ask a question at 50/50", "mid-session", "#/ask", [
+  async (page) => { await page.fill('input[aria-label="Your question"]', "Is the mine guarded?"); await page.click(".btn-action"); await page.waitForTimeout(150); }
+]);
+
+await count("ask at different odds", "mid-session", "#/ask", [
+  click(".odds-row .chip >> nth=3"),
+  click(".btn-action")
+]);
+
+await count("roll two Discover Meaning words", "mid-session", "#/meaning", [
+  click(".btn-action"),
+  click(".btn-action")
+]);
+
 await count("check the roll distribution", "stress", "#/log", [
   click("#screen details.fold summary")
 ]);

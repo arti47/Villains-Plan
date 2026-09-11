@@ -33,6 +33,9 @@ account, no server and no telemetry.
   Roll, the Focus table and the two keywords in the order the rules ask for.
 - **Arc** — Discovery → Foiling → Pivot → Concluded, with a summary and one-step undo at
   every boundary, and the Pivot gate the article defines.
+- **Oracle** — One-Page Mythic itself: Ask the Game Master (a Yes/No question, honest
+  odds, one d100 against the chart), random events on a double, and Discover Meaning for
+  detail without a question. Switch it off in Settings if you roll the oracle by hand.
 - **Log** — every die it has rolled, with a per-face distribution so you can check the app
   rather than argue with it.
 - **Rules** — one entry per automated rule in the app's own words, with the page cited, a
@@ -40,11 +43,10 @@ account, no server and no telemetry.
 
 ## What it does not do
 
-This article is one subsystem of Mythic, not the whole of it. Fate Questions and their
-odds, the Chaos Factor, scene setup, Bookkeeping, Discover Meaning, Random Events and the
-Threads and Characters lists live in the core rules, so the app neither rolls them nor
-approximates them. Where the subsystem calls for a Fate Question — the surprise route to a
-Plan B — the app asks you for the answer you resolved elsewhere, and then honours it.
+Two sources are in here: the Villain's Plan article and the One-Page Mythic Game Master
+Emulator. The Chaos Factor (which the one-page edition drops by design), scene setup,
+the Bookkeeping phase, the Threads and Characters lists and the Villain Crafter are in
+neither, so the app does not roll them and does not approximate them.
 
 ## Development
 
@@ -77,4 +79,5 @@ responsibility — openly licensed material is the safe basis for anything publi
 repository carries a transcription of a commercial article, so keep it private.
 
 "The Villain's Plan" is by Tana Pigeon, published in *Mythic Magazine* vol. 69 by Word Mill
-Games. This app is unaffiliated with and unendorsed by Word Mill Games.
+Games; the One-Page Mythic Game Master Emulator is also Word Mill Games. This app is
+unaffiliated with and unendorsed by Word Mill Games.

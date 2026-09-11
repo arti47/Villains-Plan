@@ -3,7 +3,7 @@
 
 import { launch, openPage, horizontalOverflow, tapTargets, primaryAction, WIDTHS, PHONE } from "./browser.mjs";
 
-const ROUTES = ["#/dossier", "#/adventures", "#/record", "#/reveal", "#/arc", "#/log", "#/rules", "#/tutorial", "#/settings", "#/new"];
+const ROUTES = ["#/dossier", "#/adventures", "#/record", "#/reveal", "#/arc", "#/ask", "#/meaning", "#/log", "#/rules", "#/tutorial", "#/settings", "#/new"];
 const { url, browser, close } = await launch();
 
 for (const seed of ["mid-session", "stress"]) {

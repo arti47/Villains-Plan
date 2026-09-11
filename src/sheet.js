@@ -17,6 +17,8 @@ import * as store from "./store.js";
 import * as roller from "./roller.js";
 import * as lifecycle from "./lifecycle.js";
 import { Settings } from "./settings.js";
+import { askPivot, setPivotOdds, pivotOdds } from "./oracle.js";
+import { askOdds, oddsRow } from "./rules.js";
 import { refresh, go } from "./router.js";
 
 // ------------------------------------------------------------------ persistent header
@@ -603,11 +605,16 @@ function pivotPanel(adv) {
   return box;
 }
 
-/** The surprise route asks a Fate Question, which this source does not contain (A7). */
+/**
+ * The surprise route: finish the adventure, add a cleanup scene, and ask whether the
+ * villain pivots at all. The odds come from One-Page Mythic, so the app can roll it
+ * (ruling A14) - and a table using physical dice can still record the answer by hand.
+ */
 function surprisePivotBlock(adv) {
-  const box = el("details", { class: "guidance not-in-source" });
-  add(box, el("summary", { text: "Rather be surprised? (Fate Question - not in this source)" }));
-  add(box, el("p", { text: "The article's other route is to finish the adventure, add one cleanup scene, and ask a Fate Question: does the villain enact a Pivot Plan? Yes or Exceptional Yes and they do. The odds for that question live in Mythic's core rules, not in this article, so the app will not roll it or invent a number. Resolve it with your own tools and record the answer." }));
+  const box = el("details", { class: "guidance" });
+  add(box, el("summary", { text: "Rather be surprised? Ask the Game Master" }));
+  add(box, el("p", { text: "The article's other route is to finish the adventure, add one cleanup scene, and ask: does the villain enact a Pivot Plan? Yes or Exceptional Yes and they do. Whatever answer lands here is binding - a No blocks the pivot roll above." }));
+  if (Settings.mythicOracle()) add(box, pivotAskRow(adv));
   const row = el("div", { class: "fate-row" });
   for (const answer of fateAnswers()) {
     add(row, el("button", {
@@ -621,11 +628,33 @@ function surprisePivotBlock(adv) {
       }
     }, answer.label));
   }
-  add(box, row);
+  add(box, el("p", { class: "block-note", text: "Or record an answer you rolled yourself:" }), row);
   if (adv.fateAnswer) {
-    add(box, el("p", { class: "block-note", text: `Recorded answer: ${adv.fateAnswer.replace("-", " ")}.` }));
+    add(box, el("p", { class: "block-note", text: `Recorded answer: ${adv.fateAnswer.replace(/-/g, " ")}.` }));
   }
   return box;
+}
+
+function pivotAskRow(adv) {
+  const wrap = el("div", { class: "field" });
+  add(wrap, el("span", { class: "field-label", text: "Odds that they pivot" }));
+  const chips = el("div", { class: "chip-row odds-row" });
+  for (const row of askOdds()) {
+    add(chips, el("button", {
+      class: `chip ${pivotOdds() === row.key ? "on" : ""}`, type: "button",
+      "aria-pressed": pivotOdds() === row.key ? "true" : "false",
+      onclick: () => { setPivotOdds(row.key); refresh(); }
+    }, row.label));
+  }
+  add(wrap, chips, el("button", {
+    class: "btn btn-primary", type: "button",
+    onclick: () => {
+      const result = askPivot(adv);
+      refresh();
+      showToast(`${result.answer.label} (${result.roll} at ${oddsRow(pivotOdds()).label})${result.double ? " - and a random event" : ""}.`);
+    }
+  }, "Ask the Game Master"));
+  return wrap;
 }
 
 function confirmAdvance(adv, preview) {

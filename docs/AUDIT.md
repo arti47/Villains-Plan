@@ -131,11 +131,64 @@ all seven pass types with no finding (template §11.4).
 - **Flow.** Earn and read a reveal, 3 taps. Add a lead, 2. Resolve a lead, 1. Start an
   adventure, 3. Switch adventure, 1. No terminal state without an onward route.
 
+## Cycle 2 — after adding One-Page Mythic
+
+The second source (Ask The Game Master, Random Events, Discover Meaning) went in with the
+same passes run against it.
+
+### F24 · Six tabs do not fit a 320px phone
+- **Target:** the tab bar, after the Oracle tab made it six
+- **Fix:** Settings moved to a section of the Rules tab plus a corner control (§6.3.11 —
+  it is the lowest-frequency screen there is), the tab bar back to five, the live-state
+  badge floated into the tab's corner instead of competing with the label, and the type
+  stepped down below 380px.
+- **Why it mattered:** the labels ran together — "REVEALORACLELOGRULESSETTING" — and the
+  last was cut off the screen. **The smoke harness could not see it:** the overflow check
+  deliberately skips `position: fixed` elements to avoid false positives, so the fixed bar
+  could crush unnoticed. A new check (`fixedBarFit`) measures the bar's own contents at
+  320px and now runs on every route. Found by looking at a screenshot, which is the pass
+  the probes cannot replace.
+
+### F25 · The new Settings gear did nothing on the Settings screen
+- **Fix:** `aria-current` on the corner control, same treatment as the brand link (F18),
+  via one `markCurrent` helper rather than a second copy of the logic.
+- **Why it mattered:** the interaction audit caught it on the first run after the change —
+  which is the cadence working.
+
+### F26 · `oracle.procedureCard` was written and never mounted
+- **Fix:** mounted on the Ask screen.
+- **Why it mattered:** §0 again, inside an hour of writing it. The dead-data scan caught it
+  before the screen shipped, along with two unused lookups (`askAnswers`, `isDouble`) that
+  were deleted or unexported.
+
+### F27 · The citation check assumed a single source
+- **Fix:** it accepts `MM69:p<n>` or `OPM`, and the library-size floor moved to 20 entries.
+
+## Verified clean (cycle 2)
+
+- **The chart.** All nine odds rows cover 1–100 exactly once; the published Yes bands
+  (90/85/75/65/50/35/25/15/10) are asserted and are monotonic; the 50/50 boundaries at
+  10/11, 50/51 and 90/91 are pinned; an out-of-range roll throws rather than answering.
+- **Doubles.** All nine fire an event; 100 and near-misses do not; 400 asks produce both
+  outcomes and the log shows one die normally and two on a double.
+- **Discover Meaning.** 50 rows, both columns complete and unique across 1–100, with the
+  row boundaries (1–2 Attain, 99–100 Warm) and the two words that appear in both columns
+  at different rolls (Mundane, Strange) checked.
+- **The pivot seam.** 200 asked pivot questions: every Yes opened the gate and every No
+  closed it — the two modules agree about one piece of state.
+- **Gating.** With the oracle off the tab disappears and both routes explain themselves in
+  place and offer to turn it on, rather than redirecting.
+- **Layout.** 403 smoke checks across twelve routes and three seed states; the tab bar now
+  measured at 320px on every one.
+- **Interaction.** 286 controls clicked in isolation, nothing inert.
+
 ## Not yet run
 
-- **Cycle 2.** The stopping rule needs a full second cycle finding nothing. Pass types 1–7
-  have each run once; the productive move next time is to change the method (a different
-  seed, a different width, reading the modules by seam rather than by file).
+- **Cycle 3.** Cycle 2 found four things, so the stopping rule is not met. The method that
+  paid this time was looking at rendered screenshots at 320px — the probes reported "no
+  overflow" for a bar that was visibly broken. Next cycle: read the modules by seam
+  (oracle ↔ sheet, store ↔ derived), and seed a state where the oracle has been used
+  heavily.
 - **PWA update path.** The service worker's network-first navigation and the update toast
   are written but not yet exercised by deploying a change and reloading — the one PWA
   behaviour that cannot be verified by looking at the running app.
