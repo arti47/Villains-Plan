@@ -1,6 +1,6 @@
 // service-worker.js — app shell cached, navigations network-first.
 // CACHE_VERSION is bumped on ANY shipped-file change (CLAUDE.md §10.7).
-const CACHE_VERSION = "schemer-v14";
+const CACHE_VERSION = "schemer-v15";
 const SHELL = [
   "./",
   "./index.html",

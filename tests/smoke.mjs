@@ -186,6 +186,34 @@ await check("walk: Discover Meaning rolls one word at a time", async () => {
   await context.close();
 });
 
+await check("walk: the details step rolls every table picked, each on its own d100", async () => {
+  const { page, context } = await openPage(browser, url, { seed: "mid-session", route: "#/villain" });
+  const pills = () => page.$$eval(".detail-pill", (n) => n.map((p) => p.textContent.trim()));
+  const before = (await pills()).length;
+
+  // one table by default
+  await page.click(".crafter-card .btn-primary");
+  await page.waitForFunction((n) => document.querySelectorAll(".detail-pill").length === n + 1, before, { timeout: 4000 });
+
+  // pick all seven the Villain Crafter names, and roll them in one press
+  const all = await page.$$eval("#screen button", (n) =>
+    n.findIndex((b) => /All seven/i.test(b.textContent)));
+  assert(all >= 0, "the bulk control is on screen");
+  await page.$$eval("#screen button", (n, i) => n[i].click(), all);
+  await page.waitForSelector(".crafter-card .btn-primary");
+  const label = await page.$eval(".crafter-card .btn-primary", (b) => b.textContent.trim());
+  assert(/7 tables/.test(label), `the button says what it will roll, got "${label}"`);
+
+  const now = (await pills()).length;
+  await page.click(".crafter-card .btn-primary");
+  await page.waitForFunction((n) => document.querySelectorAll(".detail-pill").length === n + 7, now, { timeout: 6000 });
+
+  // seven separate rolls, on seven different tables - not one roll reused
+  const tables = await page.$$eval(".detail-pill", (n) => n.slice(-7).map((p) => p.getAttribute("title")));
+  assert(new Set(tables).size === 7, `seven distinct tables, got ${tables.join(" | ")}`);
+  await context.close();
+});
+
 await check("the oracle toggle hides its tab and its routes explain themselves", async () => {
   const settings = { theme: "system", textScale: 1, showGuidance: true, mythicOracle: false };
   const { page, context } = await openPage(browser, url, { seed: "mid-session", route: "#/dossier", settings });

@@ -55,6 +55,14 @@ The organization and underling tables have open top and bottom bands ("8 or less
 ±Infinity rather than clamping the roll (A21), and the harness checks every total from
 −50 to 200 returns exactly one row.
 
+## Rolling the details
+
+The seven tables MM41 names are a multi-select: tap as many as you like, or take all seven
+at once, and one press rolls each of them. That is an interface convenience and nothing
+more — every table is still its own d100, stored and logged on its own, which the smoke
+walk checks by asserting seven distinct tables come back from one press. No table is
+combined and none is invented (§2.2: this app still ships no house aids).
+
 ## Meaning Table results
 
 Both tables can send you to Mythic's Action meaning table. This app has that table, from

@@ -194,7 +194,30 @@ export function canRollUnderling(adv) {
 
 // ------------------------------------------------------------------ screen
 const ROSTER_PAGE = 4;    // a roster grows without bound otherwise (§6.5)
-let detailTableId = "character-identity";
+/**
+ * Which meaning tables the details step rolls on. Several can be picked at once and
+ * rolled in one press - an interface convenience, NOT a house rule (§2.2): each table is
+ * still its own d100 on its own table, stored and logged separately, exactly as rolling
+ * them one at a time would. Nothing is combined and no table is invented.
+ */
+let detailTableIds = new Set(["character-identity"]);
+
+const selectedTables = () => meaningTables().filter((t) => detailTableIds.has(t.id));
+
+function toggleDetailTable(id) {
+  if (detailTableIds.has(id)) detailTableIds.delete(id);
+  else detailTableIds.add(id);
+  // never leave the step with nothing to roll
+  if (!detailTableIds.size) detailTableIds.add(id);
+}
+
+/** "Identity" · "Identity + Skills" · "4 tables", so the button says what it will do. */
+function selectionLabel() {
+  const picked = selectedTables();
+  if (picked.length === 1) return picked[0].short;
+  if (picked.length === 2) return `${picked[0].short} + ${picked[1].short}`;
+  return `${picked.length} tables`;
+}
 let underlingKind = "lieutenant";
 const rosterPage = { lieutenant: 1, minion: 1 };
 
@@ -252,37 +275,67 @@ function detailsCard(adv) {
   add(box, el("button", {
     class: "btn btn-primary", type: "button",
     onclick: () => rollDetail(adv, { kind: "villain" })
-  }, `Roll on ${meaningTable(detailTableId).short}`));
+  }, `Roll ${selectionLabel()}`));
   return box;
 }
 
-function detailPicker() {
-  const wrap = el("div", { class: "field" });
-  add(wrap, el("span", { class: "field-label", text: "Which table" }));
-  const named = el("div", { class: "chip-row" });
-  for (const table of villainDetailTables()) {
-    add(named, el("button", {
-      class: `chip ${detailTableId === table.id ? "on" : ""}`, type: "button",
-      "aria-pressed": detailTableId === table.id ? "true" : "false",
-      onclick: () => { detailTableId = table.id; refresh(); }
-    }, table.short));
-  }
-  add(wrap, named);
+function tableChip(table) {
+  const on = detailTableIds.has(table.id);
+  return el("button", {
+    class: `chip ${on ? "on" : ""}`, type: "button",
+    "aria-pressed": on ? "true" : "false",
+    onclick: () => { toggleDetailTable(table.id); refresh(); }
+  }, table.short);
+}
 
-  const namedIds = villainDetailTables().map((t) => t.id);
+function detailPicker() {
+  const named = villainDetailTables();
+  const namedIds = named.map((t) => t.id);
   const others = meaningTables().filter((t) => !namedIds.includes(t.id));
+
+  const wrap = el("div", { class: "field" });
+  add(wrap, el("span", { class: "field-label", text: "Which tables" }),
+    el("small", { class: "field-hint", text: "Tap to pick as many as you like; one press rolls them all, each on its own d100." }));
+
+  const namedRow = el("div", { class: "chip-row" });
+  for (const table of named) add(namedRow, tableChip(table));
+  add(wrap, namedRow);
+
+  // The Villain Crafter names these seven, so "all seven" is the book's own set
+  const allNamed = namedIds.every((id) => detailTableIds.has(id));
+  const bulk = el("div", { class: "row-actions" });
+  add(bulk,
+    el("button", {
+      class: "btn btn-quiet", type: "button",
+      onclick: () => {
+        if (allNamed) namedIds.forEach((id) => detailTableIds.delete(id));
+        else namedIds.forEach((id) => detailTableIds.add(id));
+        if (!detailTableIds.size) detailTableIds.add(namedIds[0]);
+        refresh();
+      }
+    }, allNamed ? "Clear the seven" : "All seven The Villain Crafter names"),
+    el("button", {
+      class: "btn btn-quiet", type: "button",
+      onclick: () => {
+        const first = selectedTables()[0] || meaningTables()[0];
+        detailTableIds = new Set([first.id]);
+        refresh();
+        showToast(`Just ${meaningTable(first.id).short}.`);
+      }
+    }, "Just one"));
+  add(wrap, bulk);
+
   const more = el("details", { class: "fold" });
   add(more, el("summary", { text: "Other meaning tables" }));
   const chips = el("div", { class: "chip-row" });
-  for (const table of others) {
-    add(chips, el("button", {
-      class: `chip ${detailTableId === table.id ? "on" : ""}`, type: "button",
-      "aria-pressed": detailTableId === table.id ? "true" : "false",
-      onclick: () => { detailTableId = table.id; refresh(); }
-    }, table.short));
-  }
+  for (const table of others) add(chips, tableChip(table));
   add(more, chips);
-  add(wrap, more, el("small", { class: "field-hint", text: `${meaningTable(detailTableId).use} ${meaningTable(detailTableId).cite}` }));
+  add(wrap, more);
+
+  const picked = selectedTables();
+  add(wrap, el("small", { class: "field-hint", text: picked.length === 1
+    ? `${meaningTable(picked[0].id).use} ${meaningTable(picked[0].id).cite}`
+    : `${picked.length} tables: ${picked.map((t) => t.short).join(", ")}. Each is rolled separately and read against everything else.` }));
   return wrap;
 }
 
@@ -305,10 +358,14 @@ function detailList(adv, target, details) {
 }
 
 function rollDetail(adv, target) {
-  const word = discover(detailTableId, { logAs: "detail" });
-  store.addDetail(adv.id, target, { tableId: word.tableId, table: word.table, roll: word.roll, word: word.word, at: Date.now() });
+  // One d100 per selected table, each stored and logged on its own: batching the press
+  // does not batch the roll.
+  const words = selectedTables().map((table) => discover(table.id, { logAs: "detail" }));
+  for (const word of words) {
+    store.addDetail(adv.id, target, { tableId: word.tableId, table: word.table, roll: word.roll, word: word.word, at: Date.now() });
+  }
   refresh();
-  showToast(`${word.table}: ${word.word}`);
+  showToast(words.map((w) => `${w.table}: ${w.word}`).join(" · "));
 }
 
 function partList(parts) {
@@ -472,7 +529,7 @@ function underlingBody(adv, entry) {
     el("button", {
       class: "btn btn-quiet", type: "button",
       onclick: () => rollDetail(adv, { kind: entry.kind, id: entry.id })
-    }, `Roll a detail (${meaningTable(detailTableId).short})`));
+    }, `Roll ${selectionLabel()}`));
 
   add(box, el("button", {
     class: "btn btn-danger-quiet", type: "button",
