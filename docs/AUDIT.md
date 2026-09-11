@@ -536,6 +536,35 @@ tested; what follows is what the passes confirmed.
   F45 lesson applied in the other direction: the list was wrong for four sources because
   nothing checked it. It is checked now, in both directions.
 
+## Cycle 10 — reported from play
+
+### F47 · Every control threw the reader back to the top of the page
+- **Reported by the user:** rolling for an underling, or picking a details table, jumped
+  the page to the top.
+- **Cause:** `refresh()` was `render()`, and `render()` ends with
+  `screen.scrollTop = 0; window.scrollTo(0, 0)`. That reset is right for a **navigation**
+  — you arrive at a screen at its top — and wrong for the in-place redraw that every
+  control in the app performs. All 70 call sites inherited it.
+- **Fix:** `refresh()` now renders with `inPlace: true`, which captures `window.scrollY`
+  **before** the screen is emptied (clearing it collapses the page height and the browser
+  clamps the scroll immediately, so reading it afterwards returns the wrong number) and
+  restores it after mounting. A real navigation still goes to the top, and `afterMount`
+  runs last so a citation link's `scrollIntoView` still wins.
+- **Why no harness saw it:** all three harnesses assert on *content*. None of them had
+  any notion of where the reader was standing, so a defect that made the app unpleasant
+  to use in exactly the way a play session would notice was invisible to 1,100 passing
+  assertions. The lesson is not "add a scroll test" but that **position is state**, and
+  the harnesses only knew about DOM state.
+- **Now covered:** the interaction audit parks each control mid-viewport before clicking
+  it and fails if the page ends up back at the top on the same route. Verified by
+  reverting the fix: **63 controls fail**, across every route.
+  - The check had to centre the control first. Playwright scrolls a target into view
+    before clicking, so parking at a fixed offset and clicking something near the top of
+    the page measures the harness scrolling up, not the app. The first version of this
+    check reported 30 failures that were all its own doing.
+  - Clicking the tab or pill you are already on is exempt: that is a navigation to the
+    current screen, where going to the top is the familiar behaviour.
+
 ## Not yet run
 
 - **Cycle 8.** The rules read-through is now overdue by six sources and is the next

@@ -41,6 +41,7 @@ const ROUTES = [
 
 const DEFAULT = "#/dossier";
 let current = null;
+let lastHash = null;      // the hash the last render drew, to tell a move from a redraw
 
 function parse(hash) {
   const raw = (hash || "").replace(/^#/, "") || "/dossier";
@@ -57,7 +58,15 @@ export function go(hash, { force = false } = {}) {
   location.hash = hash;
 }
 
-export function refresh() { render(); }
+/**
+ * Re-render the current screen in place, after a control has changed something.
+ *
+ * This is NOT a navigation, and the difference matters: `render()` resets the scroll
+ * position, which is right when you arrive at a screen and wrong when you press a button
+ * half a page down. Every control in the app calls this, so treating it as a navigation
+ * threw the reader back to the top on every roll (docs/AUDIT.md F47).
+ */
+export function refresh() { render({ inPlace: true }); }
 
 /** Live state that changes what to do next, as badges on the tabs (§6.3.8). */
 function badges() {
@@ -112,8 +121,11 @@ function markCurrent(selector, isCurrent) {
   else node.removeAttribute("aria-current");
 }
 
-function render() {
+function render({ inPlace = false } = {}) {
   const { route, params } = parse(location.hash);
+  // Read the scroll position BEFORE the screen is emptied: clearing it collapses the
+  // page height, and the browser clamps scrollY to the new height immediately.
+  const keptScroll = inPlace && location.hash === lastHash ? window.scrollY : null;
   if (current && current.path === "/new" && route.path !== "/new") resetWizard();
   current = route;
 
@@ -142,8 +154,17 @@ function render() {
   markCurrent(".brand", route.path === "/dossier");
   markCurrent('.app-header-actions a[href="#/settings"]', route.path === "/settings");
   tabBar(route.tab);
-  screen.scrollTop = 0;
-  window.scrollTo(0, 0);
+  lastHash = location.hash;
+  if (keptScroll === null) {
+    screen.scrollTop = 0;
+    window.scrollTo(0, 0);
+  } else {
+    // Restore where the reader was. If the re-render made the page shorter the browser
+    // clamps this for us, which is the right answer.
+    window.scrollTo(0, keptScroll);
+  }
+  // afterMount runs last so a deliberate scrollIntoView (a citation link opening its
+  // library entry) still wins over the restore.
   if (result.afterMount) result.afterMount();
 }
 

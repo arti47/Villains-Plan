@@ -1,6 +1,7 @@
 // Harness C — the interaction audit. Visits every route and clicks every visible
-// control in isolation, resetting between clicks, and flags three things: a JS error,
-// a control that cannot be clicked, and a control that changes nothing (§11.1 C).
+// control in isolation, resetting between clicks, and flags four things: a JS error,
+// a control that cannot be clicked, a control that changes nothing (§11.1 C), and a
+// control that throws the reader back to the top of the page (F47).
 
 import { launch, openPage } from "./browser.mjs";
 import { results, report } from "./harness.mjs";
@@ -91,6 +92,17 @@ for (const route of ROUTES) {
       const marked = await markControl(page, info.index);
       if (!marked) throw new Error("the control vanished between passes");
       const handle = await page.$('[data-audit-target="1"]');
+      // F47: park the page so THIS control sits mid-viewport, then check the reader is
+      // still there afterwards. Centring the control matters: Playwright scrolls a
+      // target into view before clicking it, so parking at an arbitrary offset would
+      // just measure the harness scrolling back up to a control near the top.
+      const scrolled = await page.evaluate(() => {
+        const node = document.querySelector('[data-audit-target="1"]');
+        if (!node) return null;
+        node.scrollIntoView({ block: "center", behavior: "auto" });
+        return window.scrollY > 40 ? window.scrollY : null;   // else the page is too short
+      });
+      const hashBefore = await page.evaluate(() => location.hash);
       const before = await snapshot(page);
       if (info.disabled) {
         // a disabled control must explain itself somewhere on the screen
@@ -112,6 +124,19 @@ for (const route of ROUTES) {
 
       if (errors.length) throw new Error(`JS error: ${errors.join(" | ")}`);
       if (same && !EXPECTED_NOOP(info)) throw new Error("clicking it changed nothing");
+
+      // A control that stays on the same screen must leave the reader where they were.
+      // Moving to another route is a navigation, where going to the top is correct.
+      if (scrolled) {
+        const hashAfter = await page.evaluate(() => location.hash);
+        const scrollAfter = await page.evaluate(() => window.scrollY);
+        const room = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight);
+        // `current` controls are a navigation to the screen you are on, where going to
+        // the top is the familiar behaviour rather than a bug.
+        if (hashAfter === hashBefore && !info.current && scrollAfter === 0 && room >= scrolled) {
+          throw new Error(`scrolled back to the top (was at ${scrolled}px, same route, page still ${room}px tall)`);
+        }
+      }
       results.pass += 1;
     } catch (err) {
       results.fail += 1;
