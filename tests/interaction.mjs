@@ -55,8 +55,17 @@ async function markControl(page, index) {
 }
 
 async function snapshot(page) {
-  return page.evaluate(() => ({
-    screen: document.querySelector("#screen").innerHTML.replace(/ data-audit-target="1"/g, "").length + ":" + document.querySelector("#screen").textContent.slice(0, 400),
+  return page.evaluate(() => {
+    // A 32-bit content hash: length alone cannot see a swap that keeps the length.
+    const digest = (text) => {
+      let h = 5381;
+      for (let i = 0; i < text.length; i += 1) h = ((h * 33) ^ text.charCodeAt(i)) >>> 0;
+      return `${text.length}:${h.toString(36)}`;
+    };
+    return ({
+    screen: digest(document.querySelector("#screen").innerHTML.replace(/ data-audit-target="1"/g, "")),
+    pressed: Array.from(document.querySelectorAll('[aria-pressed], [aria-current]'))
+      .map((n) => `${n.textContent.trim().slice(0, 18)}=${n.getAttribute("aria-pressed") || n.getAttribute("aria-current")}`).join("|"),
     hash: location.hash,
     store: window.localStorage.getItem("schemer.v1") || "",
     settings: window.localStorage.getItem("schemer.settings.v1") || "",
@@ -64,7 +73,8 @@ async function snapshot(page) {
     toast: !!document.querySelector(".toast"),
     theme: document.documentElement.getAttribute("data-theme") || "",
     open: Array.from(document.querySelectorAll("details")).map((d) => (d.open ? 1 : 0)).join("")
-  }));
+    });
+  });
 }
 
 const changed = (a, b) => JSON.stringify(a) !== JSON.stringify(b);

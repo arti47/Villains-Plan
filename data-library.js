@@ -81,6 +81,12 @@ export const LIBRARY = [
   { id: "crafter-stats", group: "crafter", title: "Statistics stay at your table", cite: "MM41:p8",
     body: "The article turns a villain into numbers by guessing a value and asking the Game Master whether that is it - Yes takes the guess, Exceptional Yes raises it, No lowers it, and a random event means the statistic comes with a condition. This app has no game system attached and holds no stat blocks, so it does not do that part for you." },
 
+  { id: "villain-details", group: "crafter", title: "The villain's details", cite: "MM41:p5",
+    body: "The archetype paints the general picture and not much else, so the Crafter sends you to Mythic's Elements meaning tables for who the villain actually is: identity, skills, motivations, personality, appearance, traits and flaws, background. Roll a word, read it against what you already know, and roll another if one is not enough. Those seven tables are on the Villain screen, and every other Elements table is a fold away." },
+
+  { id: "elements-tables", group: "oracle", title: "The Elements tables", cite: "GME2e",
+    body: "Twelve hundred-word tables from Mythic Second Edition, each aimed at one kind of question: who someone is, what they can do, what they want, how they act in a fight or out of one, what a conversation is like, what a city is like. They are the detail tables the Crafter points at, and they sit alongside Discover Meaning on the Meaning screen - same roll, same log, same one-word-at-a-time rule." },
+
   { id: "crafter-provenance", group: "crafter", title: "Where these tables came from", cite: "MM41:p14-15",
     body: "Three bands of the Minion column - 42-44, 68-69 and 75-76 - were unreadable in the text this app was first built from, and it shipped saying so rather than filling them in. Photographs of the page closed the gap: Soldier is one cell spanning 40-44, and On A Mission spans 68-76. Every band you can roll here is now read from the page." },
 
@@ -130,6 +136,8 @@ export const TUTORIAL = [
     body: "If the villain survived, or their lieutenants are loose, or they set a failsafe, tick it on the Arc screen and roll the Pivot Plan - or, if you would rather be surprised, ask a Fate Question in your cleanup scene and record the answer. Keep the pivot to a scene or three, then conclude the adventure." },
   { id: "t2b", title: "Craft the villain, if you want one up front",
     body: "Dossier - Villain rolls the villain's archetype, the organization behind them, and the lieutenants and minions you will actually meet. Each roll feeds a modifier into the next and the app shows the arithmetic. You can do all three now for a running start, or leave them until your character learns each piece - nothing downstream needs them." },
+  { id: "t2c", title: "Give the villain details",
+    body: "The archetype says what kind of villain they are; step 4 on the Villain screen says who they are. Pick a table - identity, skills, motivations, personality, appearance, traits and flaws, background - roll a word, and read it against everything you have. Lieutenants and minions can take details too, which is how a Tough Stuff lieutenant becomes a specific gargoyle." },
   { id: "t9b", title: "Ask when you do not know",
     body: "The Oracle tab is Mythic itself: type a Yes/No question, pick the odds honestly - 50/50 is for not knowing - and roll. Yes and No follow whatever you expected when you asked; the Exceptional results overshoot it. Roll a double and a random event lands in the same moment, on top of the answer. When you want detail rather than an answer, Discover Meaning rolls a word: Action for what something does, Description for what it is like." },
   { id: "t10", title: "Back it up",

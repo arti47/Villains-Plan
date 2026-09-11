@@ -207,6 +207,33 @@ export function removeUnderling(advId, kind, id) {
   return adv.villain.crafted[list];
 }
 
+// ------------------------------------------------------------------ villain details
+function detailHolder(adv, target) {
+  if (!target || target.kind === "villain") return adv.villain;
+  const list = target.kind === "minion" ? "minions" : "lieutenants";
+  return (adv.villain.crafted[list] || []).find((u) => u.id === target.id) || null;
+}
+
+export function addDetail(advId, target, entry) {
+  const adv = adventure(advId);
+  const holder = adv && detailHolder(adv, target);
+  if (!holder || !entry) return null;
+  holder.details = [...(holder.details || []), { id: uid("det"), ...entry }];
+  adv.updatedAt = now();
+  save();
+  return holder.details[holder.details.length - 1];
+}
+
+export function removeDetail(advId, target, detailId) {
+  const adv = adventure(advId);
+  const holder = adv && detailHolder(adv, target);
+  if (!holder) return null;
+  holder.details = (holder.details || []).filter((d) => d.id !== detailId);
+  adv.updatedAt = now();
+  save();
+  return holder.details;
+}
+
 // ------------------------------------------------------------------ phases
 export function addPhase(advId, phase) {
   const adv = adventure(advId);

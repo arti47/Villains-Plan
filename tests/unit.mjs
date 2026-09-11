@@ -100,10 +100,12 @@ test("no-context rows carry the flag, and only they do (Exception shape)", () =>
   equal(rules.lookupRange(data.PIVOT_PLAN_FOCUS, 96).noContext, true, "96 on the pivot table");
 });
 
-test("every library entry with a citation cites one of the three sources", () => {
+test("every library entry with a citation cites one of the four sources", () => {
+  // Widened once per source; it has caught a miscited entry every time (AUDIT F31).
   const lib = rules.libraryGroups().flatMap((g) => g.entries);
-  for (const entry of lib) if (entry.cite) assert(/^(MM69:p\d|MM41:p\d|OPM$)/.test(entry.cite), `${entry.id} cites ${entry.cite}`);
-  assert(lib.length >= 28, "the library covers every automated rule from all three sources");
+  const ok = /^(MM69:p\d|MM41:p\d|OPM$|GME2e$)/;
+  for (const entry of lib) if (entry.cite) assert(ok.test(entry.cite), `${entry.id} cites ${entry.cite}`);
+  assert(lib.length >= 30, "the library covers every automated rule from all four sources");
 });
 
 // ---------------------------------------------------------------- the Threshold
@@ -281,23 +283,26 @@ test("Discover Meaning: 50 rows, two columns, every roll 1-100 returns a word", 
   for (const column of ["action", "description"]) {
     const words = new Set();
     for (let roll = 1; roll <= 100; roll += 1) {
-      const word = rules.discoverWord(column, roll);
+      const word = rules.meaningWord(column, roll);
       assert(word.word && typeof word.word === "string", `roll ${roll} on ${column}`);
       words.add(word.word);
     }
     equal(words.size, 50, `${column} words are unique`);
   }
-  equal(rules.discoverWord("action", 1).word, "Attain", "1-2 is the first row");
-  equal(rules.discoverWord("action", 2).word, "Attain", "and both halves of it");
-  equal(rules.discoverWord("description", 100).word, "Warm", "99-100 is the last row");
-  equal(rules.discoverWord("action", 69).word, "Mundane", "69-70 Action");
-  equal(rules.discoverWord("description", 59).word, "Mundane", "59-60 Description");
+  equal(rules.meaningWord("action", 1).word, "Attain", "1-2 is the first row");
+  equal(rules.meaningWord("action", 2).word, "Attain", "and both halves of it");
+  equal(rules.meaningWord("description", 100).word, "Warm", "99-100 is the last row");
+  equal(rules.meaningWord("action", 69).word, "Mundane", "69-70 Action");
+  equal(rules.meaningWord("description", 59).word, "Mundane", "59-60 Description");
 });
 
-test("an unknown Discover Meaning column throws", () => {
+test("an unknown meaning table throws rather than guessing", () => {
   let threw = false;
-  try { rules.discoverWord("vibes", 5); } catch { threw = true; }
-  assert(threw, "there are two columns and no others");
+  try { rules.meaningWord("vibes", 5); } catch { threw = true; }
+  assert(threw, "a table that does not exist is an error, not a shrug");
+  let threw2 = false;
+  try { rules.meaningWord("character-identity", 101); } catch { threw2 = true; }
+  assert(threw2, "and so is a roll off the end of one");
 });
 
 test("an ask writes one log row, and a double writes the event die with it", () => {
@@ -341,6 +346,52 @@ test("Discover Meaning rolls one word at a time and logs each (A15)", () => {
   const word = oracle.discover("description");
   equal(store.rollLog({ kind: "meaning" }).length, before + 1, "one roll, one row");
   assert(word.word, "and a word came back");
+});
+
+// ---------------------------------------------------------------- Elements (GME2e)
+const elements = await import("../data-elements.js");
+
+test("all twelve Elements tables carry 100 unique words", () => {
+  equal(elements.ELEMENT_TABLES.length, 12, "tables");
+  for (const table of elements.ELEMENT_TABLES) {
+    equal(table.words.length, 100, `${table.label} row count`);
+    equal(new Set(table.words).size, 100, `${table.label} words are unique`);
+    for (const word of table.words) assert(word && typeof word === "string", `${table.label} has no blank rows`);
+  }
+});
+
+test("Elements words sit at the rolls the page shows", () => {
+  // Anchors transcribed from the page photographs, one per table.
+  const anchors = [
+    ["character-identity", 98, "Villain"], ["character-identity", 51, "Killer"],
+    ["character-motivations", 86, "Revenge"], ["character-personality", 100, "Wise"],
+    ["character-skills", 100, "Wounds"], ["character-traits-flaws", 62, "Multi"],
+    ["character-appearance", 77, "Scar"], ["character-background", 59, "Imprisonment"],
+    ["character-conversations", 68, "Macabre"], ["character-descriptors", 88, "Sophisticated"],
+    ["character-actions-combat", 100, "Withdraw"], ["character-actions-general", 100, "Yield"],
+    ["city-descriptors", 69, "Opulence"]
+  ];
+  for (const [id, roll, word] of anchors) equal(rules.meaningWord(id, roll).word, word, `${id} ${roll}`);
+});
+
+test("the meaning registry covers both sources, with the right span each", () => {
+  const tables = rules.meaningTables();
+  equal(tables.filter((t) => t.group === "Discover Meaning").length, 2, "the One-Page Mythic columns");
+  equal(tables.filter((t) => t.group === "Elements").length, 12, "the GME2e Elements tables");
+  equal(rules.meaningTable("meaning-action").span, 2, "OPM prints 50 rows over 100 numbers");
+  equal(rules.meaningTable("character-identity").span, 1, "Elements print 100");
+  for (const table of tables) {
+    const seen = new Set();
+    for (let roll = 1; roll <= 100; roll += 1) seen.add(rules.meaningWord(table.id, roll).word);
+    equal(seen.size, table.group === "Elements" ? 100 : 50, `${table.label} covers 1-100`);
+  }
+});
+
+test("the seven tables The Villain Crafter names are all present (MM41:p5)", () => {
+  const names = rules.villainDetailTables().map((t) => t.id);
+  deepEqual(names, ["character-identity", "character-skills", "character-motivations",
+    "character-personality", "character-appearance", "character-traits-flaws", "character-background"],
+  "identity, skills, motivations, personality, appearance, traits & flaws, background");
 });
 
 // ---------------------------------------------------------------- The Villain Crafter
@@ -570,6 +621,33 @@ test("the modifier breakdown shows the arithmetic it applies", () => {
   equal(mods.lieutenant.total, 10, "lieutenant takes l from both");
   equal(mods.minion.total, 15, "minion takes m from both");
   equal(mods.hasOrganization, true, "and knows the organization is rolled");
+});
+
+test("details attach to the villain and to one underling, and survive a reload", () => {
+  const adv = freshAdventure();
+  const entry = crafter.rollUnderling("minion", 0);
+  store.addUnderling(adv.id, "minion", entry);
+  store.addDetail(adv.id, { kind: "villain" }, { tableId: "character-identity", table: "Character Identity", roll: 98, word: "Villain" });
+  store.addDetail(adv.id, { kind: "minion", id: entry.id }, { tableId: "character-skills", table: "Character Skills", roll: 62, word: "Military" });
+  const reloaded = store.__setState(JSON.parse(store.exportJSON()));
+  const saved = reloaded.adventures[0];
+  equal(saved.villain.details.length, 1, "the villain's detail survived");
+  equal(saved.villain.details[0].word, "Villain", "with its word");
+  equal(saved.villain.crafted.minions[0].details.length, 1, "and the minion's");
+  assert(saved.villain.details[0].id, "details get ids");
+  const older = store.__setState({ version: 1, adventures: [{ name: "old", villain: { name: "x" } }], rollLog: [] });
+  deepEqual(older.adventures[0].villain.details, [], "an old record back-fills an empty list");
+});
+
+test("a detail is removed from the holder it belongs to, and only that one", () => {
+  const adv = freshAdventure();
+  const entry = crafter.rollUnderling("lieutenant", 0);
+  store.addUnderling(adv.id, "lieutenant", entry);
+  const a = store.addDetail(adv.id, { kind: "villain" }, { table: "Character Identity", roll: 1, word: "Abandoned" });
+  store.addDetail(adv.id, { kind: "lieutenant", id: entry.id }, { table: "Character Skills", roll: 2, word: "Adversity" });
+  store.removeDetail(adv.id, { kind: "villain" }, a.id);
+  equal(store.active().villain.details.length, 0, "removed from the villain");
+  equal(store.active().villain.crafted.lieutenants[0].details.length, 1, "the lieutenant's is untouched");
 });
 
 test("a crafted villain survives a reload, and an old adventure back-fills one", () => {

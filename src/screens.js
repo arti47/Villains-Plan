@@ -11,7 +11,7 @@ import { headerStats, phaseCount } from "./derived.js";
 import * as store from "./store.js";
 import { Settings, apply as applySettings } from "./settings.js";
 import { NOT_IN_SOURCE, LOG_CAP } from "../data.js";
-import { stillNotInSource, mythicSource } from "./rules.js";
+import { stillNotInSource, mythicSource, crafterSource, elementsSource } from "./rules.js";
 import { refresh, go } from "./router.js";
 
 const PAGE = 25;   // lists page rather than grow without bound (§6.5)
@@ -318,7 +318,9 @@ function sourceCard() {
   add(box, el("h2", { class: "card-title", text: "Sources" }),
     el("p", { text: `${s.title}, ${s.publication} volume ${s.volume}, pages ${s.pages} - the reveal system, cited ${s.cite}:p followed by the page.` }),
     el("p", { text: `${m.title}, ${m.publisher} - Ask The Game Master, Random Events and Discover Meaning, cited ${m.cite}.` }),
-    el("p", { class: "block-note", text: "Every number and table comes from those two; every wording here is the app's own." }));
+    el("p", { text: `${crafterSource().title}, ${crafterSource().publication} volume ${crafterSource().volume}, pages ${crafterSource().pages} - the villain, their organization and their underlings, cited ${crafterSource().cite}.` }),
+    el("p", { text: `${elementsSource().title}: ${elementsSource().section} - the twelve detail tables, cited ${elementsSource().cite}.` }),
+    el("p", { class: "block-note", text: "Every number and table comes from those four; every wording here is the app's own." }));
   return box;
 }
 

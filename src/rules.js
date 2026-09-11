@@ -14,6 +14,7 @@ import {
   VILLAIN_ARCHETYPES, VILLAIN_ORGANIZATIONS, UNDERLINGS, CRAFTER_GUIDANCE,
   CRAFTER_SOURCE, SPECIAL
 } from "../data-villain-crafter.js";
+import { ELEMENT_TABLES, ELEMENTS_SOURCE, VILLAIN_DETAIL_TABLES } from "../data-elements.js";
 
 const FOCUS = {
   phase: VILLAIN_PLAN_FOCUS,
@@ -88,7 +89,6 @@ export const examples = () => EXAMPLES;
 export const askOdds = () => ASK_ODDS;
 export const askProcedure = () => ASK_PROCEDURE;
 export const randomEventRule = () => RANDOM_EVENT;
-export const discoverMeaning = () => DISCOVER_MEANING;
 export const mythicGuidance = (key) => MYTHIC_GUIDANCE[key] || null;
 export const mythicSource = () => MYTHIC_SOURCE;
 export const stillNotInSource = () => STILL_NOT_IN_SOURCE;
@@ -111,12 +111,49 @@ export function askResult(oddsKey, roll) {
   return { odds, roll, answer, double: isDouble(roll) };
 }
 
-/** One word from one Discover Meaning column. */
-export function discoverWord(column, roll) {
-  const index = Math.floor((roll - 1) / 2);
-  const row = DISCOVER_MEANING.rows[index];
-  if (!row) throw new Error(`Discover Meaning: roll ${roll} is outside the table`);
-  const col = DISCOVER_MEANING.columns.findIndex((c) => c.key === column);
-  if (col < 0) throw new Error(`Discover Meaning: no column "${column}"`);
-  return { column, roll, word: row[col], cite: DISCOVER_MEANING.cite };
+/**
+ * Every meaning table the app can roll, from whichever source, behind one lookup.
+ * `span` is how many d100 results each word covers: One-Page Mythic prints 50 rows over
+ * 100 numbers, the Elements tables print 100.
+ */
+const MEANING_TABLES = [
+  ...DISCOVER_MEANING.columns.map((column, i) => ({
+    id: `meaning-${column.key}`,
+    key: column.key,
+    label: `Discover Meaning: ${column.label}`,
+    short: column.label,
+    group: "Discover Meaning",
+    use: column.use,
+    cite: DISCOVER_MEANING.cite,
+    span: 2,
+    words: DISCOVER_MEANING.rows.map((row) => row[i])
+  })),
+  ...ELEMENT_TABLES.map((table) => ({
+    id: table.id,
+    key: table.id,
+    label: table.label,
+    short: table.label,
+    group: "Elements",
+    use: table.use,
+    cite: table.cite,
+    span: 1,
+    words: table.words
+  }))
+];
+
+export const meaningTables = () => MEANING_TABLES.map(({ words, ...rest }) => rest);
+export function meaningTable(id) {
+  return MEANING_TABLES.find((t) => t.id === id || t.key === id) || null;
+}
+export const elementsSource = () => ELEMENTS_SOURCE;
+/** The tables The Villain Crafter names for fleshing out a villain (MM41:p5). */
+export const villainDetailTables = () => VILLAIN_DETAIL_TABLES.map((id) => meaningTable(id)).filter(Boolean);
+
+/** One word from one meaning table. Throws rather than guessing. */
+export function meaningWord(tableId, roll) {
+  const table = meaningTable(tableId);
+  if (!table) throw new Error(`no meaning table "${tableId}"`);
+  const word = table.words[Math.floor((roll - 1) / table.span)];
+  if (!word) throw new Error(`${table.label}: roll ${roll} is outside the table`);
+  return { tableId: table.id, table: table.label, roll, word, cite: table.cite };
 }

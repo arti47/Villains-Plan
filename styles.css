@@ -350,6 +350,9 @@ textarea { min-height: 5.5rem; resize: vertical; }
 .underling-card.lieutenant { border-left-color: var(--crimson); }
 .gap-block { border: 1px dashed var(--gold); border-radius: var(--radius); padding: 0.6rem; }
 .underling-card.collapsed { padding: 0.35rem 0.85rem; }
+.detail-pill { padding-right: 0.15rem; }
+.detail-remove { min-width: 28px; min-height: 28px; font-size: 0.9rem; padding: 0; }
+.group-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); margin: 0.5rem 0 0.2rem; }
 
 /* ------------------------------------------------------------ oracle */
 .odds-row { margin-bottom: 0.4rem; }

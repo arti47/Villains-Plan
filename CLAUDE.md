@@ -12,6 +12,11 @@ Sources of record, in precedence order (§2.1):
 3. **The Villain Crafter**, *Mythic Magazine* Vol. 41, pp. 3–16. Cited `MM41:p<page>`.
    Supplies the villain, their organization, and their lieutenants and minions — the thing
    the reveal system reveals. Extracted into `data-villain-crafter.js`.
+4. **Meaning Tables: Elements**, *Mythic Game Master Emulator Second Edition* (Word Mill
+   Games), supplied as page images. Cited `GME2e`. Twelve d100 word tables — the detail
+   tables MM41:p5 sends you to for who the villain actually is. Extracted into
+   `data-elements.js`. All twelve transcribed from the photographs, 100 unique words each,
+   thirteen anchors pinned by test.
    **Blocked data: none outstanding. Every table verified against page photographs.**
    Three bands of the Minion column (42–44, 68–69, 75–76) were unreadable in the first
    transcription and shipped marked `unrecovered`; photographs of MM41:p14–15 closed the
@@ -136,7 +141,7 @@ Oracle tab (Ask · Meaning), gated by one setting that is on by default.
 
 | Shape | Count | Rules |
 |---|---|---|
-| Lookup | 10 | Villain Plan Focus, End Goal Focus, Pivot Plan Focus, Plot Twists, Ask The Game Master (9 rows × 4 bands), Discover Meaning Action, Discover Meaning Description, Villain Archetype, Villain Organization, Lieutenants & Minions |
+| Lookup | 22 | Villain Plan Focus, End Goal Focus, Pivot Plan Focus, Plot Twists, Ask The Game Master (9 rows × 4 bands), Discover Meaning Action, Discover Meaning Description, Villain Archetype, Villain Organization, Lieutenants & Minions, and the twelve GME2e Elements tables behind one registry |
 | Threshold | 1 | `d10 + 2×phases ≥ 11` reveals the End Goal |
 | Escalation | 2 | +2 per known phase · the Crafter's modifiers carried archetype → organization → underlings |
 | Once-per-X | 2 | End Goal once per adventure; Pivot once per adventure |
@@ -209,7 +214,8 @@ Storage is plain JSON, exported and re-imported in one tap, round-trip tested.
 | `styles.css` | Dossier-ink theme (light+dark) + components |
 | `data.js` | The four tables, the End Goal Roll constants, the procedure text (paraphrased, cited) |
 | `data-mythic.js` | Second source (OPM): the odds chart, the four answers, the random-event rule, Discover Meaning, and what is still unsourced |
-| `data-villain-crafter.js` | Third source (MM41): villain archetypes with their modifiers, organizations, lieutenants and minions, and the three unrecovered cells |
+| `data-villain-crafter.js` | Third source (MM41): villain archetypes with their modifiers, organizations, lieutenants and minions |
+| `data-elements.js` | Fourth source (GME2e): the twelve Elements meaning tables, and which seven MM41 names for villain details |
 | `data-library.js` | Rules-library entries + tutorial steps + the two worked examples |
 | `firebase-config.js` | Placeholder + `FIREBASE_ENABLED` flag (Phase 5, not built) |
 | `database.rules.json` | RTDB rules for the Phase 5 shape |
@@ -249,9 +255,10 @@ schemer.v1 = {
   adventures: [ {
     id, name, createdAt, updatedAt, archivedAt|null,
     villain: { name, epithet, known, forces, behind,     // behind: End Goal Focus 73-76
+               details: [ { id, tableId, table, roll, word, at } ],   // GME2e Elements
                crafted: { archetype: { rolls, parts[], words[], mods{o,l,m}, note } | null,
                           organization: { rolls, parts[], words[], mods{l,m}, upscaled, note } | null,
-                          lieutenants: [ { id, kind, rolls, parts[], mod, name, unrecovered } ],
+                          lieutenants: [ { id, kind, rolls, parts[], mod, name, details[] } ],
                           minions:     [ { …the same shape } ] } },
     arc: { stage: "discovery"|"foiling"|"pivot"|"concluded",
            endGoalAt|null, defeatedAt|null, pivotAt|null, concludedAt|null },
@@ -310,7 +317,8 @@ box means no UI may be built against it.
 | T14 | Villain Archetype (d100) with o/l/m modifiers | `data-villain-crafter.js` | `crafter.rollArchetype` | 23 | [x] all 23 modifier triples verified against page photographs |
 | T15 | Villain Organization (d100 + mod) with l/m modifiers | `data-villain-crafter.js` | `crafter.rollOrganization` | 18 | [x] all 18 modifier pairs verified against page photographs |
 | T16 | Lieutenants & Minions (d100 + mod), both columns | `data-villain-crafter.js` | `crafter.rollUnderling` | 23 | [x] all bands verified against page photographs |
-| T17 | Crafter guidance: staging, interpretation, modifiers, statistics, the gap | `data-villain-crafter.js` | `crafter` | 6 | [x] |
+| T17 | Crafter guidance: staging, interpretation, modifiers, statistics, provenance | `data-villain-crafter.js` | `crafter` | 6 | [x] |
+| T18 | Meaning Tables: Elements (12 × d100) | `data-elements.js` | `rules.meaningWord`, `oracle.discover`, `crafter.detailsCard` | 1200 | [x] transcribed from page photographs; 13 anchors pinned |
 
 ### 9.1a Rules Traceability Ledger
 
@@ -347,6 +355,9 @@ box means no UI may be built against it.
 | Open-ended bands absorb the modifiers | Lookup | `±Infinity` bands | `rules.lookupOpen` | — | `the modified tables are open-ended` |
 | Every minion band resolves to an archetype | Lookup | `UNDERLINGS[].minion` | `crafter.entryFor` | Underling card | `every band of the minion column is readable`, `no minion roll can come back without an archetype` |
 | Villain statistics stay at your table | guidance only | `CRAFTER_GUIDANCE.stats` | not automated, and marked so | Rules library entry | — |
+| The villain's details come from the Elements tables | Lookup | `ELEMENT_TABLES` | `rules.meaningWord` → `crafter.rollDetail` | Step 2 of the Villain screen, and each underling card | `all twelve Elements tables carry 100 unique words`, `Elements words sit at the rolls the page shows` |
+| MM41 names seven detail tables | — | `VILLAIN_DETAIL_TABLES` | `rules.villainDetailTables` | Those seven as chips, the rest behind a fold | `the seven tables The Villain Crafter names are all present` |
+| Every meaning table, both sources, one lookup | Lookup | registry in `rules.js` | `rules.meaningWord` (`span` 2 for OPM, 1 for Elements) | Meaning screen picker, grouped | `the meaning registry covers both sources, with the right span each` |
 | The oracle is one toggle, on by default | — | `Settings.mythicOracle` | `router` tab gating | Settings + a gated route that explains itself | `the oracle toggle hides its tab and its routes explain themselves` |
 
 ## 10. Process rules
@@ -387,5 +398,7 @@ see README. Repository stays private while it carries a transcription.
 | 2026-09-11 | Third source extracted (The Villain Crafter): `data-villain-crafter.js`, `src/crafter.js`, a Villain screen under the Dossier tab, modifiers carried between the three tables, and the three cascades | The user supplied the pages; MM41 was the last thing `STILL_NOT_IN_SOURCE` named that the app could use | `npm test` 98, `npm run smoke` 436, `npm run interaction` 331, probes read, screenshot checked | `schemer-v3` |
 | 2026-09-11 | Minion column completed from page photographs; `unrecovered` handling and its UI removed with the gap | The user supplied MM41:p14–15; merged cells explain all three bands | `npm test` 99, `npm run smoke` 436, `npm run interaction` 331 | `schemer-v4` |
 | 2026-09-11 | MM41:p6–7 and p10–11 photographs verified all 41 Crafter modifier triples against the shipped data: zero corrections. An independent transcription of both tables now lives in the harness | The modifier column had been de-interleaved and paired by order, with only three rows confirmable from worked examples — the largest silent-error risk left in the app | `npm test` 102 | `schemer-v4` |
+| 2026-09-11 | Fourth source extracted (GME2e Meaning Tables: Elements): `data-elements.js`, one meaning-table registry behind `rules.meaningWord`, a details step on the Villain screen and on every underling, and all twelve tables on the Meaning screen | The user supplied the pages; MM41:p5's "Villain Details" step had nowhere to point until now | `npm test` 108, `npm run smoke` 436, `npm run interaction` 363, probes read, screenshot checked | `schemer-v5` |
+| 2026-09-11 | Audit cycle 3b: F34 (the interaction audit signed the screen by length and missed a chip swap that preserved it — a false finding), F35 (the details step was numbered 4 and sat in the wrong place) | New source, new passes | the audit's change detector now hashes content and records pressed state | `schemer-v5` |
 | 2026-09-11 | Audit cycle 3: F28–F31 (Double Archetypes expanded recursively and diverged at large modifiers; the villain roster hit 8.7 viewports; the seeds did not cover the crafted state; the citation check was a source behind) | New source, new passes | all harnesses green; a cascade-termination test now runs at a hostile modifier | `schemer-v3` |
 | 2026-09-11 | Audit cycle 2: F24–F27 (six tabs collided at 320px and the harness could not see it; the Settings gear was inert on Settings; a card written and never mounted; the citation check assumed one source) | New source, new passes | all harnesses green; `fixedBarFit` added so the tab bar is measured on every route | `schemer-v2` |

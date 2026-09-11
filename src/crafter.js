@@ -10,7 +10,7 @@ import {
 } from "./ui.js";
 import {
   archetypeTable, organizationTable, underlingTable, crafterGuidance, crafterSource,
-  lookupOpen, SPECIAL_KEYS
+  lookupOpen, SPECIAL_KEYS, villainDetailTables, meaningTables, meaningTable
 } from "./rules.js";
 import { discover } from "./oracle.js";
 import * as store from "./store.js";
@@ -194,6 +194,7 @@ export function canRollUnderling(adv) {
 
 // ------------------------------------------------------------------ screen
 const ROSTER_PAGE = 4;    // a roster grows without bound otherwise (§6.5)
+let detailTableId = "character-identity";
 let underlingKind = "lieutenant";
 const rosterPage = { lieutenant: 1, minion: 1 };
 
@@ -213,6 +214,7 @@ export function renderVillain() {
 
   add(content, guidanceNote(crafterGuidance("stages"), "crafter-stages"));
   add(content, archetypeCard(adv, c, mods));
+  add(content, detailsCard(adv));
   add(content, organizationCard(adv, c, mods));
   add(content, underlingsCard(adv, c, mods));
   add(content, guidanceNote(crafterGuidance("interpret"), "crafter-interpret"),
@@ -226,13 +228,88 @@ export function renderVillain() {
     })
     : actionBar({
       label: "Roll the archetype",
-      context: "Step 1 of 3 · who the villain is",
+      context: "Step 1 of 4 · who the villain is",
       onClick: () => rollArchetypeInto(adv)
     });
   return { content, action };
 }
 
 function signed(n) { return n >= 0 ? `+${n}` : String(n); }
+
+/**
+ * Step 4: the details. The Crafter says the archetype paints the general picture and
+ * sends you to Mythic's Elements meaning tables for who the villain actually is
+ * (MM41:p5). Those tables are in the app now, so this is a control rather than a
+ * sentence - and it is the same roll and the same log row as the oracle's.
+ */
+function detailsCard(adv) {
+  const box = el("section", { class: "card crafter-card" });
+  add(box, el("h2", { class: "card-title" }, "2 · The details", citeLink("villain-details", "rule")),
+    el("p", { class: "block-note", text: "Who they actually are: identity, skills, what drives them, how they think, what they look like, their quirks and where they came from. Roll a word and read it against everything above." }));
+
+  add(box, detailPicker());
+  add(box, detailList(adv, { kind: "villain" }, adv.villain.details || []));
+  add(box, el("button", {
+    class: "btn btn-primary", type: "button",
+    onclick: () => rollDetail(adv, { kind: "villain" })
+  }, `Roll on ${meaningTable(detailTableId).short}`));
+  return box;
+}
+
+function detailPicker() {
+  const wrap = el("div", { class: "field" });
+  add(wrap, el("span", { class: "field-label", text: "Which table" }));
+  const named = el("div", { class: "chip-row" });
+  for (const table of villainDetailTables()) {
+    add(named, el("button", {
+      class: `chip ${detailTableId === table.id ? "on" : ""}`, type: "button",
+      "aria-pressed": detailTableId === table.id ? "true" : "false",
+      onclick: () => { detailTableId = table.id; refresh(); }
+    }, table.short));
+  }
+  add(wrap, named);
+
+  const namedIds = villainDetailTables().map((t) => t.id);
+  const others = meaningTables().filter((t) => !namedIds.includes(t.id));
+  const more = el("details", { class: "fold" });
+  add(more, el("summary", { text: "Other meaning tables" }));
+  const chips = el("div", { class: "chip-row" });
+  for (const table of others) {
+    add(chips, el("button", {
+      class: `chip ${detailTableId === table.id ? "on" : ""}`, type: "button",
+      "aria-pressed": detailTableId === table.id ? "true" : "false",
+      onclick: () => { detailTableId = table.id; refresh(); }
+    }, table.short));
+  }
+  add(more, chips);
+  add(wrap, more, el("small", { class: "field-hint", text: `${meaningTable(detailTableId).use} ${meaningTable(detailTableId).cite}` }));
+  return wrap;
+}
+
+function detailList(adv, target, details) {
+  if (!details.length) return el("p", { class: "block-note", text: "Nothing rolled yet." });
+  const row = el("div", { class: "dice-row" });
+  for (const detail of details) {
+    const pill = el("span", { class: "keyword detail-pill", title: `${detail.table} ${detail.roll}` });
+    add(pill,
+      el("span", { class: "keyword-word", text: detail.word }),
+      el("span", { class: "keyword-roll", text: String(detail.roll) }),
+      el("button", {
+        class: "btn-icon detail-remove", type: "button",
+        "aria-label": `Remove ${detail.word} (${detail.table})`,
+        onclick: () => { store.removeDetail(adv.id, target, detail.id); refresh(); }
+      }, "\u00d7"));
+    add(row, pill);
+  }
+  return row;
+}
+
+function rollDetail(adv, target) {
+  const word = discover(detailTableId, { logAs: "detail" });
+  store.addDetail(adv.id, target, { tableId: word.tableId, table: word.table, roll: word.roll, word: word.word, at: Date.now() });
+  refresh();
+  showToast(`${word.table}: ${word.word}`);
+}
 
 function partList(parts) {
   const list = el("ul", { class: "crafter-parts" });
@@ -280,7 +357,7 @@ function archetypeCard(adv, c, mods) {
 
 function organizationCard(adv, c, mods) {
   const box = el("section", { class: "card crafter-card" });
-  add(box, el("h2", { class: "card-title" }, "2 · The organization", citeLink("villain-organization", "rule")));
+  add(box, el("h2", { class: "card-title" }, "3 · The organization", citeLink("villain-organization", "rule")));
   const legality = canRollOrganization(adv);
   if (!c.organization) {
     add(box, el("p", { class: "block-note", text: "What stands behind them - or, sometimes, that nothing does." }),
@@ -303,7 +380,7 @@ function organizationCard(adv, c, mods) {
 
 function underlingsCard(adv, c, mods) {
   const box = el("section", { class: "card crafter-card" });
-  add(box, el("h2", { class: "card-title" }, "3 · Lieutenants and minions", citeLink("underlings", "rule")));
+  add(box, el("h2", { class: "card-title" }, "4 · Lieutenants and minions", citeLink("underlings", "rule")));
   add(box, guidanceNote(crafterGuidance("underlings"), "underlings"));
 
   const chips = el("div", { class: "chip-row" });
@@ -390,6 +467,12 @@ function underlingBody(adv, entry) {
   const field = el("label", { class: "field" });
   add(field, el("span", { class: "field-label", text: "Name" }), name);
   add(box, field);
+
+  add(box, detailList(adv, { kind: entry.kind, id: entry.id }, entry.details || []),
+    el("button", {
+      class: "btn btn-quiet", type: "button",
+      onclick: () => rollDetail(adv, { kind: entry.kind, id: entry.id })
+    }, `Roll a detail (${meaningTable(detailTableId).short})`));
 
   add(box, el("button", {
     class: "btn btn-danger-quiet", type: "button",

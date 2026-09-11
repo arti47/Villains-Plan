@@ -177,6 +177,7 @@ export function normalizeAdventure(raw) {
     known: v.known || "",
     forces: v.forces || "",
     behind: v.behind || "",       // the villain behind the villain (End Goal Focus 73-76)
+    details: normalizeDetails(v.details),  // Elements meaning-table rolls (GME2e)
     crafted: normalizeCrafted(v.crafted)   // The Villain Crafter (MM41)
   };
 
@@ -209,6 +210,12 @@ export function normalizeAdventure(raw) {
   return a;
 }
 
+function normalizeDetails(list) {
+  return (Array.isArray(list) ? list : [])
+    .filter((d) => d && d.word)
+    .map((d) => ({ id: d.id || uid("det"), tableId: d.tableId || "", table: d.table || "", roll: d.roll || 0, word: d.word, at: d.at || now() }));
+}
+
 function normalizeCrafted(raw) {
   const c = raw && typeof raw === "object" ? raw : {};
   const roster = (list) => (Array.isArray(list) ? list : []).filter((u) => u && Array.isArray(u.parts)).map((u) => ({
@@ -217,7 +224,8 @@ function normalizeCrafted(raw) {
     kind: u.kind === "minion" ? "minion" : "lieutenant",
     name: u.name || "",
     note: u.note || "",
-    mod: Number.isFinite(u.mod) ? u.mod : 0
+    mod: Number.isFinite(u.mod) ? u.mod : 0,
+    details: normalizeDetails(u.details)
   }));
   return {
     archetype: c.archetype && Array.isArray(c.archetype.parts) ? c.archetype : null,

@@ -7,8 +7,8 @@ import {
   explain, actionBar, sectionTitle, citeLink, diePill, emptyState, showToast
 } from "./ui.js";
 import {
-  askOdds, askResult, defaultOdds, oddsRow, discoverWord, discoverMeaning,
-  askProcedure, randomEventRule, mythicGuidance, mythicSource
+  askOdds, askResult, defaultOdds, oddsRow, meaningWord, meaningTables, meaningTable,
+  askProcedure, randomEventRule, mythicGuidance, mythicSource, elementsSource
 } from "./rules.js";
 import * as store from "./store.js";
 import { Settings } from "./settings.js";
@@ -43,18 +43,18 @@ export function ask({ question = "", odds = defaultOdds(), expectation = "" } = 
   return { ...result, question: String(question || "").trim(), expectation, event, id: uid("ask"), at: now() };
 }
 
-/** One Discover Meaning word. Nothing rolls a second one on your behalf (ruling A15). */
-export function discover(column = "action", { logAs = "meaning", question = "" } = {}) {
+/** One word from one meaning table. Nothing rolls a second on your behalf (ruling A15). */
+export function discover(tableId = "action", { logAs = "meaning", question = "" } = {}) {
   const roll = rollD100();
-  const word = discoverWord(column, roll);
+  const word = meaningWord(tableId, roll);
   const adv = store.active();
   store.pushLog({
     adventureId: adv ? adv.id : null,
     kind: logAs,
     question: String(question || "").trim(),
-    dice: [{ die: "d100", value: roll, table: `Discover Meaning - ${column === "action" ? "Action" : "Description"}` }],
+    dice: [{ die: "d100", value: roll, table: word.table }],
     summary: word.word,
-    outcome: `${column === "action" ? "Action" : "Description"}: ${word.word}`
+    outcome: `${word.table}: ${word.word}`
   });
   return word;
 }
@@ -62,7 +62,7 @@ export function discover(column = "action", { logAs = "meaning", question = "" }
 /** The word a Random Event is read from — an Action, because an event is what happens. */
 function rollEventWord() {
   const roll = rollD100();
-  return { ...discoverWord("action", roll), event: true };
+  return { ...meaningWord("action", roll), event: true };
 }
 
 /** Ask the pivot question for the Arc screen, and record the answer where the gate reads it. */
@@ -204,7 +204,7 @@ function recentAsks() {
 }
 
 // ------------------------------------------------------------------ meaning screen
-let reading = { column: "action", words: [] };
+let reading = { tableId: "meaning-action", words: [] };
 
 export function renderMeaning() {
   const content = el("div", {});
@@ -216,18 +216,24 @@ export function renderMeaning() {
     return { content };
   }
 
-  const table = discoverMeaning();
-  const chips = el("div", { class: "chip-row" });
-  for (const column of table.columns) {
-    add(chips, el("button", {
-      class: `chip ${reading.column === column.key ? "on" : ""}`, type: "button",
-      "aria-pressed": reading.column === column.key ? "true" : "false",
-      onclick: () => { reading.column = column.key; refresh(); }
-    }, column.label));
-  }
+  const current = meaningTable(reading.tableId);
   const wrap = el("div", { class: "field" });
-  add(wrap, el("span", { class: "field-label", text: "Which column" }), chips,
-    el("small", { class: "field-hint", text: table.columns.find((c) => c.key === reading.column).use }));
+  add(wrap, el("span", { class: "field-label", text: "Which table" }));
+  for (const group of ["Discover Meaning", "Elements"]) {
+    const tables = meaningTables().filter((t) => t.group === group);
+    if (!tables.length) continue;
+    add(wrap, el("p", { class: "group-title", text: group }));
+    const chips = el("div", { class: "chip-row" });
+    for (const table of tables) {
+      add(chips, el("button", {
+        class: `chip ${reading.tableId === table.id ? "on" : ""}`, type: "button",
+        "aria-pressed": reading.tableId === table.id ? "true" : "false",
+        onclick: () => { reading.tableId = table.id; refresh(); }
+      }, table.short));
+    }
+    add(wrap, chips);
+  }
+  add(wrap, el("small", { class: "field-hint", text: `${current.use} ${current.cite}` }));
   add(content, wrap);
 
   if (reading.words.length) {
@@ -235,7 +241,7 @@ export function renderMeaning() {
     add(box, el("h2", { class: "card-title" }, "This reading", citeLink("discover-meaning", "rule")));
     const dice = el("div", { class: "dice-row" });
     for (const word of reading.words) {
-      const pill = el("span", { class: "keyword" });
+      const pill = el("span", { class: "keyword", title: `${word.table} ${word.roll}` });
       add(pill, el("span", { class: "keyword-word", text: word.word }), el("span", { class: "keyword-roll", text: String(word.roll) }));
       add(dice, pill);
     }
@@ -253,13 +259,14 @@ export function renderMeaning() {
   }
 
   add(content, guidanceNote(mythicGuidance("moreWords"), "discover-meaning"),
-    guidanceNote(mythicGuidance("noMeaning"), "ask-answers"));
+    guidanceNote(mythicGuidance("noMeaning"), "ask-answers"),
+    el("p", { class: "block-note" }, "The Elements tables come from ", elementsSource().section, ", ", elementsSource().title, ". ", citeLink("elements-tables", "what they are for")));
 
   const action = actionBar({
     label: reading.words.length ? "Roll another word" : "Roll a word",
-    context: `${table.columns.find((c) => c.key === reading.column).label} column`,
+    context: current.short,
     onClick: () => {
-      reading.words.push(discover(reading.column));
+      reading.words.push(discover(reading.tableId));
       refresh();
     }
   });

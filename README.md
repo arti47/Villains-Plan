@@ -27,9 +27,11 @@ account, no server and no telemetry.
 
 ## What it does
 
-- **Villain** — the Villain Crafter: an archetype for who the villain is, a shape for the
-  organization behind them, and rolls for the lieutenants and minions your character will
-  actually meet. Each roll carries a modifier into the next and the app shows the sum.
+- **Villain** — the Villain Crafter: an archetype for who the villain is, the Elements
+  tables for who they actually are (identity, skills, motivations, personality, appearance,
+  traits and flaws, background), a shape for the organization behind them, and rolls for the
+  lieutenants and minions your character will meet. Each roll carries a modifier into the
+  next and the app shows the sum.
 - **Dossier** — the villain, every reveal with the dice that produced it, your reading of
   each one, and the leads still open.
 - **Reveal** — earn a reveal (your judgement, never a roll), and the app runs the End Goal
@@ -38,7 +40,8 @@ account, no server and no telemetry.
   every boundary, and the Pivot gate the article defines.
 - **Oracle** — One-Page Mythic itself: Ask the Game Master (a Yes/No question, honest
   odds, one d100 against the chart), random events on a double, and Discover Meaning for
-  detail without a question. Switch it off in Settings if you roll the oracle by hand.
+  detail without a question — plus all twelve Elements tables from Mythic Second Edition.
+  Switch it off in Settings if you roll the oracle by hand.
 - **Log** — every die it has rolled, with a per-face distribution so you can check the app
   rather than argue with it.
 - **Rules** — one entry per automated rule in the app's own words, with the page cited, a
@@ -46,8 +49,8 @@ account, no server and no telemetry.
 
 ## What it does not do
 
-Three sources are in here: the Villain's Plan article, the One-Page Mythic Game Master
-Emulator, and the Villain Crafter. The Chaos Factor (which the one-page edition drops by
+Four sources are in here: the Villain's Plan article, the One-Page Mythic Game Master
+Emulator, the Villain Crafter, and Mythic Second Edition's Elements meaning tables. The Chaos Factor (which the one-page edition drops by
 design), scene setup, the Bookkeeping phase and the Threads and Characters lists are in
 none of them, so the app does not roll them and does not approximate them. Villain
 statistics are also left alone: no game system is attached here.

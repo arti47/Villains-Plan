@@ -264,6 +264,36 @@ same passes run against it.
   off twice: the Minion cells were flagged and asked about, and this column, which *looked*
   recovered, was still worth asking about.
 
+## Cycle 3c — after adding the Elements tables
+
+### F34 · The interaction audit produced a false finding
+- **Target:** `tests/interaction.mjs`
+- **Fix:** the snapshot now hashes `#screen`'s content and records every `aria-pressed` /
+  `aria-current` state, instead of signing the screen by innerHTML **length** plus its
+  first 400 characters of text.
+- **Why it mattered:** toggling one chip on and another off preserves both. It flagged
+  exactly one of fourteen table chips as "changes nothing" — a finding that reproduced
+  nowhere and would have sent the next reader hunting a bug in working code. A harness
+  that lies once gets ignored twice (§13 D-15 in its other direction: not a manufactured
+  race, a manufactured blind spot).
+
+### F35 · The details step was numbered 4 and placed third
+- **Fix:** MM41:p4-5 runs villain → details → organization → underlings; the card moved to
+  match and the four steps renumbered.
+- **Why it mattered:** §6.3.3 — a screen that hosts a procedure presents its controls in
+  the order the book performs them. Caught by looking at a screenshot, again.
+
+## Verified clean (cycle 3c)
+
+- **The twelve tables.** 100 unique non-empty words each; thirteen anchors transcribed
+  independently from the photographs and asserted; every roll 1–100 resolves on all
+  fourteen tables in the registry (twelve Elements at span 1, two One-Page Mythic columns
+  at span 2); an unknown table id and an out-of-range roll both throw.
+- **The seven MM41 names.** Identity, Skills, Motivations, Personality, Appearance,
+  Traits & Flaws, Background — all present, in that order, asserted.
+- **Details state.** They attach to the villain and to one named underling, survive a
+  reload, back-fill empty on old records, and a removal touches only its own holder.
+
 ## Not yet run
 
 - **Cycle 4.** Cycle 3 found four more, so the stopping rule is still not met — and two of

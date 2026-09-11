@@ -12,13 +12,25 @@ const crafter = await import("../src/crafter.js");
 const oracle = await import("../src/oracle.js");
 
 /** Roll up the villain the way a player would, so the seeds cover the crafted state. */
-function craftVillain(adv, { lieutenants = 1, minions = 1 } = {}) {
+function craftVillain(adv, { lieutenants = 1, minions = 1, details = 2 } = {}) {
   store.setCrafted(adv.id, { archetype: crafter.rollArchetype() });
   const withArchetype = crafter.modifierBreakdown(store.active());
   store.setCrafted(adv.id, { organization: crafter.rollOrganization(withArchetype.organization.total) });
   const mods = crafter.modifierBreakdown(store.active());
   for (let i = 0; i < lieutenants; i += 1) store.addUnderling(adv.id, "lieutenant", crafter.rollUnderling("lieutenant", mods.lieutenant.total));
   for (let i = 0; i < minions; i += 1) store.addUnderling(adv.id, "minion", crafter.rollUnderling("minion", mods.minion.total));
+  const tables = ["character-identity", "character-motivations", "character-appearance", "character-traits-flaws"];
+  for (let i = 0; i < details; i += 1) {
+    const word = oracle.discover(tables[i % tables.length], { logAs: "detail" });
+    store.addDetail(adv.id, { kind: "villain" }, { tableId: word.tableId, table: word.table, roll: word.roll, word: word.word, at: Date.now() });
+  }
+  const roster = store.active().villain.crafted;
+  for (const kind of ["lieutenant", "minion"]) {
+    const first = roster[`${kind}s`][0];
+    if (!first) continue;
+    const word = oracle.discover("character-skills", { logAs: "detail" });
+    store.addDetail(adv.id, { kind, id: first.id }, { tableId: word.tableId, table: word.table, roll: word.roll, word: word.word, at: Date.now() });
+  }
 }
 
 function reset() { store.__setState({ version: 1, adventures: [], rollLog: [], activeAdventureId: null }); }
@@ -84,7 +96,7 @@ const deep = store.createAdventure({
 revealPhases(deep, 6);
 addLeads(deep, 3);
 writeInterpretations(deep);
-craftVillain(deep, { lieutenants: 4, minions: 6 });
+craftVillain(deep, { lieutenants: 4, minions: 6, details: 5 });
 for (let i = 0; i < 12; i += 1) oracle.ask({ question: `Does the guard look up? (${i + 1})`, odds: i % 2 ? "unlikely" : "50-50" });
 // drive it to an End Goal, then a defeat and a pivot
 let guard = 0;
