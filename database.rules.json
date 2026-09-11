@@ -1,0 +1,29 @@
+{
+  "//": "Phase 5 shape only; no sync code ships (CLAUDE.md §1.1). Roles exist from day one so the phase needs no migration.",
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "campaigns": {
+      "$campaignId": {
+        "meta": {
+          ".read": "auth != null",
+          ".write": "auth != null && (!data.exists() || data.child('ownerUid').val() === auth.uid)"
+        },
+        "members": {
+          ".read": "auth != null && root.child('campaigns/' + $campaignId + '/members/' + auth.uid).exists()",
+          "$uid": { ".write": "auth != null && ($uid === auth.uid || root.child('campaigns/' + $campaignId + '/members/' + auth.uid + '/role').val() === 'gm')" }
+        },
+        "adventures": {
+          ".read": "auth != null && root.child('campaigns/' + $campaignId + '/members/' + auth.uid).exists()",
+          "$adventureId": {
+            ".write": "auth != null && (root.child('campaigns/' + $campaignId + '/adventures/' + $adventureId + '/owner').val() === auth.uid || root.child('campaigns/' + $campaignId + '/members/' + auth.uid + '/role').val() === 'gm')"
+          }
+        },
+        "rollLog": {
+          ".read": "auth != null && root.child('campaigns/' + $campaignId + '/members/' + auth.uid).exists()",
+          "$entryId": { ".write": "auth != null && (!data.exists() || data.child('byId').val() === auth.uid)" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "//": "A hand-written pre-list record: one adventure at the top level, no arc block, no ids, ordinals wrong, a spent override left on. Loading it must produce the current shape (§10.17).",
+  "adventure": {
+    "name": "The Dormant Temple",
+    "villain": { "name": "The Dark Shaman" },
+    "pivotOverride": true,
+    "phases": [
+      {
+        "kind": "phase", "ordinal": 7,
+        "focus": { "table": "villain-plan-focus", "tableName": "Villain Plan Focus", "roll": 44, "key": "gathering-resources", "label": "Gathering Resources", "text": "..." },
+        "keywords": [{ "roll": 53, "word": "Mental" }, { "roll": 54, "word": "Missing" }],
+        "check": { "d10": 3, "modifier": 0, "total": 3, "needed": null, "fired": false },
+        "leads": [{ "text": "Who is paying the diggers?" }, { "text": "", "resolved": true }]
+      },
+      {
+        "kind": "endgoal",
+        "focus": { "table": "end-goal-focus", "tableName": "End Goal Focus", "roll": 90, "key": "no-context", "label": "No Context", "noContext": true, "text": "..." },
+        "keywords": [{ "roll": 16, "word": "Death" }, { "roll": 16, "word": "Death" }],
+        "doubled": true,
+        "check": { "d10": 9, "modifier": 2, "total": 11, "needed": 9, "fired": true }
+      }
+    ]
+  }
+}

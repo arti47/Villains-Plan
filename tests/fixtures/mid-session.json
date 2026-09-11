@@ -1,0 +1,357 @@
+{
+  "app": "Schemer",
+  "schema": 1,
+  "exportedAt": "2026-09-11T09:04:52.029Z",
+  "activeAdventureId": "adv_ezexws415x2n",
+  "adventures": [
+    {
+      "id": "adv_ezexws415x2n",
+      "name": "The General Who Did Not Go Home",
+      "createdAt": 1789117492025,
+      "villain": {
+        "name": "General Gorazon",
+        "epithet": "the rogue general",
+        "known": "A victorious imperial general has not gone home, and is absorbing his defeated enemy's henchmen.",
+        "forces": "An army camped at the stronghold; unknown funds."
+      },
+      "updatedAt": 1789117492029,
+      "archivedAt": null,
+      "arc": {
+        "stage": "discovery",
+        "endGoalAt": null,
+        "defeatedAt": null,
+        "pivotAt": null,
+        "concludedAt": null
+      },
+      "phases": [
+        {
+          "id": "ph_12z0t0x1nrtz8n",
+          "kind": "phase",
+          "createdAt": 1789117492026,
+          "revisedAt": 1789117492029,
+          "earnedNote": "Followed the lead and got into the room.",
+          "interpretation": "The agents are amassing relics, swords and a seized mine, and not one of them knows what any of it is for - which means the answer is being kept a long way above their heads.",
+          "focus": {
+            "min": 17,
+            "max": 24,
+            "key": "relocating",
+            "label": "Relocating",
+            "text": "The villain is leaving the place or position they normally occupy for somewhere else, for some reason.",
+            "table": "villain-plan-focus",
+            "tableName": "Villain Plan Focus",
+            "roll": 20,
+            "cite": "MM69:p21",
+            "noContext": false
+          },
+          "keywords": [
+            {
+              "roll": 17,
+              "word": "Delay",
+              "table": "plot-twists",
+              "cite": "MM69:p21"
+            },
+            {
+              "roll": 52,
+              "word": "Lucky",
+              "table": "plot-twists",
+              "cite": "MM69:p21"
+            }
+          ],
+          "doubled": false,
+          "check": {
+            "d10": 9,
+            "modifier": 0,
+            "total": 9,
+            "threshold": 11,
+            "needed": null,
+            "fired": false
+          },
+          "leads": [
+            {
+              "id": "lead_xx5dcqzwr2dq",
+              "text": "Lead 1 from phase 1: who is paying for all of this, and why here?",
+              "resolved": false
+            },
+            {
+              "id": "lead_17lsir01vs0up4",
+              "text": "Lead 2 from phase 1: who is paying for all of this, and why here?",
+              "resolved": false
+            }
+          ],
+          "override": false,
+          "ordinal": 1
+        },
+        {
+          "id": "ph_39vgs310zne4",
+          "kind": "phase",
+          "createdAt": 1789117492028,
+          "revisedAt": 1789117492029,
+          "earnedNote": "Followed the lead and got into the room.",
+          "interpretation": "The agents are amassing relics, swords and a seized mine, and not one of them knows what any of it is for - which means the answer is being kept a long way above their heads.",
+          "focus": {
+            "min": 25,
+            "max": 40,
+            "key": "searching",
+            "label": "Searching",
+            "text": "The villain is hunting for something or someone, and is going to great lengths to find it.",
+            "table": "villain-plan-focus",
+            "tableName": "Villain Plan Focus",
+            "roll": 28,
+            "cite": "MM69:p21",
+            "noContext": false
+          },
+          "keywords": [
+            {
+              "roll": 37,
+              "word": "Helpless",
+              "table": "plot-twists",
+              "cite": "MM69:p21"
+            },
+            {
+              "roll": 94,
+              "word": "Trap",
+              "table": "plot-twists",
+              "cite": "MM69:p21"
+            }
+          ],
+          "doubled": false,
+          "check": {
+            "d10": 8,
+            "modifier": 2,
+            "total": 10,
+            "threshold": 11,
+            "needed": 9,
+            "fired": false
+          },
+          "leads": [
+            {
+              "id": "lead_1nptspc150s2jt",
+              "text": "Lead 1 from phase 2: who is paying for all of this, and why here?",
+              "resolved": false
+            },
+            {
+              "id": "lead_a9877e1baxlkf",
+              "text": "Lead 2 from phase 2: who is paying for all of this, and why here?",
+              "resolved": false
+            }
+          ],
+          "override": false,
+          "ordinal": 2
+        },
+        {
+          "id": "ph_1qsikar64vygi",
+          "kind": "phase",
+          "createdAt": 1789117492028,
+          "revisedAt": 1789117492029,
+          "earnedNote": "Followed the lead and got into the room.",
+          "interpretation": "The agents are amassing relics, swords and a seized mine, and not one of them knows what any of it is for - which means the answer is being kept a long way above their heads.",
+          "focus": {
+            "min": 73,
+            "max": 80,
+            "key": "construction",
+            "label": "Construction",
+            "text": "The villain is building something - a structure, an excavation, a vehicle - for an unknown reason.",
+            "table": "villain-plan-focus",
+            "tableName": "Villain Plan Focus",
+            "roll": 74,
+            "cite": "MM69:p21",
+            "noContext": false
+          },
+          "keywords": [
+            {
+              "roll": 16,
+              "word": "Death",
+              "table": "plot-twists",
+              "cite": "MM69:p21"
+            },
+            {
+              "roll": 66,
+              "word": "Persuade",
+              "table": "plot-twists",
+              "cite": "MM69:p21"
+            }
+          ],
+          "doubled": false,
+          "check": {
+            "d10": 1,
+            "modifier": 4,
+            "total": 5,
+            "threshold": 11,
+            "needed": 7,
+            "fired": false
+          },
+          "leads": [
+            {
+              "id": "lead_hnmjky61aiss",
+              "text": "Lead 1 from phase 3: who is paying for all of this, and why here?",
+              "resolved": false
+            },
+            {
+              "id": "lead_1bz4tu2t3mkwg",
+              "text": "Lead 2 from phase 3: who is paying for all of this, and why here?",
+              "resolved": false
+            }
+          ],
+          "override": false,
+          "ordinal": 3
+        }
+      ],
+      "pivotEligible": {
+        "survived": false,
+        "underlings": false,
+        "failsafe": false
+      },
+      "pivotOverride": false,
+      "fateAnswer": null,
+      "record": [
+        {
+          "ts": 1789117492025,
+          "kind": "start",
+          "text": "Adventure started against General Gorazon."
+        },
+        {
+          "ts": 1789117492026,
+          "kind": "phase",
+          "text": "Phase 1 revealed: Relocating + Delay, Lucky."
+        },
+        {
+          "ts": 1789117492026,
+          "kind": "endgoal",
+          "text": "End Goal revealed: Advancement + Diminish, Evidence."
+        },
+        {
+          "ts": 1789117492028,
+          "kind": "phase",
+          "text": "Phase 2 revealed: Searching + Helpless, Trap."
+        },
+        {
+          "ts": 1789117492028,
+          "kind": "phase",
+          "text": "Phase 3 revealed: Construction + Death, Persuade."
+        }
+      ]
+    }
+  ],
+  "rollLog": [
+    {
+      "id": "log_jp9nswi1muwm",
+      "ts": 1789117492028,
+      "adventureId": "adv_ezexws415x2n",
+      "kind": "phase",
+      "dice": [
+        {
+          "die": "d10",
+          "value": 1,
+          "table": "End Goal Roll"
+        },
+        {
+          "die": "d100",
+          "value": 74,
+          "table": "Villain Plan Focus"
+        },
+        {
+          "die": "d100",
+          "value": 16,
+          "table": "Plot Twists"
+        },
+        {
+          "die": "d100",
+          "value": 66,
+          "table": "Plot Twists"
+        }
+      ],
+      "summary": "Construction + Death, Persuade",
+      "outcome": "Phase 3 (5 vs 11)"
+    },
+    {
+      "id": "log_1d9faz57x4o1o",
+      "ts": 1789117492028,
+      "adventureId": "adv_ezexws415x2n",
+      "kind": "phase",
+      "dice": [
+        {
+          "die": "d10",
+          "value": 8,
+          "table": "End Goal Roll"
+        },
+        {
+          "die": "d100",
+          "value": 28,
+          "table": "Villain Plan Focus"
+        },
+        {
+          "die": "d100",
+          "value": 37,
+          "table": "Plot Twists"
+        },
+        {
+          "die": "d100",
+          "value": 94,
+          "table": "Plot Twists"
+        }
+      ],
+      "summary": "Searching + Helpless, Trap",
+      "outcome": "Phase 2 (10 vs 11)"
+    },
+    {
+      "id": "log_4awwqhdgstdo",
+      "ts": 1789117492026,
+      "adventureId": "adv_ezexws415x2n",
+      "kind": "endgoal",
+      "dice": [
+        {
+          "die": "d10",
+          "value": 10,
+          "table": "End Goal Roll"
+        },
+        {
+          "die": "d100",
+          "value": 46,
+          "table": "End Goal Focus"
+        },
+        {
+          "die": "d100",
+          "value": 19,
+          "table": "Plot Twists"
+        },
+        {
+          "die": "d100",
+          "value": 27,
+          "table": "Plot Twists"
+        }
+      ],
+      "summary": "Advancement + Diminish, Evidence",
+      "outcome": "End Goal revealed (12 vs 11)"
+    },
+    {
+      "id": "log_mi37rs1gdz09z",
+      "ts": 1789117492026,
+      "adventureId": "adv_ezexws415x2n",
+      "kind": "phase",
+      "dice": [
+        {
+          "die": "d10",
+          "value": 9,
+          "table": "End Goal Roll"
+        },
+        {
+          "die": "d100",
+          "value": 20,
+          "table": "Villain Plan Focus"
+        },
+        {
+          "die": "d100",
+          "value": 17,
+          "table": "Plot Twists"
+        },
+        {
+          "die": "d100",
+          "value": 52,
+          "table": "Plot Twists"
+        }
+      ],
+      "summary": "Relocating + Delay, Lucky",
+      "outcome": "Phase 1 (9 vs 11)"
+    }
+  ]
+}

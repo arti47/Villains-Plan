@@ -1,0 +1,86 @@
+// Builds the seed states every harness and probe shares, so no two passes measure a
+// different app (§11.1 D). Run it when the schema changes; the output is committed.
+
+import { writeFileSync } from "node:fs";
+import { installStorage } from "./harness.mjs";
+
+installStorage();
+const store = await import("../src/store.js");
+const roller = await import("../src/roller.js");
+const derived = await import("../src/derived.js");
+
+function reset() { store.__setState({ version: 1, adventures: [], rollLog: [], activeAdventureId: null }); }
+
+/** Force a run of reveals, restarting rather than accepting an early End Goal. */
+function revealPhases(adv, count) {
+  let guard = 0;
+  while (derived.planPhases(store.active()).length < count && guard < 200) {
+    guard += 1;
+    const before = store.active();
+    const result = roller.revealNext(before, { earnedNote: "Followed the lead and got into the room." });
+    if (!result.ok) break;
+    if (result.phase.kind === "endgoal") { store.deletePhase(adv.id, result.phase.id); }
+  }
+}
+
+function addLeads(adv, per) {
+  for (const phase of store.active().phases) {
+    for (let i = 0; i < per; i += 1) {
+      store.addLead(adv.id, phase.id, `Lead ${i + 1} from ${phase.kind} ${phase.ordinal || ""}: who is paying for all of this, and why here?`);
+    }
+  }
+}
+
+function writeInterpretations(adv) {
+  for (const phase of store.active().phases) {
+    store.updatePhase(adv.id, phase.id, {
+      interpretation: "The agents are amassing relics, swords and a seized mine, and not one of them knows what any of it is for - which means the answer is being kept a long way above their heads."
+    });
+  }
+}
+
+// ------------------------------------------------------------------ mid-session
+reset();
+const mid = store.createAdventure({
+  name: "The General Who Did Not Go Home",
+  villainName: "General Gorazon", epithet: "the rogue general",
+  known: "A victorious imperial general has not gone home, and is absorbing his defeated enemy's henchmen.",
+  forces: "An army camped at the stronghold; unknown funds."
+});
+revealPhases(mid, 3);
+addLeads(mid, 2);
+writeInterpretations(mid);
+writeFileSync("tests/fixtures/mid-session.json", JSON.stringify(JSON.parse(store.exportJSON()), null, 2));
+
+// ------------------------------------------------------------------ stress
+// What a table has by session three: several adventures, one of them long, a full log.
+reset();
+for (let i = 0; i < 7; i += 1) {
+  const adv = store.createAdventure({ name: `Concluded adventure ${i + 1}: the long cold winter of a thousand schemes`, villainName: `Villain ${i + 1}` });
+  revealPhases(adv, 2);
+  addLeads(adv, 2);
+  store.setArcStage(adv.id, "concluded", { concludedAt: Date.now() });
+}
+const deep = store.createAdventure({
+  name: "Cold Rock, Cold Heart",
+  villainName: "Max Vathen", epithet: "the billionaire",
+  known: "A billionaire has bought an island nation and is building something on it.",
+  forces: "Private security, a fleet, more money than several states."
+});
+revealPhases(deep, 6);
+addLeads(deep, 3);
+writeInterpretations(deep);
+// drive it to an End Goal, then a defeat and a pivot
+let guard = 0;
+while (!derived.endGoalRevealed(store.active()) && guard < 50) { guard += 1; roller.revealNext(store.active()); }
+store.setArcStage(deep.id, "foiling", { endGoalAt: Date.now() });
+store.setArcStage(deep.id, "pivot", { defeatedAt: Date.now() });
+for (const key of ["survived", "underlings"]) store.setPivotFlag(deep.id, key, true);
+roller.revealPivot(store.active());
+// a full roll log
+for (let i = store.rollLog().length; i < 200; i += 1) {
+  store.pushLog({ adventureId: deep.id, kind: "phase", dice: [{ die: "d10", value: (i % 10) + 1, table: "End Goal Roll" }, { die: "d100", value: (i * 7) % 100 + 1, table: "Villain Plan Focus" }], summary: "Gathering Resources + Mental, Missing", outcome: `Phase ${i % 6 + 1} (${i % 11 + 1} vs 11)` });
+}
+writeFileSync("tests/fixtures/stress.json", JSON.stringify(JSON.parse(store.exportJSON()), null, 2));
+
+console.log("fixtures written: fresh, mid-session, stress, old-shape");

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- Zoom is locked so a stray pinch mid-roll cannot shift the page; Settings carries a
+     text-size control to pay that back (§6.2). -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="description" content="Schemer — reveal a villain's plan one layer at a time. A play aid for The Villain's Plan (Mythic Magazine 69).">
+<meta name="theme-color" content="#14110f">
+<title>Schemer</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip-link" href="#screen">Skip to the screen</a>
+
+<header class="app-header">
+  <a class="brand" href="#/dossier">
+    <span class="brand-mark" aria-hidden="true">&#9671;</span>
+    <span class="brand-name">Schemer</span>
+  </a>
+  <div class="app-header-actions">
+    <button id="theme-toggle" class="btn-icon" type="button" aria-label="Switch theme">&#9681;</button>
+  </div>
+</header>
+
+<div id="resource-header" class="resource-slot"></div>
+
+<main id="screen" tabindex="-1"></main>
+
+<div id="action-slot" class="action-slot"></div>
+
+<nav id="tabs" class="tab-bar" aria-label="Main"></nav>
+
+<div id="modal-root"></div>
+<noscript><p style="padding:1rem">Schemer needs JavaScript: it rolls dice and keeps your dossier in this browser.</p></noscript>
+<script type="module" src="src/main.js"></script>
+<script type="module">
+  // The one control in a top corner, because it is the lowest-frequency control there is (§6.3.11).
+  import { Settings, apply } from "./src/settings.js";
+  const order = ["system", "light", "dark"];
+  document.getElementById("theme-toggle").addEventListener("click", () => {
+    const next = order[(order.indexOf(Settings.theme()) + 1) % order.length];
+    Settings.set("theme", next);
+    apply();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "Schemer — a villain's plan, one layer at a time",
+  "short_name": "Schemer",
+  "description": "A play aid for The Villain's Plan (Mythic Magazine 69): earn reveals, roll the End Goal, track the dossier.",
+  "start_url": "./index.html#/dossier",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#14110f",
+  "theme_color": "#14110f",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

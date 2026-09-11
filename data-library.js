@@ -1,0 +1,121 @@
+// Schemer — rules library, tutorial and worked examples.
+// One library entry per rule the app automates or surfaces (CLAUDE.md §9.1a).
+// All prose is in the app's own words; the source is cited, never quoted.
+
+export const LIBRARY_GROUPS = [
+  { key: "start", label: "Before you begin" },
+  { key: "earning", label: "Earning a reveal" },
+  { key: "phase", label: "Revealing a phase" },
+  { key: "endgoal", label: "The End Goal" },
+  { key: "arc", label: "Arcs and foiling" },
+  { key: "pivot", label: "The Pivot" },
+  { key: "app", label: "How the app behaves" }
+];
+
+export const LIBRARY = [
+  { id: "what-this-is", group: "start", title: "What this tool is for", cite: "MM69:p16",
+    body: "You already know there is a villain and that something is being planned. This tool reveals that plan a layer at a time, so the investigation is the adventure rather than a single moment of guessing right. Bring it in once your character is aware of the villain and suspects a scheme." },
+
+  { id: "arcs", group: "start", title: "The three arcs", cite: "MM69:p25",
+    body: "Discovery: earn reveals until the End Goal surfaces. Foiling: the plan is known, so go and spoil it - expect this to run as long as the Discovery arc did. Pivot: optional, and only if the villain can still act. The app tracks which arc you are in and what the next boundary is." },
+
+  { id: "earned-discovery", group: "earning", title: "Reveals are earned, not rolled", cite: "MM69:p18",
+    body: "You decide when a reveal is due - after the ambush survived, the lead followed, the room entered under a dead assassin's name. The rules deliberately keep this off the dice, because you have already decided the mystery is the spine of the adventure. The app never rolls to see whether you learn something and never nags you to. There is one button, and you press it when you have earned it." },
+
+  { id: "reveal-sequence", group: "phase", title: "The order of a reveal", cite: "MM69:p22",
+    body: "The End Goal Roll comes first, before anything else is rolled: it decides whether this reveal is another phase or the finale. Then the Focus roll for context, then two keywords. The app performs them in that order and the roll log records them that way." },
+
+  { id: "villain-plan-focus", group: "phase", title: "Villain Plan Focus", cite: "MM69:p21",
+    body: "A d100 table of seven contexts - marching, relocating, searching, gathering resources, teamwork, collecting, construction - plus a fifth of the range that declines to steer you at all. It answers what this piece of the plan looks like from outside, not what it is for." },
+
+  { id: "plot-twists", group: "phase", title: "Plot Twists keywords", cite: "MM69:p21",
+    body: "A hundred single words; you roll two and read them against the Focus and against what you already know. They are meaning, not instructions: 'Mental, Missing' next to Gathering Resources became agents amassing a hoard while missing any idea of why." },
+
+  { id: "no-context", group: "phase", title: "No Context is a result", cite: "MM69:p21",
+    body: "The top fifth of the Villain Plan Focus table, and the top sixth of the End Goal table, give you no context. That is a real answer and never a re-roll: the two keywords carry the whole reveal. The app shows the roll and simply gives you no Focus line." },
+
+  { id: "doubles", group: "phase", title: "Doubled keywords", cite: "MM69:p21",
+    body: "Both dice can land on the same word. Plot Twists is a meaning table, so read a double as amplification - that word, harder - rather than rolling again. The app flags the double and leaves the reading to you." },
+
+  { id: "partial-reveal", group: "phase", title: "Explain something, ask something", cite: "MM69:p20",
+    body: "A phase is a portion of the plan, never the whole of it. Interpret so that one thing becomes clear and another becomes newly puzzling. The puzzling half is your next scene - write it in as a lead, and the dossier will keep it in front of you until you resolve it." },
+
+  { id: "end-goal-roll", group: "endgoal", title: "The End Goal Roll", cite: "MM69:p22",
+    body: "Before generating a reveal, roll a d10 and add 2 for every phase you already know. Eleven or more and this reveal is the End Goal. So the first reveal can never be the finale (ten is the most a d10 can give), the second needs a 9, the third a 7, the fourth a 5, the fifth a 3, and the sixth arrives whatever you roll. The app shows the number you need before you roll it." },
+
+  { id: "end-goal-focus", group: "endgoal", title: "End Goal Focus", cite: "MM69:p22",
+    body: "The finale rolls on its own d100 table: acquisition, something personal, self-advancement, destruction, a monstrous new order, a villain behind the villain, or survival at everyone else's expense - plus a sixth of the range with no context at all." },
+
+  { id: "coherence", group: "endgoal", title: "The End Goal must explain the rest", cite: "MM69:p24",
+    body: "The finale does two jobs: it names the last piece, and it makes every earlier phase make sense in hindsight. Gorazon's hired swords, stolen relics and seized mine only cohered once his grudge against his own king surfaced. When the app reveals your End Goal it lists every phase you already have, and every one of them stays editable - revising backwards is the rule working, not cheating." },
+
+  { id: "pivot-gate", group: "pivot", title: "When a pivot is possible", cite: "MM69:p26",
+    body: "Somebody has to be left to enact it: the villain survived, important underlings are at large, or a failsafe was set in advance. The app asks which of the three is true and refuses the pivot if none of them are - that refusal is the rule, not a limitation of the app." },
+
+  { id: "pivot-focus", group: "pivot", title: "Pivot Plan Focus", cite: "MM69:p25",
+    body: "Four results: a diminished version of the original plan, spite that ruins the thing for everyone, petty revenge, or an outright surprise read from the keywords. Revenge covers thirty points of the range because it is the most likely thing a beaten villain does." },
+
+  { id: "pivot-timing", group: "pivot", title: "Reveal it immediately, keep it short", cite: "MM69:p25",
+    body: "Put the Plan B in the scene right after the plan falls - the celebration, the debrief - because a pivot you know is coming and are waiting for reads as padding. One to three scenes. If you would rather be surprised, ask a Fate Question in that cleanup scene instead and record the answer here." },
+
+  { id: "not-in-source", group: "app", title: "What this app deliberately does not do", cite: "MM69:p26",
+    body: "This article is one subsystem, not the whole of Mythic. Fate Questions and their odds, the Chaos Factor, scene setup, Bookkeeping, Discover Meaning, Random Events and the Threads and Characters lists are all elsewhere, so the app does not roll them and does not guess at them. Where the subsystem calls for one - the surprise route to a pivot - the app asks you for the answer and records it." },
+
+  { id: "dice-honesty", group: "app", title: "About the dice", cite: null,
+    body: "Every die uses the browser's cryptographic random source, never Math.random. Every roll shows its individual faces, which table it was read on, and what modified it, and the roll log keeps the record with a per-face distribution view so you can check the app instead of arguing with it. A roll happens once and is stored; nothing re-rolls behind your back." },
+
+  { id: "backup", group: "app", title: "Your data", cite: null,
+    body: "Everything lives in this browser. Settings exports the lot as plain readable JSON and imports it back, which is also how you move to another device. Nothing is sent anywhere." }
+];
+
+export const TUTORIAL = [
+  { id: "t1", title: "Start an adventure",
+    body: "Dossier - Adventures - New. Name the adventure and the villain, and write down what your character already knows. You need no stats: this tool tracks a plan, not a character. You can keep as many adventures as you like and come back to old ones as records." },
+  { id: "t2", title: "Read the header",
+    body: "The bar under the title is the whole state of the investigation: how many phases you know, what the End Goal Roll needs next, which arc you are in, and how many leads are still open. It follows you onto every screen because those numbers decide what you do next." },
+  { id: "t3", title: "Play, then earn the first reveal",
+    body: "Go and play your scene in Mythic as normal. When your character has genuinely got somewhere - survived something, followed something, talked their way in - come back and press Earn a reveal. There is no roll for this and the app will never ask you for one." },
+  { id: "t4", title: "Read the reveal card",
+    body: "The card shows the End Goal Roll first (the d10, the bonus, the number you needed), then the Focus and its two keywords. Note that the first reveal can never be the End Goal - eleven is out of a d10's reach with no bonus." },
+  { id: "t5", title: "Write what it means",
+    body: "The dice hand you raw material; you decide what it means in the adventure you are already in. Write the interpretation on the card. Aim for a reading that explains one thing and raises another." },
+  { id: "t6", title: "Write the lead",
+    body: "The thing that got more puzzling is your next scene: the seized mine, the hired sword, the enemy nobody named. Add it as a lead. Leads stay counted in the header until you tick them off, so the adventure always has somewhere to go." },
+  { id: "t7", title: "Keep going until the End Goal",
+    body: "Each phase you know adds 2 to the next End Goal Roll, so the finale gets closer on its own. When it fires, the card lists every phase you already have: the End Goal's job is to make all of them make sense, and you may revise them to fit." },
+  { id: "t8", title: "Foil the plan",
+    body: "Once the End Goal is out, the Arc screen moves you to Foiling. Expect this arc to run as long as the Discovery arc did. When the plan actually falls, mark the plan defeated - the app summarises what changed and gives you one step of undo." },
+  { id: "t9", title: "Decide about a pivot",
+    body: "If the villain survived, or their lieutenants are loose, or they set a failsafe, tick it on the Arc screen and roll the Pivot Plan - or, if you would rather be surprised, ask a Fate Question in your cleanup scene and record the answer. Keep the pivot to a scene or three, then conclude the adventure." },
+  { id: "t10", title: "Back it up",
+    body: "Settings - Export exports every adventure as plain JSON you can read. Do that before you delete anything, and to carry your adventures to another device." }
+];
+
+// The article's two worked examples, summarised. MM69:p19-28.
+export const EXAMPLES = [
+  { id: "gorazon", title: "A general who did not go home", genre: "Fantasy", cite: "MM69:p19-25",
+    setup: "A victorious imperial general stays camped at his defeated enemy's stronghold and starts absorbing that enemy's surviving henchmen. The player character is sent to find out why.",
+    reveals: [
+      { roll: "Gathering Resources + Mental, Missing",
+        reading: "Impersonating a dead assassin at a secret meeting, the character hears operatives report on hoarded relics, hired mercenaries and a quietly seized ore mine - and realises none of them know what any of it is for." },
+      { roll: "(further phases)",
+        reading: "An operative is sent into a lethal ruin for a powerful relic; the general's scattered troops are being organised into an army." },
+      { roll: "d10 5 +6 = 11 - End Goal: Personal + Limit, Power",
+        reading: "The war was started by the general's own king, out of greed for his enemy's dark power. The general means to limit that king's power for good - by waging an equally selfish war, with the ore enhancing the relics to offset the king's strength." }
+    ],
+    outcome: "The character destroys the mine and most of the relics, leaving the general's army exposed - but the general escapes.",
+    pivot: "Revenge + Diminish, Mystery: the general raids the character's storehouse, kills the guards and takes two relics of unknown function, just as the king's forces arrive with the king himself." },
+
+  { id: "cold-rock", title: "A billionaire and a very cold mineral", genre: "Spy thriller", cite: "MM69:p27-28",
+    setup: "A spy works his way into the investor circle of a billionaire who has bought himself an island nation and is building something on it.",
+    reveals: [
+      { roll: "Construction + Rare, Enemy",
+        reading: "A drunk investor at a party lets slip that the thing being built will destroy the billionaire's most hated enemies, and that the world has never seen anything like it." },
+      { roll: "d10 4 +2 = 6 - Gathering Resources + Problem, Failure",
+        reading: "The construction is a vast mine for a mineral found nowhere else, with notes about heat transfer and fusion: the mineral solves the problem of a sustained fusion reaction." },
+      { roll: "d10 8 +4 = 12 - End Goal: Destruction + Personal, Unknown",
+        reading: "The mineral swallows heat without warming. Fusion is only the charging mechanism: a thimble of the stuff becomes an untraceable bomb, and the plan is to plant them among rivals worldwide and kill them all at once, undetectably." }
+    ],
+    outcome: "Discovered and pursued into the freezing heart of the island, the spy sets a charge on processed ore and escapes by helicopter as the island tears itself apart.",
+    pivot: "Revenge + Incapacitate, Repair: during a hotel air-conditioning outage, the repair technician at the door is the billionaire, with a tranquilliser gun and one last ampule." }
+];

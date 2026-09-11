@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="Schemer">
+  <rect width="192" height="192" rx="28" fill="#14110f"/>
+  <circle cx="96" cy="96" r="58" fill="none" stroke="#8c1c1c" stroke-width="8"/>
+  <path d="M96 38 L96 96 L140 118" fill="none" stroke="#c8a951" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="96" cy="96" r="9" fill="#c8a951"/>
+</svg>

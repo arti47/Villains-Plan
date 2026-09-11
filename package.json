@@ -1,0 +1,14 @@
+{
+  "name": "schemer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Dev-only harnesses for Schemer. The app itself has no build step and no runtime dependencies.",
+  "scripts": {
+    "test": "node tests/unit.mjs",
+    "smoke": "node tests/smoke.mjs",
+    "interaction": "node tests/interaction.mjs",
+    "probe": "node tests/probe-layout.mjs && node tests/probe-flow.mjs",
+    "serve": "node tests/serve.mjs"
+  }
+}
