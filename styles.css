@@ -340,6 +340,17 @@ textarea { min-height: 5.5rem; resize: vertical; }
 .dist-bar { height: 0.55rem; background: var(--crimson); border-radius: 999px; min-width: 2px; }
 .dist-count { font-size: 0.78rem; color: var(--ink-soft); }
 
+/* ------------------------------------------------------------ villain crafter */
+.crafter-card { border-left: 3px solid var(--gold); }
+.crafter-parts { list-style: none; padding: 0; margin: 0.4rem 0; }
+.crafter-parts li { border-top: 1px solid var(--rule); padding: 0.45rem 0; display: flex; flex-direction: column; gap: 0.2rem; }
+.part-label { font-weight: 700; }
+.part-text { font-size: 0.88rem; color: var(--ink-soft); }
+.underling-card { border-left: 3px solid var(--ink-faint); }
+.underling-card.lieutenant { border-left-color: var(--crimson); }
+.gap-block { border: 1px dashed var(--gold); border-radius: var(--radius); padding: 0.6rem; }
+.underling-card.collapsed { padding: 0.35rem 0.85rem; }
+
 /* ------------------------------------------------------------ oracle */
 .odds-row { margin-bottom: 0.4rem; }
 .band-row { display: flex; align-items: center; gap: 0.5rem; min-height: 26px; }

@@ -5,7 +5,7 @@
 import { launch, openPage } from "./browser.mjs";
 import { results, report } from "./harness.mjs";
 
-const ROUTES = ["#/dossier", "#/adventures", "#/record", "#/reveal", "#/arc", "#/ask", "#/meaning", "#/log", "#/rules", "#/tutorial", "#/settings", "#/new"];
+const ROUTES = ["#/dossier", "#/villain", "#/adventures", "#/record", "#/reveal", "#/arc", "#/ask", "#/meaning", "#/log", "#/rules", "#/tutorial", "#/settings", "#/new"];
 const SEED = "mid-session";
 
 // Controls that are meant to do nothing where they are: the current tab, the current

@@ -10,6 +10,10 @@ import {
   ASK_ODDS, ASK_ANSWERS, ASK_PROCEDURE, RANDOM_EVENT, DISCOVER_MEANING,
   MYTHIC_GUIDANCE, MYTHIC_SOURCE, STILL_NOT_IN_SOURCE
 } from "../data-mythic.js";
+import {
+  VILLAIN_ARCHETYPES, VILLAIN_ORGANIZATIONS, UNDERLINGS, CRAFTER_GUIDANCE,
+  CRAFTER_SOURCE, SPECIAL
+} from "../data-villain-crafter.js";
 
 const FOCUS = {
   phase: VILLAIN_PLAN_FOCUS,
@@ -36,6 +40,24 @@ export function keyword(roll) {
   const word = PLOT_TWISTS.words[roll - 1];
   if (!word) throw new Error(`Plot Twists: roll ${roll} is outside the table`);
   return { roll, word, table: PLOT_TWISTS.id, cite: PLOT_TWISTS.cite };
+}
+
+// ---------------------------------------------------------------- Villain Crafter
+export const SPECIAL_KEYS = SPECIAL;
+export const archetypeTable = () => VILLAIN_ARCHETYPES;
+export const organizationTable = () => VILLAIN_ORGANIZATIONS;
+export const underlingTable = () => UNDERLINGS;
+export const crafterGuidance = (key) => CRAFTER_GUIDANCE[key] || null;
+export const crafterSource = () => CRAFTER_SOURCE;
+
+/**
+ * Range lookup for the Crafter tables, whose top and bottom bands are open-ended -
+ * that is what absorbs a modifier pushing a roll past 100 or under 1 (ruling A21).
+ */
+export function lookupOpen(table, total) {
+  const row = table.rows.find((r) => total >= r.min && total <= r.max);
+  if (!row) throw new Error(`${table.name}: ${total} is outside the table`);
+  return row;
 }
 
 export function arcStage(key) {

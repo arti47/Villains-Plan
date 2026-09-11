@@ -176,7 +176,8 @@ export function normalizeAdventure(raw) {
     epithet: v.epithet || "",
     known: v.known || "",
     forces: v.forces || "",
-    behind: v.behind || ""        // the villain behind the villain (End Goal Focus 73-76)
+    behind: v.behind || "",       // the villain behind the villain (End Goal Focus 73-76)
+    crafted: normalizeCrafted(v.crafted)   // The Villain Crafter (MM41)
   };
 
   const arc = a.arc && typeof a.arc === "object" ? a.arc : {};
@@ -206,6 +207,25 @@ export function normalizeAdventure(raw) {
   a.fateAnswer = a.fateAnswer || null;
   a.record = (Array.isArray(a.record) ? a.record : []).filter((r) => r && r.text);
   return a;
+}
+
+function normalizeCrafted(raw) {
+  const c = raw && typeof raw === "object" ? raw : {};
+  const roster = (list) => (Array.isArray(list) ? list : []).filter((u) => u && Array.isArray(u.parts)).map((u) => ({
+    ...u,
+    id: u.id || uid("und"),
+    kind: u.kind === "minion" ? "minion" : "lieutenant",
+    name: u.name || "",
+    note: u.note || "",
+    mod: Number.isFinite(u.mod) ? u.mod : 0,
+    unrecovered: !!u.unrecovered
+  }));
+  return {
+    archetype: c.archetype && Array.isArray(c.archetype.parts) ? c.archetype : null,
+    organization: c.organization && Array.isArray(c.organization.parts) ? c.organization : null,
+    lieutenants: roster(c.lieutenants),
+    minions: roster(c.minions)
+  };
 }
 
 function normalizePhase(raw, i) {

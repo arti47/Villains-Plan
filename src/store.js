@@ -165,6 +165,48 @@ export function deleteAdventure(id) {
   return adv;
 }
 
+// ------------------------------------------------------------------ the crafted villain
+export function setCrafted(advId, patch) {
+  const adv = adventure(advId);
+  if (!adv) return null;
+  adv.villain.crafted = { ...adv.villain.crafted, ...patch };
+  adv.updatedAt = now();
+  save();
+  return adv.villain.crafted;
+}
+
+export function addUnderling(advId, kind, entry) {
+  const adv = adventure(advId);
+  if (!adv || !entry) return null;
+  const list = kind === "minion" ? "minions" : "lieutenants";
+  adv.villain.crafted[list] = [...(adv.villain.crafted[list] || []), { ...entry, kind }];
+  adv.updatedAt = now();
+  save();
+  return entry;
+}
+
+export function updateUnderling(advId, kind, id, patch) {
+  const adv = adventure(advId);
+  if (!adv) return null;
+  const list = kind === "minion" ? "minions" : "lieutenants";
+  const entry = (adv.villain.crafted[list] || []).find((u) => u.id === id);
+  if (!entry) return null;
+  Object.assign(entry, patch);
+  adv.updatedAt = now();
+  save();
+  return entry;
+}
+
+export function removeUnderling(advId, kind, id) {
+  const adv = adventure(advId);
+  if (!adv) return null;
+  const list = kind === "minion" ? "minions" : "lieutenants";
+  adv.villain.crafted[list] = (adv.villain.crafted[list] || []).filter((u) => u.id !== id);
+  adv.updatedAt = now();
+  save();
+  return adv.villain.crafted[list];
+}
+
 // ------------------------------------------------------------------ phases
 export function addPhase(advId, phase) {
   const adv = adventure(advId);

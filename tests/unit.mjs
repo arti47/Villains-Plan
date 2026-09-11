@@ -100,10 +100,10 @@ test("no-context rows carry the flag, and only they do (Exception shape)", () =>
   equal(rules.lookupRange(data.PIVOT_PLAN_FOCUS, 96).noContext, true, "96 on the pivot table");
 });
 
-test("every library entry with a citation cites one of the two sources", () => {
+test("every library entry with a citation cites one of the three sources", () => {
   const lib = rules.libraryGroups().flatMap((g) => g.entries);
-  for (const entry of lib) if (entry.cite) assert(/^(MM69:p\d|OPM$)/.test(entry.cite), `${entry.id} cites ${entry.cite}`);
-  assert(lib.length >= 20, "the library covers every automated rule from both sources");
+  for (const entry of lib) if (entry.cite) assert(/^(MM69:p\d|MM41:p\d|OPM$)/.test(entry.cite), `${entry.id} cites ${entry.cite}`);
+  assert(lib.length >= 28, "the library covers every automated rule from all three sources");
 });
 
 // ---------------------------------------------------------------- the Threshold
@@ -343,6 +343,202 @@ test("Discover Meaning rolls one word at a time and logs each (A15)", () => {
   assert(word.word, "and a word came back");
 });
 
+// ---------------------------------------------------------------- The Villain Crafter
+const vc = await import("../data-villain-crafter.js");
+const crafter = await import("../src/crafter.js");
+
+test("Villain Archetype: 23 rows, every roll 1-100 returns exactly one, keys unique", () => {
+  equal(vc.VILLAIN_ARCHETYPES.rows.length, 23, "rows");
+  for (let roll = 1; roll <= 100; roll += 1) {
+    const hits = vc.VILLAIN_ARCHETYPES.rows.filter((r) => roll >= r.min && roll <= r.max);
+    equal(hits.length, 1, `roll ${roll}`);
+  }
+  equal(new Set(vc.VILLAIN_ARCHETYPES.rows.map((r) => r.key)).size, 23, "unique keys");
+});
+
+test("the modified tables are open-ended, so a big modifier cannot fall off them", () => {
+  for (const table of [vc.VILLAIN_ORGANIZATIONS, vc.UNDERLINGS]) {
+    for (const total of [-40, -1, 0, 1, 50, 100, 140, 200]) {
+      const row = rules.lookupOpen(table, total);
+      assert(row && row.label, `${table.name} at ${total}`);
+    }
+    for (let total = -50; total <= 200; total += 1) {
+      const hits = table.rows.filter((r) => total >= r.min && total <= r.max);
+      equal(hits.length, 1, `${table.name} at ${total}`);
+    }
+  }
+});
+
+test("the article's own example arithmetic comes out right (MM41:p16)", () => {
+  // Has No Choice + One Of The People, then The Company: lieutenants +15, minions +20.
+  const noChoice = vc.VILLAIN_ARCHETYPES.rows.find((r) => r.key === "no-choice");
+  const people = vc.VILLAIN_ARCHETYPES.rows.find((r) => r.key === "one-of-the-people");
+  equal(noChoice.mods.o + people.mods.o, 10, "organization modifier is +10");
+  const org = rules.lookupOpen(vc.VILLAIN_ORGANIZATIONS, 42 + 10);
+  equal(org.key, "company", "42 +10 = 52 is The Company");
+  equal(noChoice.mods.l + people.mods.l + org.mods.l, 15, "lieutenant modifier is +15");
+  equal(noChoice.mods.m + people.mods.m + org.mods.m, 20, "minion modifier is +20");
+  equal(rules.lookupOpen(vc.UNDERLINGS, 28 + 15).key, "tough-stuff", "the lieutenant roll gives Tough Stuff");
+  equal(rules.lookupOpen(vc.UNDERLINGS, 7 + 20).key, "groveler", "the minion roll gives Groveler");
+});
+
+test("the spore example's organization roll also reproduces", () => {
+  // The Domination Game is +10 to the organization roll; 25 +10 = 35 is Organized Crime.
+  const domination = vc.VILLAIN_ARCHETYPES.rows.find((r) => r.key === "domination");
+  equal(domination.mods.o, 10, "+10");
+  equal(rules.lookupOpen(vc.VILLAIN_ORGANIZATIONS, 25 + 10).key, "organized-crime", "35");
+});
+
+test("Double Archetypes always resolves to real archetypes, never to itself", () => {
+  let sawDouble = false;
+  for (let i = 0; i < 300; i += 1) {
+    const result = crafter.rollArchetype();
+    assert(result.parts.length >= 1, "at least one archetype");
+    for (const part of result.parts) {
+      assert(part.special !== "double", "a Double is never left in the result");
+      assert(part.label, "every part is named");
+    }
+    if (result.parts.length > 1) sawDouble = true;
+    // the modifiers are the sum of the parts, which is what the rule says to do
+    const sum = result.parts.reduce((a, p) => a + (p.mods ? p.mods.o : 0), 0);
+    equal(result.mods.o, sum, "organization modifier is the sum of the parts");
+  }
+  assert(sawDouble, "a double archetype occurs in 300 rolls and combines two");
+});
+
+test("Upscale rolls again and keeps both sets of modifiers", () => {
+  let sawUpscale = false;
+  for (let i = 0; i < 400 && !sawUpscale; i += 1) {
+    const result = crafter.rollOrganization(0);
+    if (!result.upscaled) continue;
+    sawUpscale = true;
+    assert(result.parts.length >= 2, "the Upscale row and the result it scaled");
+    const sum = result.parts.reduce((a, p) => a + (p.mods ? p.mods.l : 0), 0);
+    equal(result.mods.l, sum, "both sets of modifiers count");
+    assert(result.parts.some((p) => !p.scaffold), "something real came out of it");
+  }
+  assert(sawUpscale, "Upscale occurs in 400 rolls");
+});
+
+test("a nested Double is re-rolled, not expanded (the rule, and why it terminates)", () => {
+  // At +40 the organization table lands on Double (81 or more) on roughly three rolls in
+  // five. Expanding those recursively diverges - which is how this shipped first, and
+  // what docs/AUDIT.md F28 records. Two archetypes is the most a Double may produce.
+  for (let i = 0; i < 300; i += 1) {
+    const result = crafter.rollOrganization(40);
+    const real = result.parts.filter((p) => !p.scaffold);
+    assert(real.length <= 2, `a Double produced ${real.length} archetypes`);
+    for (const part of result.parts) assert(part.special !== "double", "no Double survives in the result");
+  }
+});
+
+test("Teamwork rolls a partner archetype, and a second Teamwork is not another pair", () => {
+  let sawTeamwork = false;
+  for (let i = 0; i < 400 && !sawTeamwork; i += 1) {
+    const result = crafter.rollUnderling("lieutenant", 0);
+    if (!result.teamwork) continue;
+    sawTeamwork = true;
+    equal(result.parts.filter((p) => p.special === "teamwork").length, 1, "only one Teamwork in the result");
+    assert(result.parts.length >= 2, "and a partner archetype came with it");
+  }
+  assert(sawTeamwork, "Teamwork occurs in 400 rolls");
+});
+
+test("every crafter cascade terminates", () => {
+  for (let i = 0; i < 200; i += 1) {
+    const arch = crafter.rollArchetype();
+    assert(arch.rolls.length < 20, `archetype cascade ran ${arch.rolls.length} times`);
+    const org = crafter.rollOrganization(40);   // a big modifier pushes Double more often
+    assert(org.rolls.length < 20, `organization cascade ran ${org.rolls.length} times`);
+    const und = crafter.rollUnderling("lieutenant", 40);
+    assert(und.rolls.length < 20, `underling cascade ran ${und.rolls.length} times`);
+  }
+});
+
+test("the minion column overrides the lieutenant one where the table splits it", () => {
+  const row = vc.UNDERLINGS.rows.find((r) => r.key === "anger-issues");
+  equal(row.label, "Anger Issues", "lieutenant entry");
+  equal(row.minion.label, "Soldier", "minion entry");
+  const shared = vc.UNDERLINGS.rows.find((r) => r.key === "true-believer");
+  equal(shared.shared, true, "and shared rows read the same for both");
+  assert(!shared.minion, "with no separate minion entry");
+});
+
+test("the three unreadable minion bands are marked, never invented (A19)", () => {
+  const gaps = vc.UNDERLINGS.rows.filter((r) => r.minion && r.minion.unrecovered);
+  deepEqual(gaps.map((r) => `${r.min}-${r.max}`), ["42-44", "68-69", "75-76"], "the bands the page did not yield");
+  for (const row of gaps) {
+    equal(Object.keys(row.minion).length, 1, "the cell carries the flag and nothing else");
+    assert(row.label && row.text, "the lieutenant entry beside it is intact, and is offered as context");
+  }
+  // a minion roll landing there reports the gap rather than a made-up archetype
+  let sawGap = false;
+  for (let i = 0; i < 400 && !sawGap; i += 1) {
+    const result = crafter.rollUnderling("minion", 0);
+    if (!result.unrecovered) continue;
+    sawGap = true;
+    const part = result.parts.find((p) => p.unrecovered);
+    assert(part.lieutenantLabel && part.lieutenantText, "the lieutenant entry travels with it as context");
+    assert(!part.text || part.text === undefined || part.lieutenantText, "no invented minion text");
+  }
+  assert(sawGap, "the gap surfaces in 400 minion rolls");
+});
+
+test("crafter rolls are logged with their dice and recorded", () => {
+  const adv = freshAdventure();
+  const before = store.rollLog({ kind: "crafter" }).length;
+  const result = crafter.rollArchetype();
+  const rows = store.rollLog({ kind: "crafter" });
+  equal(rows.length, before + 1 + result.words.length, "one row for the archetype, plus any meaning-table word");
+  assert(rows[rows.length - 1].dice.length >= 1, "the dice are kept");
+  assert(store.sessionRecord(adv.id).some((r) => r.kind === "crafter"), "and the session record shows it");
+});
+
+test("the organization roll is gated on the archetype, whose modifier it carries", () => {
+  const adv = freshAdventure();
+  const blocked = crafter.canRollOrganization(store.active());
+  equal(blocked.ok, false, "refused");
+  assert(/archetype first/.test(blocked.reason), "and says why");
+  store.setCrafted(adv.id, { archetype: crafter.rollArchetype() });
+  equal(crafter.canRollOrganization(store.active()).ok, true, "allowed once the archetype is known");
+});
+
+test("the modifier breakdown shows the arithmetic it applies", () => {
+  const adv = freshAdventure();
+  const archetype = { mods: { o: 10, l: 0, m: 5 }, parts: [{ label: "Has No Choice" }], rolls: [57] };
+  const organization = { mods: { l: 10, m: 10 }, parts: [{ label: "The Company" }], rolls: [{ roll: 42, mod: 10, total: 52 }] };
+  store.setCrafted(adv.id, { archetype, organization });
+  const mods = crafter.modifierBreakdown(store.active());
+  equal(mods.organization.total, 10, "organization takes the archetype's o");
+  equal(mods.lieutenant.total, 10, "lieutenant takes l from both");
+  equal(mods.minion.total, 15, "minion takes m from both");
+  equal(mods.hasOrganization, true, "and knows the organization is rolled");
+});
+
+test("a crafted villain survives a reload, and an old adventure back-fills one", () => {
+  const adv = freshAdventure();
+  store.setCrafted(adv.id, { archetype: crafter.rollArchetype() });
+  const entry = crafter.rollUnderling("minion", 0);
+  store.addUnderling(adv.id, "minion", entry);
+  const reloaded = store.__setState(JSON.parse(store.exportJSON()));
+  const saved = reloaded.adventures[0].villain.crafted;
+  equal(saved.minions.length, 1, "the minion survived");
+  assert(saved.archetype, "and the archetype");
+  const older = store.__setState({ version: 1, adventures: [{ name: "old", villain: { name: "x" } }], rollLog: [] });
+  const blank = older.adventures[0].villain.crafted;
+  deepEqual([blank.archetype, blank.organization, blank.lieutenants, blank.minions], [null, null, [], []], "old records get an empty roster");
+});
+
+test("underlings can be renamed and removed", () => {
+  const adv = freshAdventure();
+  const entry = crafter.rollUnderling("lieutenant", 0);
+  store.addUnderling(adv.id, "lieutenant", entry);
+  store.updateUnderling(adv.id, "lieutenant", entry.id, { name: "The Gargoyle" });
+  equal(store.active().villain.crafted.lieutenants[0].name, "The Gargoyle", "renamed");
+  store.removeUnderling(adv.id, "lieutenant", entry.id);
+  equal(store.active().villain.crafted.lieutenants.length, 0, "removed");
+});
+
 // ---------------------------------------------------------------- the pivot gate
 function atPivot(flags = {}) {
   const adv = freshAdventure();
@@ -544,6 +740,10 @@ test("dead-data scan: every export is imported somewhere (§11.2.1)", () => {
     "firebaseConfig", "FIREBASE_ENABLED",   // Phase 5 shape, deliberately unconsumed (§1.1)
     "__setState",                            // test seam, named as one
     "rollKeywords",                          // engine API the unit harness exercises directly
+    // The Crafter's engine and its screen share one module, so these have no importer
+    // outside it; the harness drives them directly and every one has a test.
+    "rollArchetype", "rollOrganization", "rollUnderling",
+    "modifierBreakdown", "canRollOrganization", "canRollUnderling",
     "routes",                                // the layout probe's single source of routes
     "die", "d10", "d100",                    // dice primitives, reached through the roller
     "clearNode", "clearUndo", "deepClone",

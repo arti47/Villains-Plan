@@ -182,13 +182,66 @@ same passes run against it.
   measured at 320px on every one.
 - **Interaction.** 286 controls clicked in isolation, nothing inert.
 
+## Cycle 3 — after adding The Villain Crafter
+
+### F28 · Double Archetypes was implemented as recursive expansion, and diverged
+- **Rule:** "Roll two Archetypes and combine them … if you roll Double Archetypes again,
+  ignore it and re-roll" (MM41:p7)
+- **Target:** `crafter.rollArchetype` / `rollOrganization` / `rollUnderling`
+- **Fix:** one `expand()` that draws with a `banned` set — a nested Double is re-rolled at
+  the draw, never expanded — plus Upscale banning Upscale and Double on its follow-up, and
+  Teamwork reading As Expected the second time.
+- **Why it mattered:** the first implementation added two pending rolls for every Double it
+  saw. At the organization table with a +40 modifier, Double is 60% of rolls, so the
+  branching factor exceeded one and the cascade ran to its guard every time. **This is the
+  Cascade shape §3.0 warns about, failing in the other direction:** not "implemented once
+  and the repetition lost", but implemented without the termination the rule states. Caught
+  by a test that asserts every cascade finishes, run at a deliberately hostile modifier.
+
+### F29 · The villain screen was 8.7 viewports with a full roster
+- **Fix:** the newest lieutenant and minion stay open, earlier ones collapse to a line
+  carrying their name and archetype, and each roster pages at four.
+- **Why it mattered:** the same D-9 as the dossier (F19), on a screen written after that fix
+  — which is the argument for the probe being a standing pass rather than a one-off. After:
+  4.0 viewports, 32 controls.
+
+### F30 · The seeds did not cover the new state
+- **Fix:** `make-fixtures.mjs` now crafts a villain (and asks the oracle) in both seeds —
+  one lieutenant and one minion mid-session, four and six under stress.
+- **Why it mattered:** the interaction audit had been clicking an empty three-step builder
+  and reporting it clean. Changing the seed is the method note cycle 2 left for cycle 3.
+
+### F31 · The citation check and the library floor were one source behind again
+- **Fix:** both accept `MM41:p<n>` and the floor moved to 28 entries. Third time this check
+  has needed widening; it is cheap and it has caught a miscited entry each time.
+
+## Verified clean (cycle 3)
+
+- **Tables.** Archetype: 23 rows, every roll 1–100 hits exactly one, keys unique.
+  Organization and underlings: every total from −50 to 200 returns exactly one row, so no
+  modifier can fall off either table.
+- **The article's own arithmetic.** Its worked example reproduces end to end: +10 to the
+  organization, 42+10 → The Company, +15/+20 to underlings, 28+15 → Tough Stuff,
+  7+20 → Groveler; and the spore example's 25+10 → Organized Crime.
+- **Cascades.** 300 organization rolls at +40 never produce more than two archetypes and
+  never leave a Double in the result; Upscale keeps both sets of modifiers; Teamwork brings
+  exactly one partner; every cascade finishes well inside its guard.
+- **The source gap.** The three unreadable bands carry the flag and nothing else — no
+  invented text — and a minion roll landing there reports the gap with the Lieutenant entry
+  as context.
+- **State.** A crafted villain survives a reload; an old adventure back-fills an empty
+  roster; underlings rename and delete.
+- **Layout and interaction.** 436 smoke checks over thirteen routes and three seeds; 331
+  controls clicked in isolation, including the crafted state.
+
 ## Not yet run
 
-- **Cycle 3.** Cycle 2 found four things, so the stopping rule is not met. The method that
-  paid this time was looking at rendered screenshots at 320px — the probes reported "no
-  overflow" for a bar that was visibly broken. Next cycle: read the modules by seam
-  (oracle ↔ sheet, store ↔ derived), and seed a state where the oracle has been used
-  heavily.
+- **Cycle 4.** Cycle 3 found four more, so the stopping rule is still not met — and two of
+  them (a density defect on a new screen, a seed that did not cover new state) were repeats
+  of cycle 1 and 2 findings in a new place, which says the passes work and the *habits*
+  have not caught up. Next cycle: walk the module seams (crafter ↔ oracle ↔ store, where
+  one module's rolls are written by another), and re-read `docs/rules/*.md` against the
+  engine now that three sources are in.
 - **PWA update path.** The service worker's network-first navigation and the update toast
   are written but not yet exercised by deploying a change and reloading — the one PWA
   behaviour that cannot be verified by looking at the running app.

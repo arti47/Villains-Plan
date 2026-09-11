@@ -6,6 +6,7 @@ import { renderDossier, renderReveal, renderArc, renderResourceHeader } from "./
 import { renderAdventures, renderRecord, renderLog, renderLibrary, renderSettings } from "./screens.js";
 import { renderWizard, resetWizard } from "./wizard.js";
 import { renderAsk, renderMeaning } from "./oracle.js";
+import { renderVillain } from "./crafter.js";
 import { renderTutorial } from "./tutorial.js";
 import * as store from "./store.js";
 import { openLeads, endGoalRevealed, arcStageKey, pivotPhases, canRevealPivot } from "./derived.js";
@@ -21,6 +22,7 @@ const TABS = [
 
 const ROUTES = [
   { path: "/dossier", tab: "dossier", title: "Dossier", render: renderDossier, inPlay: true, section: "Dossier" },
+  { path: "/villain", tab: "dossier", title: "Craft the villain", render: renderVillain, inPlay: true, section: "Villain" },
   { path: "/adventures", tab: "dossier", title: "Adventures", render: renderAdventures, inPlay: true, section: "Adventures" },
   { path: "/record", tab: "dossier", title: "Session record", render: renderRecord, inPlay: true, section: "Session record" },
   { path: "/reveal", tab: "reveal", title: "Reveal", render: renderReveal, inPlay: true, section: "Reveal" },

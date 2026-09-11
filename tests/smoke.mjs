@@ -16,7 +16,7 @@ function check(name, fn) {
 function assert(cond, message) { if (!cond) throw new Error(message); }
 
 const ROUTES = [
-  "#/dossier", "#/adventures", "#/record", "#/reveal", "#/arc",
+  "#/dossier", "#/villain", "#/adventures", "#/record", "#/reveal", "#/arc",
   "#/ask", "#/meaning", "#/log", "#/rules", "#/tutorial", "#/settings", "#/new"
 ];
 

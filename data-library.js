@@ -9,6 +9,7 @@ export const LIBRARY_GROUPS = [
   { key: "endgoal", label: "The End Goal" },
   { key: "arc", label: "Arcs and foiling" },
   { key: "pivot", label: "The Pivot" },
+  { key: "crafter", label: "Crafting the villain" },
   { key: "oracle", label: "The Mythic oracle" },
   { key: "app", label: "How the app behaves" }
 ];
@@ -59,6 +60,30 @@ export const LIBRARY = [
   { id: "pivot-timing", group: "pivot", title: "Reveal it immediately, keep it short", cite: "MM69:p25",
     body: "Put the Plan B in the scene right after the plan falls - the celebration, the debrief - because a pivot you know is coming and are waiting for reads as padding. One to three scenes. If you would rather be surprised, ask a Fate Question in that cleanup scene instead and record the answer here." },
 
+  { id: "villain-archetype", group: "crafter", title: "Villain Archetype", cite: "MM41:p6-7",
+    body: "A d100 for who the villain is and what drives them - revenge, domination, duty, money, a need they cannot put down, or no free will at all. It is rolled flat, with no modifier, because the modifiers come out of it: every archetype carries three, one each for the organization, lieutenant and minion rolls that follow. Roll 81 or more and you take two archetypes and combine them, modifiers included." },
+
+  { id: "villain-organization", group: "crafter", title: "Villain Organization", cite: "MM41:p10-11",
+    body: "What stands behind the villain, from nothing at all through a gang, a cult, organized crime, a company, a syndicate, up to an actual government - rolled at the archetype's modifier, which is why this one comes second. The bands at the top and bottom are open-ended, so a large modifier cannot fall off the table. Upscale means roll again and read the result bigger, keeping both sets of modifiers." },
+
+  { id: "underlings", group: "crafter", title: "Lieutenants and minions", cite: "MM41:p13-15",
+    body: "One table, two columns, rolled at the archetype's modifier plus the organization's. A lieutenant stands in for the villain and should be a real fight; a minion is an obstacle. The article suggests a fresh roll for each lieutenant, and either a roll per minion for variety or one roll that defines what this organization's rank and file are like. Teamwork means a pair or more: roll again and share the result between them, or roll one each." },
+
+  { id: "crafter-modifiers", group: "crafter", title: "How the modifiers carry", cite: "MM41:p9",
+    body: "The archetype modifies the organization roll. The archetype and the organization both modify the lieutenant and minion rolls, added together. A double archetype adds both of its halves. The app carries this for you and prints the arithmetic on the screen - for the article's own example, Has No Choice plus One Of The People plus The Company gives +15 for lieutenants and +20 for minions." },
+
+  { id: "crafter-stages", group: "crafter", title: "All at once, or as you go", cite: "MM41:p3",
+    body: "Rolling everything up front gives you a great deal to start from. Holding each piece back until your character learns it keeps the discovery in play - the article supports both, and this app simply remembers where you got to. Lieutenants and minions can be rolled as you meet them." },
+
+  { id: "crafter-interpret", group: "crafter", title: "Read it to fit", cite: "MM41:p9",
+    body: "These results look specific - Secret Society, Government - but they work like a meaning table with more detail. Take what fits, twist what nearly fits, ignore what cannot be made to mean anything. The article's own example runs a mind-controlling alien spore as organized crime, and is better for it." },
+
+  { id: "crafter-stats", group: "crafter", title: "Statistics stay at your table", cite: "MM41:p8",
+    body: "The article turns a villain into numbers by guessing a value and asking the Game Master whether that is it - Yes takes the guess, Exceptional Yes raises it, No lowers it, and a random event means the statistic comes with a condition. This app has no game system attached and holds no stat blocks, so it does not do that part for you." },
+
+  { id: "crafter-gap", group: "crafter", title: "The cells this app cannot read", cite: "MM41:p14-15",
+    body: "Three narrow bands of the Minion column - 42-44, 68-69 and 75-76 - did not survive the page this app was built from. Rather than invent entries, the app tells you when a roll lands on one, shows the Lieutenant entry from the same band as context, and lets you roll again or take that entry by your own choice. One photograph of that page would close the gap." },
+
   { id: "ask-chart", group: "oracle", title: "Ask the Game Master", cite: "OPM",
     body: "A Yes/No question, an honest read of the odds, one d100. Nine odds rows run from Certain to Impossible with 50/50 in the middle, and each row splits the hundred into Exceptional Yes, Yes, No and Exceptional No. At 50/50 a Yes of some kind lands on 1-50; at Likely it is 1-65; at Unlikely, 1-35. The app shows you the bands for the odds you picked before you roll." },
 
@@ -103,6 +128,8 @@ export const TUTORIAL = [
     body: "Once the End Goal is out, the Arc screen moves you to Foiling. Expect this arc to run as long as the Discovery arc did. When the plan actually falls, mark the plan defeated - the app summarises what changed and gives you one step of undo." },
   { id: "t9", title: "Decide about a pivot",
     body: "If the villain survived, or their lieutenants are loose, or they set a failsafe, tick it on the Arc screen and roll the Pivot Plan - or, if you would rather be surprised, ask a Fate Question in your cleanup scene and record the answer. Keep the pivot to a scene or three, then conclude the adventure." },
+  { id: "t2b", title: "Craft the villain, if you want one up front",
+    body: "Dossier - Villain rolls the villain's archetype, the organization behind them, and the lieutenants and minions you will actually meet. Each roll feeds a modifier into the next and the app shows the arithmetic. You can do all three now for a running start, or leave them until your character learns each piece - nothing downstream needs them." },
   { id: "t9b", title: "Ask when you do not know",
     body: "The Oracle tab is Mythic itself: type a Yes/No question, pick the odds honestly - 50/50 is for not knowing - and roll. Yes and No follow whatever you expected when you asked; the Exceptional results overshoot it. Roll a double and a random event lands in the same moment, on top of the answer. When you want detail rather than an answer, Discover Meaning rolls a word: Action for what something does, Description for what it is like." },
   { id: "t10", title: "Back it up",

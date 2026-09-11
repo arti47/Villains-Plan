@@ -9,6 +9,12 @@ Sources of record, in precedence order (§2.1):
 2. The **One-Page Mythic Game Master Emulator** (Word Mill Games), supplied as a page
    image. Cited `OPM`. Supplies Ask The Game Master, Random Events and Discover Meaning —
    the Mythic core the article leans on. Extracted into `data-mythic.js`.
+3. **The Villain Crafter**, *Mythic Magazine* Vol. 41, pp. 3–16. Cited `MM41:p<page>`.
+   Supplies the villain, their organization, and their lieutenants and minions — the thing
+   the reveal system reveals. Extracted into `data-villain-crafter.js`.
+   **Blocked data (§2.1):** three bands of its Minion column (42–44, 68–69, 75–76) did not
+   survive the supplied transcription. They ship marked `unrecovered`, never guessed; one
+   photograph of MM41:p14–15 would close the gap.
 
 ---
 
@@ -20,7 +26,7 @@ Sources of record, in precedence order (§2.1):
 | **Scope decision** | Build the Villain's Plan tool only (user decision, Stage B), plus the Mythic oracle once One-Page Mythic was supplied. What is in neither source — Chaos Factor, scene setup, Bookkeeping, Threads/Characters lists — stays **not implemented and not invented** (§2 hard rule). |
 | **Audience** | A solo player/GM emulating a GM (Stage B: seat = solo). No GM screen. |
 | **Platforms** | Phone-first installable PWA; browser and desktop follow. |
-| **Core job** | Adventure/villain dossier · earned-Discovery reveal engine · End Goal Roll state machine · Pivot Plan coda · the Mythic oracle (Ask, random events, Discover Meaning) · roll log · rules library · tutorial. |
+| **Core job** | Villain Crafter (archetype, organization, underlings) · adventure/villain dossier · earned-Discovery reveal engine · End Goal Roll state machine · Pivot Plan coda · the Mythic oracle (Ask, random events, Discover Meaning) · roll log · rules library · tutorial. |
 | **Backend** | None built. `firebase-config.js` + `database.rules.json` ship as the Phase 5 schema only (Stage B: local-first, sync later). |
 | **Theme** | Dossier ink: aged paper light / near-black dark; crimson = villain & threat, gold = revealed knowledge. System default, in-app override. |
 
@@ -104,7 +110,10 @@ phase, and the escalating modifier is its progress track. One tracker component 
 
 **3.17 Combat.** None.
 
-**3.18 Bestiary / NPCs.** None statted. The villain is free text by design.
+**3.18 Bestiary / NPCs.** No stat blocks in any source — MM41 hands NPC statistics back to
+whatever system you are playing (a guess, then a Fate Question), and this app has no system
+attached, so it holds none. What it does hold is **archetypes**: the villain, their
+organization, and a roster of lieutenants and minions, each with the roll that produced it.
 
 **3.19 Pregens.** None. The two worked examples (General Gorazon, Cold Rock Cold Heart) are
 *illustrations*, shipped as read-only examples in the rules library, never instantiable
@@ -122,18 +131,22 @@ Oracle tab (Ask · Meaning), gated by one setting that is on by default.
 
 | Shape | Count | Rules |
 |---|---|---|
-| Lookup | 7 | Villain Plan Focus, End Goal Focus, Pivot Plan Focus, Plot Twists, Ask The Game Master (9 rows × 4 bands), Discover Meaning Action, Discover Meaning Description |
+| Lookup | 10 | Villain Plan Focus, End Goal Focus, Pivot Plan Focus, Plot Twists, Ask The Game Master (9 rows × 4 bands), Discover Meaning Action, Discover Meaning Description, Villain Archetype, Villain Organization, Lieutenants & Minions |
 | Threshold | 1 | `d10 + 2×phases ≥ 11` reveals the End Goal |
-| Escalation | 1 | +2 per known phase |
+| Escalation | 2 | +2 per known phase · the Crafter's modifiers carried archetype → organization → underlings |
 | Once-per-X | 2 | End Goal once per adventure; Pivot once per adventure |
-| Gate | 2 | Pivot requires survival / underlings at large / a failsafe · a recorded or rolled No on the pivot question blocks it |
+| Gate | 3 | Pivot requires survival / underlings at large / a failsafe · a recorded or rolled No on the pivot question blocks it · the organization roll needs the archetype whose modifier it carries |
 | Exception | 3 | "No Context" branches (81–100 and 84–100) skip the Focus text; a double-digit Ask roll fires a random event as well as the answer |
 | Permission | 5 | Earn a Discovery · interpret & revise freely · override a second Pivot · name the villain behind the villain · keep rolling Discover Meaning words until it comes clear |
 | Guidance only | 4 | every phase opens a lead · End Goal must unify prior phases · Pivot arc ≤3 scenes · reveal the Pivot immediately |
 
-Absent shapes: Modifier, Cost, Future cost, Compulsion, Substitution, Cascade, Conversion,
-Blocker, Opposed. **There is no Future-cost rule in this source** — the one shape §15 says
-every family forgets does not exist here, and that is recorded so no later pass hunts it.
+| Cascade | 3 | Double Archetypes (roll two, combine; a nested Double is re-rolled) · Upscale (roll again bigger, re-rolling Upscale and Double) · Teamwork (roll a partner; a second Teamwork reads As Expected) |
+
+Absent shapes: Modifier, Cost, Future cost, Compulsion, Substitution, Conversion, Blocker,
+Opposed. **There is no Future-cost rule in any of the three sources** — the one shape §15
+says every family forgets does not exist here, recorded so no later pass hunts it.
+**Cascade arrived with the third source**, and promptly failed in the way §3.0 predicts —
+see `docs/AUDIT.md` F28.
 
 ### Ambiguity rulings (Stage B sign-off)
 
@@ -154,6 +167,13 @@ every family forgets does not exist here, and that is recorded so no later pass 
 | A13 | Which column a random event rolls | One **Action** word — an event is what happens — with the book's own "get more words" control for the rest. |
 | A14 | *Revises A7.* The Fate Question | With One-Page Mythic supplied, the app rolls it: the Arc screen offers odds and asks. The manual-record path stays for physical dice. Either way the answer is binding — a No blocks the pivot roll. |
 | A15 | "Keep rolling until it comes clear" | An unbounded, explicit repeat control. Nothing rolls a second word automatically. |
+| A16 | Crafter modifier accumulation | The archetype modifies the organization roll; archetype and organization together modify lieutenant and minion rolls. A Double Archetype adds both halves. The screen prints the arithmetic. |
+| A17 | Crafter "Meaning Table" results | Rolled on One-Page Mythic's Action column — the only Action meaning table this app has. With the oracle off, the row is reported without a word rather than faked. |
+| A18 | Nested Double / Upscale / Teamwork | Re-rolled at the draw, never expanded, exactly as the tables say. This is also what makes the cascades finite (F28). |
+| A19 | The three unreadable Minion bands | Marked `unrecovered` and never invented. A roll landing there says so, shows the Lieutenant entry from the same band as context, and offers a re-roll or that entry by the player's explicit choice. |
+| A20 | Lieutenant or minion | Chosen before the roll, as the article instructs, because the modifier differs. |
+| A21 | Modifiers past the ends of a table | No clamping: the Crafter's top and bottom bands are open-ended and are what absorb them. |
+| A22 | Underlings before an organization | Allowed. The organization's contribution counts as 0 and the breakdown says "organization not rolled yet" rather than implying the modifier is complete. |
 
 **End Goal Roll thresholds** (the arithmetic the whole app turns on):
 
@@ -184,6 +204,7 @@ Storage is plain JSON, exported and re-imported in one tap, round-trip tested.
 | `styles.css` | Dossier-ink theme (light+dark) + components |
 | `data.js` | The four tables, the End Goal Roll constants, the procedure text (paraphrased, cited) |
 | `data-mythic.js` | Second source (OPM): the odds chart, the four answers, the random-event rule, Discover Meaning, and what is still unsourced |
+| `data-villain-crafter.js` | Third source (MM41): villain archetypes with their modifiers, organizations, lieutenants and minions, and the three unrecovered cells |
 | `data-library.js` | Rules-library entries + tutorial steps + the two worked examples |
 | `firebase-config.js` | Placeholder + `FIREBASE_ENABLED` flag (Phase 5, not built) |
 | `database.rules.json` | RTDB rules for the Phase 5 shape |
@@ -205,6 +226,7 @@ Storage is plain JSON, exported and re-imported in one tap, round-trip tested.
 | `store.js` | Adventures CRUD, active adventure, phases, roll log, session record, export/import, undo stack |
 | `roller.js` | The reveal engine: End Goal Roll, phase reveal, pivot reveal, roll-log writes |
 | `oracle.js` | The Mythic oracle: Ask The Game Master, random events, Discover Meaning, the pivot question, and both oracle screens |
+| `crafter.js` | The Villain Crafter: archetype, organization and underling rolls with their cascades and carried modifiers, and the Villain screen |
 | `sheet.js` | The in-play screens: persistent header, dossier (phase timeline, leads, editing), Reveal, Arc |
 | `lifecycle.js` | Arc boundaries with confirmation summary + one-step undo |
 | `wizard.js` | New-adventure dossier flow |
@@ -221,7 +243,11 @@ schemer.v1 = {
   version, activeAdventureId,
   adventures: [ {
     id, name, createdAt, updatedAt, archivedAt|null,
-    villain: { name, epithet, known, forces, behind },   // behind: End Goal Focus 73-76
+    villain: { name, epithet, known, forces, behind,     // behind: End Goal Focus 73-76
+               crafted: { archetype: { rolls, parts[], words[], mods{o,l,m}, note } | null,
+                          organization: { rolls, parts[], words[], mods{l,m}, upscaled, note } | null,
+                          lieutenants: [ { id, kind, rolls, parts[], mod, name, unrecovered } ],
+                          minions:     [ { …the same shape } ] } },
     arc: { stage: "discovery"|"foiling"|"pivot"|"concluded",
            endGoalAt|null, defeatedAt|null, pivotAt|null, concludedAt|null },
     phases: [ { id, ordinal, kind: "phase"|"endgoal"|"pivot",
@@ -276,6 +302,10 @@ box means no UI may be built against it.
 | T11 | The four answers + the random-event rule | `data-mythic.js` | `oracle.ask` | 4+1 | [x] |
 | T12 | Discover Meaning (50 rows × 2 columns) | `data-mythic.js` | `rules.discoverWord` | 50 | [x] |
 | T13 | Ask procedure + oracle guidance + what is still unsourced | `data-mythic.js` | `oracle`, `screens` | 4+5+5 | [x] |
+| T14 | Villain Archetype (d100) with o/l/m modifiers | `data-villain-crafter.js` | `crafter.rollArchetype` | 23 | [x] |
+| T15 | Villain Organization (d100 + mod) with l/m modifiers | `data-villain-crafter.js` | `crafter.rollOrganization` | 18 | [x] |
+| T16 | Lieutenants & Minions (d100 + mod), both columns | `data-villain-crafter.js` | `crafter.rollUnderling` | 23 | [~] three Minion cells unrecovered (§2.1) |
+| T17 | Crafter guidance: staging, interpretation, modifiers, statistics, the gap | `data-villain-crafter.js` | `crafter` | 6 | [x] |
 
 ### 9.1a Rules Traceability Ledger
 
@@ -304,6 +334,14 @@ box means no UI may be built against it.
 | An event is read from one Action word, more on request | Permission | `DISCOVER_MEANING` | `oracle.discover` | Event block + "add another word" | `an ask writes one log row, and a double writes the event die with it` |
 | Discover Meaning: one word at a time, unbounded | Permission | `DISCOVER_MEANING` | `oracle.discover` | Meaning screen reading | `rolls one word at a time and logs each` |
 | The pivot question can be rolled, and binds | Gate | `ASK_ODDS`, `FATE_ANSWERS` | `oracle.askPivot` → `derived.canRevealPivot` | Arc screen ask row | `asking the pivot question writes the answer the gate reads` |
+| Archetype emits the modifiers everything else carries | Escalation | `VILLAIN_ARCHETYPES[].mods` | `crafter.modifierBreakdown` | Villain screen, arithmetic printed | `the article's own example arithmetic comes out right` |
+| Organization is rolled at the archetype's modifier | Gate | `VILLAIN_ORGANIZATIONS` | `crafter.canRollOrganization` | Disabled control + refusal naming the rule | `the organization roll is gated on the archetype` |
+| Double Archetypes: roll two, combine; a nested Double is re-rolled | Cascade | `SPECIAL.double` | `crafter.expand` banned set | Both archetypes shown with a note | `a nested Double is re-rolled, not expanded`, `every crafter cascade terminates` |
+| Upscale: roll again bigger, both sets of modifiers | Cascade | `SPECIAL.upscale` | `crafter.expand` | Upscale note on the organization card | `Upscale rolls again and keeps both sets of modifiers` |
+| Teamwork: a partner archetype; a second reads As Expected | Cascade | `UNDERLINGS` teamwork row | `crafter.expand` | Teamwork note on the card | `Teamwork rolls a partner archetype` |
+| Open-ended bands absorb the modifiers | Lookup | `±Infinity` bands | `rules.lookupOpen` | — | `the modified tables are open-ended` |
+| Three Minion cells are unrecovered source | — (blocked data) | `UNDERLINGS[].minion.unrecovered` | `crafter.entryFor` → gap block | A card that says so and offers a re-roll or the Lieutenant entry by choice | `the three unreadable minion bands are marked, never invented` |
+| Villain statistics stay at your table | guidance only | `CRAFTER_GUIDANCE.stats` | not automated, and marked so | Rules library entry | — |
 | The oracle is one toggle, on by default | — | `Settings.mythicOracle` | `router` tab gating | Settings + a gated route that explains itself | `the oracle toggle hides its tab and its routes explain themselves` |
 
 ## 10. Process rules
@@ -341,4 +379,6 @@ see README. Repository stays private while it carries a transcription.
 | 2026-09-11 | Audit cycle 1: F1–F22 fixed (see `docs/AUDIT.md`) | Findings from the parse gate, dead-data scan, rules read-through, interaction audit and layout/stress probes | all harnesses green after each fix | `schemer-v1` |
 | 2026-09-11 | Rules read-through found two inert rules: a recorded Fate Question answer read by nothing (F20) and the "villain behind the villain" permission with no control (F21) | §0 defect class | unit tests added for both | `schemer-v1` |
 | 2026-09-11 | Second source extracted (One-Page Mythic): `data-mythic.js`, `src/oracle.js`, an Oracle tab with Ask and Meaning, random events, and the pivot question wired to the gate that already honoured it | The user supplied the page; it unblocks everything ruling A7 had marked not-in-source | `npm test` 81, `npm run smoke` 403, `npm run interaction` 286, probes read, screenshots checked | `schemer-v2` |
+| 2026-09-11 | Third source extracted (The Villain Crafter): `data-villain-crafter.js`, `src/crafter.js`, a Villain screen under the Dossier tab, modifiers carried between the three tables, and the three cascades | The user supplied the pages; MM41 was the last thing `STILL_NOT_IN_SOURCE` named that the app could use | `npm test` 98, `npm run smoke` 436, `npm run interaction` 331, probes read, screenshot checked | `schemer-v3` |
+| 2026-09-11 | Audit cycle 3: F28–F31 (Double Archetypes expanded recursively and diverged at large modifiers; the villain roster hit 8.7 viewports; the seeds did not cover the crafted state; the citation check was a source behind) | New source, new passes | all harnesses green; a cascade-termination test now runs at a hostile modifier | `schemer-v3` |
 | 2026-09-11 | Audit cycle 2: F24–F27 (six tabs collided at 320px and the harness could not see it; the Settings gear was inert on Settings; a card written and never mounted; the citation check assumed one source) | New source, new passes | all harnesses green; `fixedBarFit` added so the tab bar is measured on every route | `schemer-v2` |

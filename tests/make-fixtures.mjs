@@ -8,6 +8,18 @@ installStorage();
 const store = await import("../src/store.js");
 const roller = await import("../src/roller.js");
 const derived = await import("../src/derived.js");
+const crafter = await import("../src/crafter.js");
+const oracle = await import("../src/oracle.js");
+
+/** Roll up the villain the way a player would, so the seeds cover the crafted state. */
+function craftVillain(adv, { lieutenants = 1, minions = 1 } = {}) {
+  store.setCrafted(adv.id, { archetype: crafter.rollArchetype() });
+  const withArchetype = crafter.modifierBreakdown(store.active());
+  store.setCrafted(adv.id, { organization: crafter.rollOrganization(withArchetype.organization.total) });
+  const mods = crafter.modifierBreakdown(store.active());
+  for (let i = 0; i < lieutenants; i += 1) store.addUnderling(adv.id, "lieutenant", crafter.rollUnderling("lieutenant", mods.lieutenant.total));
+  for (let i = 0; i < minions; i += 1) store.addUnderling(adv.id, "minion", crafter.rollUnderling("minion", mods.minion.total));
+}
 
 function reset() { store.__setState({ version: 1, adventures: [], rollLog: [], activeAdventureId: null }); }
 
@@ -50,6 +62,8 @@ const mid = store.createAdventure({
 revealPhases(mid, 3);
 addLeads(mid, 2);
 writeInterpretations(mid);
+craftVillain(mid, { lieutenants: 1, minions: 1 });
+oracle.ask({ question: "Is the mine still guarded?", odds: "likely" });
 writeFileSync("tests/fixtures/mid-session.json", JSON.stringify(JSON.parse(store.exportJSON()), null, 2));
 
 // ------------------------------------------------------------------ stress
@@ -70,6 +84,8 @@ const deep = store.createAdventure({
 revealPhases(deep, 6);
 addLeads(deep, 3);
 writeInterpretations(deep);
+craftVillain(deep, { lieutenants: 4, minions: 6 });
+for (let i = 0; i < 12; i += 1) oracle.ask({ question: `Does the guard look up? (${i + 1})`, odds: i % 2 ? "unlikely" : "50-50" });
 // drive it to an End Goal, then a defeat and a pivot
 let guard = 0;
 while (!derived.endGoalRevealed(store.active()) && guard < 50) { guard += 1; roller.revealNext(store.active()); }

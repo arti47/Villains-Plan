@@ -27,6 +27,9 @@ account, no server and no telemetry.
 
 ## What it does
 
+- **Villain** — the Villain Crafter: an archetype for who the villain is, a shape for the
+  organization behind them, and rolls for the lieutenants and minions your character will
+  actually meet. Each roll carries a modifier into the next and the app shows the sum.
 - **Dossier** — the villain, every reveal with the dice that produced it, your reading of
   each one, and the leads still open.
 - **Reveal** — earn a reveal (your judgement, never a roll), and the app runs the End Goal
@@ -43,10 +46,15 @@ account, no server and no telemetry.
 
 ## What it does not do
 
-Two sources are in here: the Villain's Plan article and the One-Page Mythic Game Master
-Emulator. The Chaos Factor (which the one-page edition drops by design), scene setup,
-the Bookkeeping phase, the Threads and Characters lists and the Villain Crafter are in
-neither, so the app does not roll them and does not approximate them.
+Three sources are in here: the Villain's Plan article, the One-Page Mythic Game Master
+Emulator, and the Villain Crafter. The Chaos Factor (which the one-page edition drops by
+design), scene setup, the Bookkeeping phase and the Threads and Characters lists are in
+none of them, so the app does not roll them and does not approximate them. Villain
+statistics are also left alone: no game system is attached here.
+
+Three narrow bands of the Villain Crafter's Minion column did not survive the page this was
+built from (42-44, 68-69, 75-76). Rather than invent entries, the app tells you when a roll
+lands on one and offers you the choice. One photo of that page would close it.
 
 ## Development
 
@@ -78,6 +86,6 @@ content is included. If you publish or distribute it, the licensing is your
 responsibility — openly licensed material is the safe basis for anything public. The
 repository carries a transcription of a commercial article, so keep it private.
 
-"The Villain's Plan" is by Tana Pigeon, published in *Mythic Magazine* vol. 69 by Word Mill
-Games; the One-Page Mythic Game Master Emulator is also Word Mill Games. This app is
-unaffiliated with and unendorsed by Word Mill Games.
+"The Villain's Plan" (*Mythic Magazine* vol. 69), "The Villain Crafter" (vol. 41) and the
+One-Page Mythic Game Master Emulator are by Tana Pigeon, published by Word Mill Games. This
+app is unaffiliated with and unendorsed by Word Mill Games.
