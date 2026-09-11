@@ -101,8 +101,21 @@ involving it — is another 2.
   toward something that ends the thread — now, or next scene.
 - The **Discovery Check** is for when forward momentum has stalled and you are out of
   ideas: your character does something that gives a discovery a chance, and you ask whether
-  something is discovered at odds of **no less than 50/50**. On a Yes, roll 1d10 and add
-  your current progress points. Four of the eight results — Progress +2, Flashpoint +2,
+  something is discovered at odds of **no less than 50/50**. The answer does more than
+  decide yes or no:
+
+  | Answer | What it buys |
+  |---|---|
+  | Exceptional Yes | Roll **twice** on the table and combine |
+  | Yes | Roll once |
+  | No | Nothing found |
+  | Exceptional No | Nothing found, **and no further Discovery Check this scene** |
+
+  The Exceptional No is the only one with a lasting effect — a dead end the character has
+  to leave and come back to in a later scene. The app records it on the scene, so the next
+  scene opens Discovery again.
+
+  When you do roll, it is 1d10 plus your current progress points. Four of the eight results — Progress +2, Flashpoint +2,
   Progress +3, Flashpoint +3 — award points. **The other four (Track +1, Track +2,
   Strengthen Progress +1 and +2) are printed with no stated effect**, so the app rolls
   them, names them, and applies nothing (ruling A33).
@@ -116,13 +129,14 @@ involving it — is another 2.
   "default, middle of the road percentiles").
 - **Random Chaos** — at the end of a scene roll a d10: equal-or-under drops the Chaos
   Factor by one, over raises it. Bookkeeping stops asking about control and rolls instead.
-- **Mid-Chaos** trims the extremes: chaos pulls a question by +2 to −2 instead of +5 to
-  −5. Its **Check** modifiers are quoted, so the mode is offered whenever the adventure
-  resolves on the Fate Check. The book also has a Mid-Chaos Fate *Chart*, but its cells
-  were not supplied, so on the chart the app refuses the mode and says why (ruling A35).
-  Worth noting for whoever gets that page: the Mid-Chaos ladder (+2/+1/0/−1/−2) is exactly
-  the standard ladder at chaos 7/6/5/4/3, so the chart version is very likely a column
-  compression — but that is a hypothesis, not shipped behaviour.
+- **Mid-Chaos** trims the extremes: the nine Chaos Factors collapse into five columns
+  (1, 2-3, 4-6, 7-8, 9), so chaos pulls a question by +2 to −2 instead of +5 to −5.
+- **Low-Chaos** goes further: three columns (1-2, 3-7, 8-9), a pull of +1 to −1.
+
+All three variants have their own printed Fate Chart *and* their own Fate Check modifier
+ladder, so each works under either resolution — see `oracle.md` for the four charts side by
+side. Each variant chart turns out to be a slice of the standard one, which the suite
+asserts cell for cell.
 
 ## A question standing in for a game rule
 
@@ -132,6 +146,7 @@ not skewed by the story's tension.
 
 ## Still not supplied — so still not built
 
-The **Mid-Chaos Fate Chart's cells** — only its column groupings (1, 2-3, 4-6, 7-8, 9) are
-known — and **what Track +1, Track +2 and Strengthen Progress +1/+2 actually do** on the
-Discovery Check table. Listed in the rules library and on the Scene screen.
+**What Track +1, Track +2, Strengthen Progress +1 and Strengthen Progress +2 actually do.**
+Their ranges on the Thread Discovery Check table are exact and shipped; the page that
+defines the terms was not supplied, so the app rolls them, names them, and applies nothing.
+This is the only gap left in the app. Listed in the rules library and on the Scene screen.

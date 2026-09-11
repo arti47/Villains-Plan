@@ -481,6 +481,38 @@ summary-only rule left and keeps its flag and its recorded inference (A28).
   data called and never re-examined — stale prose asserting a falsehood about the app,
   surfaced in the UI, with a test nearby that looked like it covered it.
 
+## Cycle 8 — the variant charts
+
+### F46 · A test that was 5% wrong about its own log row
+- **Target:** `the ask engine uses whichever resolution the adventure is set to` asserted
+  the ask's log row held exactly two dice.
+- **Symptom:** it failed about one run in twenty.
+- **Cause:** when a Fate Check rolls doubles at or under the Chaos Factor it fires a random
+  event, and `oracle.ask` appends that event's focus and two Action words to **the same**
+  log row — so the row holds five dice, correctly. The test asserted the common case.
+- **Fix:** assert what is invariant (the two d10s are there, with the values that were
+  rolled) and make the total conditional on `double`. Confirmed over 30 consecutive runs.
+- **Worth noting:** the first fix was wrong. It assumed the extra row was a *separate* log
+  entry and searched by question text, which changed nothing — the flake reappeared at the
+  same rate. A flake is not fixed until you have seen it not happen many more times than
+  its rate; running the suite once and seeing green proves nothing at 5%.
+
+## Verified clean (cycle 8)
+
+- **All three variant Fate Charts.** 81 transcribed cells, every one asserted against the
+  standard chart's corresponding column, plus a column-coverage check (exactly one column
+  holds each Chaos Factor 1–9, no gap, no overlap). Together with the standard chart's own
+  ladder check, the four charts now cross-validate each other.
+- **The compression is real, not assumed.** Mid-Chaos reads the standard chart at 3–7 and
+  Low-Chaos at 4–6, asserted at both ends; No-Chaos reads the same band at chaos 1, 5 and 9.
+- **Low-Chaos on the Fate Check.** Both directions: the quoted modifiers cell for cell, and
+  the equivalence to the standard ladder at chaos 6/5/4.
+- **The Discovery Fate Question.** All four answers: how many rolls each buys, and that
+  only the Exceptional No closes the scene. The shutdown persists across a save and
+  reload (it gates a control), and the next scene opens Discovery again.
+- **Mode persistence.** Every chaos mode now survives a switch of resolution, where
+  Mid-Chaos used to be forced back to standard.
+
 ## Not yet run
 
 - **Cycle 8.** The rules read-through is now overdue by six sources and is the next

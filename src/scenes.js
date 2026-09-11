@@ -15,13 +15,11 @@ import {
   chaosRule, sceneTestRule, sceneOutcome, clampChaos, listsRule, listKind,
   bookkeepingSteps, notSupplied, scenesSource, sceneAdjustment, sceneAdjustmentTable,
   listSelectionRule, activeSections, sectionFromRoll, lineFromRoll, chaosModes,
-  chaosMode as chaosModeRule, randomChaosDelta, progressTrack, chaosModeAvailable,
-  resolution as resolutionRule
+  chaosMode as chaosModeRule, randomChaosDelta, progressTrack
 } from "./rules.js";
 import {
   chaos, currentScene, scenes, sceneCount, listItems, listLines, listFull, listNeedsCleanup,
-  chaosMode as chaosModeOf, track as trackOf, focusThread, trackComplete, plotArmoured,
-  resolutionMode
+  chaosMode as chaosModeOf, track as trackOf, focusThread, trackComplete, plotArmoured
 } from "./derived.js";
 import { rollEvent, eventBlock, ask } from "./oracle.js";
 import * as store from "./store.js";
@@ -42,6 +40,7 @@ export function testScene(adv, { expectation = "" } = {}) {
     test: { d10, chaos: level, kind: outcome.key, label: outcome.label },
     expectation: String(expectation || "").trim(),
     notes: "", adjustments: [], words: [], control: null,
+    discoveryClosed: false,
     startedAt: now(), endedAt: null
   };
   const saved = store.addScene(adv.id, scene);
@@ -262,18 +261,12 @@ function chaosModeRow(adv) {
   const current = chaosModeOf(adv);
   const wrap = el("div", { class: "field" });
   add(wrap, el("span", { class: "field-label", text: "How chaos moves" }));
-  const how = resolutionMode(adv);
   const chips = el("div", { class: "chip-row" });
   for (const mode of chaosModes()) {
-    const available = chaosModeAvailable(mode.key, how);
     add(chips, el("button", {
-      class: `chip ${current === mode.key ? "on" : ""} ${available ? "" : "unavailable"}`, type: "button",
+      class: `chip ${current === mode.key ? "on" : ""}`, type: "button",
       "aria-pressed": current === mode.key ? "true" : "false",
       onclick: () => {
-        if (!available) {
-          showToast(`${mode.label} needs the Fate Check: the book's Mid-Chaos chart was not in what this app was built from, so it is not offered on the ${resolutionRule(how).label}.`, "warn");
-          return;
-        }
         store.setChaosMode(adv.id, mode.key);
         refresh();
         showToast(`${mode.label}.`);
@@ -564,10 +557,35 @@ function trackCard(adv) {
   return box;
 }
 
+/** One roll on the Thread Discovery Check table, applied and logged. */
+function rollDiscovery(adv, rule) {
+  const roll = die(rule.die);
+  const points = trackOf(store.active()).points;
+  const total = roll + points;
+  const row = rule.rows.find((r) => total >= r.min && total <= r.max);
+  store.pushLog({
+    adventureId: adv.id, kind: "track",
+    dice: [{ die: "d10", value: roll, table: `Discovery Check +${points}` }],
+    summary: row.label,
+    outcome: `Discovery Check ${total}: ${row.label}`
+  });
+  if (row.award) {
+    store.awardTrack(adv.id, { key: "discovery", label: row.label, points: row.award.points, note: row.text });
+  } else {
+    store.setTrack(adv.id, {
+      awards: [...(trackOf(store.active()).awards || []), { key: "discovery", label: row.label, points: 0, note: row.text, at: Date.now() }]
+    });
+  }
+  store.record(adv.id, "track", `Discovery Check (d10 ${roll} + ${points}): ${row.label}.`);
+  return row;
+}
+
 /**
- * The Discovery Check: ask whether something is discovered at no less than 50/50, and on
- * a Yes roll 1d10 + current points on the table. Four of its results have no stated
- * effect in the source, so the app names them and applies nothing.
+ * The Discovery Check. Ask "Is something discovered?" at no less than 50/50; what the
+ * answer buys you is the Discovery Fate Question table, which is why this is not a plain
+ * yes/no: an Exceptional Yes rolls the table TWICE and combines, and an Exceptional No
+ * shuts Discovery down for the rest of the scene. Four of the table's eight results have
+ * no stated effect, so the app names them and applies nothing.
  */
 function discoveryBlock(adv, current) {
   const rule = progressTrack().discovery;
@@ -575,40 +593,52 @@ function discoveryBlock(adv, current) {
   add(box, el("summary", { text: "Stalled? Make a Discovery Check" }),
     el("p", { text: rule.when }), el("p", { class: "block-note", text: rule.gate }));
 
+  const table = el("table", { class: "ladder" });
+  add(table, el("thead", {}, el("tr", {}, el("th", { text: "Answer" }), el("th", { text: "What it buys" }))));
+  const body = el("tbody", {});
+  for (const answer of rule.answers) {
+    add(body, el("tr", {}, el("td", { text: answer.label }), el("td", { text: answer.text })));
+  }
+  add(table, body);
+  add(box, el("div", { class: "scroll-x" }, table));
+
   const last = (current.awards || []).filter((a) => a.key === "discovery").slice(-1)[0];
   if (last) {
     add(box, el("p", { class: "block-text" }, el("strong", { text: `${last.label}. ` }), last.note || ""));
   }
 
+  const scene = currentScene(adv);
+  const closed = Boolean(scene && scene.discoveryClosed);
+  if (closed) {
+    add(box, el("p", { class: "block-note warn", text: "An Exceptional No ended Discovery for this scene: your character has hit a dead end and must search again in another scene. Start the next scene to try again." }));
+  }
+
   add(box, el("button", {
     class: "btn btn-primary", type: "button",
     onclick: () => {
-      const asked = ask({ question: "Is something discovered?", odds: rule.minimumOdds });
-      if (!asked.answer.yes) {
-        store.record(adv.id, "track", `Discovery Check: ${asked.answer.label} - nothing discovered.`);
-        refresh();
-        showToast(`${asked.answer.label}: nothing discovered.`);
+      if (closed) {
+        showToast("An Exceptional No shut Discovery down for this scene. It opens again in the next one.", "warn");
         return;
       }
-      const roll = die(rule.die);
-      const total = roll + trackOf(store.active()).points;
-      const row = rule.rows.find((r) => total >= r.min && total <= r.max);
-      store.pushLog({
-        adventureId: adv.id, kind: "track",
-        dice: [{ die: "d10", value: roll, table: `Discovery Check +${trackOf(store.active()).points}` }],
-        summary: row.label,
-        outcome: `Discovery Check ${total}: ${row.label}`
-      });
-      if (row.award) {
-        store.awardTrack(adv.id, { key: "discovery", label: row.label, points: row.award.points, note: row.text });
-      } else {
-        store.setTrack(adv.id, {
-          awards: [...(trackOf(store.active()).awards || []), { key: "discovery", label: row.label, points: 0, note: row.text, at: Date.now() }]
-        });
+      const asked = ask({ question: "Is something discovered?", odds: rule.minimumOdds });
+      const answer = rule.answers.find((a) => a.key === asked.answer.key) || rule.answers.find((a) => a.key === "no");
+      // The Exceptional No shuts Discovery down for the rest of THIS scene, so it is
+      // recorded on the scene. With no scene open there is nothing to shut.
+      if (answer.closesScene && scene) store.updateScene(adv.id, scene.id, { discoveryClosed: true });
+      if (!answer.rolls) {
+        store.record(adv.id, "track", `Discovery Check: ${asked.answer.label} - ${answer.text}`);
+        refresh();
+        showToast(`${asked.answer.label}: nothing discovered.${answer.closesScene ? " Discovery is shut for this scene." : ""}`, answer.closesScene ? "warn" : undefined);
+        return;
       }
-      store.record(adv.id, "track", `Discovery Check (d10 ${roll} + ${total - roll}): ${row.label}.`);
+      const rolled = [];
+      for (let i = 0; i < answer.rolls; i += 1) rolled.push(rollDiscovery(adv, rule));
+      if (answer.rolls > 1) {
+        store.record(adv.id, "track", `${asked.answer.label}: rolled twice and combined - ${rolled.map((r) => r.label).join(" + ")}.`);
+      }
       refresh();
-      showToast(`${row.label}${row.award ? "" : " - effect not in the source"}.`);
+      const named = rolled.map((r) => r.label).join(" + ");
+      showToast(`${named}${rolled.every((r) => r.award) ? "" : " - some effects are not stated"}.`);
     }
   }, "Make a Discovery Check"));
   add(box, el("p", { class: "block-note", text: rule.undefinedResults }),

@@ -63,13 +63,16 @@ scene/Chaos Factor/bookkeeping rules. That last part arrived as a written summar
 than pages, so what still rests on it ships marked provisional and the Scene screen says so.
 
 The Fate Check is in: an adventure resolves on the Fate Chart or on the Check, whichever
-you pick. Mid-Chaos comes with it — its Check modifiers are quoted, so the mode is offered
-there and refused on the chart, whose Mid-Chaos cells were not supplied. The Discovery
-Check is in too, with the caveat that four of its eight results are printed with no stated
-effect, so the app rolls them, names them and applies nothing.
+you pick. So are all four ways of running chaos — standard, Mid-Chaos, Low-Chaos and
+No-Chaos each have their own printed Fate Chart and their own Check modifiers, so any of
+them works under either resolution. The Discovery Check is in, including the part that
+catches people out: an Exceptional Yes rolls its table twice, and an Exceptional No shuts
+Discovery down for the rest of the scene.
 
-Still not in: the Mid-Chaos Fate Chart's cells, and what those four Discovery results do.
-The app does not approximate either. The Chaos Factor (which the one-page edition drops by
+One gap is left in the whole app: four results on the Thread Discovery Check table — Track
++1, Track +2, Strengthen Progress +1 and +2 — are printed with exact ranges but no stated
+effect anywhere that was supplied. The app rolls them, names them, and applies nothing
+rather than guessing. The Chaos Factor (which the one-page edition drops by
 design), scene setup, the Bookkeeping phase and the Threads and Characters lists are in
 none of them, so the app does not roll them and does not approximate them. Villain
 statistics are also left alone: no game system is attached here.

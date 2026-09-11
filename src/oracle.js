@@ -8,7 +8,8 @@ import {
   inlineRow
 } from "./ui.js";
 import {
-  askResult, defaultOdds, oddsRow, fateChart, fateBands, meaningWord, meaningTables,
+  askResult, defaultOdds, oddsRow, fateChart, fateBands, chartFor, chartVariants,
+  variantEquivalence, meaningWord, meaningTables,
   meaningTable, askProcedure, randomEventRule, mythicGuidance, mythicSource,
   elementsSource, eventFocus, eventFocusTable, chartChaos, chaosMode as chaosModeRule,
   checkResult, fateCheck, resolution as resolutionRule, RESOLUTIONS, checkChaosModifier
@@ -35,10 +36,10 @@ export function ask({ question = "", odds = defaultOdds(), expectation = "", for
     result = checkResult(odds, pair, chaosOf(adv), { mode, forMechanic });
     dice = pair.map((value) => ({ die: "d10", value, table: `Fate Check - ${result.odds.label} at chaos ${result.chaos}` }));
   } else {
-    const level = chartChaos(chaosOf(adv), { mode, forMechanic });
+    const level = chartChaos(chaosOf(adv), { forMechanic });
     const roll = rollD100();
-    result = askResult(odds, roll, level);
-    dice = [{ die: "d100", value: roll, table: `Fate Chart - ${result.odds.label} at chaos ${level}` }];
+    result = askResult(odds, roll, level, mode);
+    dice = [{ die: "d100", value: roll, table: `${result.bands.chart.name} - ${result.odds.label} at chaos ${level}` }];
   }
   const level = result.chaos;
   const event = result.double ? rollEvent() : null;
@@ -140,9 +141,10 @@ export function renderAsk() {
   const how = resolutionMode(store.active());
   const level = how === "check"
     ? (draft.forMechanic ? 5 : chaosOf(store.active()))
-    : chartChaos(chaosOf(store.active()), { mode, forMechanic: draft.forMechanic });
+    : chartChaos(chaosOf(store.active()), { forMechanic: draft.forMechanic });
+  const chartMode = draft.forMechanic ? "standard" : mode;
   add(content, resolutionRow(how), mechanicRow(mode, level),
-    how === "check" ? checkCard(odds, level, mode, draft.forMechanic) : oddsCard(odds, level),
+    how === "check" ? checkCard(odds, level, mode, draft.forMechanic) : oddsCard(odds, level, chartMode),
     procedureCard());
 
   if (lastAsk) add(content, sectionTitle("The answer"), askCard(lastAsk));
@@ -151,7 +153,7 @@ export function renderAsk() {
 
   const action = actionBar({
     label: "Ask",
-    context: `${odds.label} · chaos ${level} · Yes on 1-${fateBands(odds.key, level).yes[1]}`,
+    context: `${odds.label} · chaos ${level} · Yes on 1-${fateBands(odds.key, level, chartMode).yes[1]}`,
     onClick: () => {
       lastAsk = ask({ question: draft.question, odds: draft.odds, forMechanic: draft.forMechanic });
       refresh();
@@ -177,7 +179,7 @@ function mechanicRow(mode, level) {
   if (mode !== "standard") {
     add(wrap, el("p", { class: "block-note", text: `${variant.label}: ${variant.text}` }));
   }
-  if (draft.forMechanic || variant.readsChartAt) {
+  if (draft.forMechanic) {
     add(wrap, el("p", { class: "block-note", text: `Reading the chart at chaos ${level}.` }));
   }
   return wrap;
@@ -207,17 +209,22 @@ function checkCard(odds, level, mode, forMechanic) {
   add(box, el("h2", { class: "card-title" }, `${odds.label} at chaos ${level}`, citeLink("fate-check", "rule")));
   add(box, inlineRow("Dice", "2d10, added"));
   add(box, inlineRow("Odds", oddsMod >= 0 ? `+${oddsMod}` : String(oddsMod)));
-  add(box, inlineRow(mode === "mid-chaos" ? "Chaos (Mid-Chaos)" : mode === "no-chaos" ? "Chaos (No-Chaos)" : "Chaos", chaosMod >= 0 ? `+${chaosMod}` : String(chaosMod)));
+  const variant = chaosModeRule(forMechanic ? "standard" : mode);
+  add(box, inlineRow(variant.key === "standard" ? "Chaos" : `Chaos (${variant.label})`,
+    chaosMod >= 0 ? `+${chaosMod}` : String(chaosMod)));
   const need = 11 - oddsMod - chaosMod;
   add(box, inlineRow("Yes needs", `${need} or more on the dice`));
   add(box, el("p", { class: "block-note", text: "18 or more is an Exceptional Yes, 4 or less an Exceptional No. Both dice the same, at or under the Chaos Factor, also throws a random event." }));
   return box;
 }
 
-function oddsCard(odds, level) {
-  const bands = fateBands(odds.key, level);
+function oddsCard(odds, level, mode = "standard") {
+  const bands = fateBands(odds.key, level, mode);
   const box = el("div", { class: "card" });
   add(box, el("h2", { class: "card-title" }, `${odds.label} at chaos ${bands.chaos}`, citeLink("fate-chart", "rule")));
+  if (bands.column) {
+    add(box, el("p", { class: "block-note", text: `Read on the ${bands.chart.name}, whose column ${bands.column.label} covers chaos ${bands.chaos}.` }));
+  }
   for (const [name, range] of [
     ["Exceptional Yes", bands.exYes], ["Yes", bands.yes], ["No", bands.no], ["Exceptional No", bands.exNo]
   ]) {
@@ -231,6 +238,38 @@ function oddsCard(odds, level) {
     add(box, row);
   }
   add(box, el("p", { class: "block-note", text: `A Yes of either kind on 1-${bands.yes[1]}: ${bands.yes[1]}%. The Chaos Factor moves these bands - that is what it is for.` }));
+  return box;
+}
+
+/**
+ * The four charts side by side, on the Rules tab: how wide each one lets chaos swing a
+ * 50/50 question. It is the clearest statement of what choosing a variant actually buys.
+ */
+export function chartsCard() {
+  const box = el("details", { class: "card fold" });
+  add(box, el("summary", { text: "The four Fate Charts" }),
+    el("p", { text: "Each variant chart groups the nine Chaos Factors into fewer columns, which is how it narrows chaos's pull. A 50/50 question, at its quietest and its wildest:" }));
+  const table = el("div", { class: "table-scroll" });
+  const rows = el("table", { class: "data-table" });
+  add(rows, el("thead", {}, el("tr", {},
+    el("th", { text: "Chart" }), el("th", { text: "Columns" }),
+    el("th", { text: "Yes at chaos 1" }), el("th", { text: "Yes at chaos 9" }))));
+  const body = el("tbody", {});
+  const charts = [{ key: "standard", name: chartFor("standard").name, columns: 9 },
+    ...chartVariants().map((v) => ({ key: v.key, name: v.name, columns: v.columns.length }))];
+  for (const chart of charts) {
+    const low = fateBands("50-50", 1, chart.key).yes[1];
+    const high = fateBands("50-50", 9, chart.key).yes[1];
+    add(body, el("tr", {},
+      el("td", { text: chart.name }), el("td", { text: String(chart.columns) }),
+      el("td", { text: `1-${low}` }), el("td", { text: `1-${high}` })));
+  }
+  add(rows, body);
+  add(table, rows);
+  const equivalence = variantEquivalence();
+  const named = Object.entries(equivalence)
+    .map(([key, cols]) => `${chartFor(key).name}: columns ${cols.join(", ")}`).join("; ");
+  add(box, table, el("p", { class: "block-note", text: `Every variant column turns out to be a column of the standard chart, copied whole - ${named}. The app reads each chart's own printed cells; that equivalence is a cross-check the test suite makes, which is how 117 transcribed cells check each other.` }));
   return box;
 }
 

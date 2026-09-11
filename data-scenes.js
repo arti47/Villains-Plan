@@ -16,7 +16,7 @@ export const SCENES_SOURCE = {
   cite: "GME2e",
   provenance: "summary, since confirmed by quotation",
   provisional: false,
-  note: "This subsystem arrived as a written summary and shipped marked provisional. The scene test was then confirmed against a photograph, and the Chaos Factor, list and bookkeeping rules against direct quotations from the book - which corrected the clean-up rule in the process. What remains summary-only is how a random event picks an entry from a list, which is still marked provisional where it lives."
+  note: "This subsystem arrived as a written summary and shipped marked provisional. The scene test was then confirmed against a photograph, and the Chaos Factor, list and bookkeeping rules against direct quotations from the book - which corrected the clean-up rule in the process. How a random event picks an entry from a list has since been quoted too, so nothing here rests on the summary any more."
 };
 
 // T19 — the Chaos Factor. GME2e, via summary.
@@ -86,11 +86,12 @@ export const LISTS = {
 export const CHAOS_MODES = [
   { key: "standard", label: "Standard", cite: "GME2e", default: true,
     text: "The Chaos Factor moves by whether the characters were in control, and the Fate Chart is read at it." },
-  { key: "no-chaos", label: "No-Chaos", cite: "GME2e",
-    text: "Answers come purely from the odds: the chart is read at its middle column and chaos never skews a question. The Chaos Factor is still tracked in the background, because scenes are still tested against it and random events still trigger.",
-    readsChartAt: 5 },
-  { key: "mid-chaos", label: "Mid-Chaos", cite: "GME2e", checkOnly: true,
-    text: "The extremes are trimmed: the Chaos Factor's pull on a question runs +2 down to -2 instead of +5 down to -5. Available on the Fate Check, where the book's modifiers are known; the Mid-Chaos chart was not supplied." },
+  { key: "low-chaos", label: "Low-Chaos", cite: "GME2e", chart: "low-chaos",
+    text: "Chaos barely leans on a question at all: its nine values collapse into three bands, so the pull runs +1 down to -1. A quieter story where the odds you set are nearly the whole answer." },
+  { key: "mid-chaos", label: "Mid-Chaos", cite: "GME2e", chart: "mid-chaos",
+    text: "The extremes are trimmed: the nine Chaos Factors collapse into five bands, so chaos pulls a question by +2 down to -2 instead of +5 down to -5." },
+  { key: "no-chaos", label: "No-Chaos", cite: "GME2e", chart: "no-chaos",
+    text: "Answers come purely from the odds: the chart has one column and chaos never skews a question. The Chaos Factor is still tracked in the background, because scenes are still tested against it and random events still trigger." },
   { key: "random-chaos", label: "Random Chaos", cite: "GME2e",
     text: "The pacing is taken out of your hands. At the end of a scene, roll a d10: equal to the Chaos Factor or under and it drops by one, over it and it rises by one - the same floor and ceiling.",
     rollsAtSceneEnd: true }
@@ -111,8 +112,21 @@ export const PROGRESS_TRACK = {
   discovery: {
     cite: "GME2e",
     when: "Make one when forward momentum has stalled and you are out of ideas for how to proceed - and your character has to do something that presents an opportunity for a discovery.",
-    gate: "Ask the Game Master \"Is something discovered?\" at odds of no less than 50/50. Only on a Yes do you roll on the table.",
+    gate: "Ask the Game Master \"Is something discovered?\" at odds of no less than 50/50. What the answer buys you is on the Discovery Fate Question table.",
     minimumOdds: "50-50",
+    // The Discovery Fate Question table: what each of the four answers does. An
+    // Exceptional No is the only one with a lasting effect - it shuts Discovery down
+    // for the rest of the scene.
+    answers: [
+      { key: "exceptional-yes", rolls: 2, label: "Exceptional Yes",
+        text: "Roll twice on the Thread Discovery Check table and combine the results." },
+      { key: "yes", rolls: 1, label: "Yes",
+        text: "Roll once on the Thread Discovery Check table." },
+      { key: "no", rolls: 0, label: "No",
+        text: "Nothing useful is found. There is no roll on the table." },
+      { key: "exceptional-no", rolls: 0, closesScene: true, label: "Exceptional No",
+        text: "Nothing useful is found, there is no roll, and you cannot make another Discovery Check for the rest of this scene. Your character has hit a dead end and must search again in another scene." }
+    ],
     die: 10,
     addProgress: true,
     rows: [
@@ -121,17 +135,17 @@ export const PROGRESS_TRACK = {
       { min: 10, max: 10, key: "flashpoint-2", label: "Flashpoint +2", award: { kind: "flashpoint", points: 2 },
         text: "You discover something that involves the focus thread in an important and dramatic way." },
       { min: 11, max: 14, key: "track-1", label: "Track +1", award: null,
-        text: "Track +1. What that does is not in the source this app was built from, so the app records the result and leaves it to you." },
+        text: "Track +1. The table names it; what it does is not stated in what this app was built from, so the app records the result and leaves it to you." },
       { min: 15, max: 17, key: "progress-3", label: "Progress +3", award: { kind: "progress", points: 3 },
         text: "You discover something that moves you closer to the focus thread." },
       { min: 18, max: 18, key: "flashpoint-3", label: "Flashpoint +3", award: { kind: "flashpoint", points: 3 },
         text: "You discover something that involves the focus thread in an important and dramatic way." },
       { min: 19, max: 19, key: "track-2", label: "Track +2", award: null,
-        text: "Track +2. Same as Track +1: the effect is not in the source, so the app does not apply one." },
+        text: "Track +2. Same as Track +1: the effect is not stated, so the app does not apply one." },
       { min: 20, max: 24, key: "strengthen-1", label: "Strengthen Progress +1", award: null,
-        text: "Strengthen Progress +1. The effect is not in the source, so the app records it and leaves it to you." },
+        text: "Strengthen Progress +1. The table names it; what it does is not stated in what this app was built from, so the app records it and leaves it to you." },
       { min: 25, max: Infinity, key: "strengthen-2", label: "Strengthen Progress +2", award: null,
-        text: "Strengthen Progress +2. The effect is not in the source, so the app records it and leaves it to you." }
+        text: "Strengthen Progress +2. Same again: the effect is not stated, so the app does not apply one." }
     ],
     undefinedResults: "Track +1, Track +2, Strengthen Progress +1 and Strengthen Progress +2 are printed in the table, but what they do is not stated in what was supplied. The app rolls them, names them, and applies nothing - it does not guess."
   }
@@ -154,6 +168,5 @@ export const BOOKKEEPING = {
 // Event Focus and Scene Adjustment tables (data-actions.js) and the list selection
 // procedure. What is still missing:
 export const NOT_SUPPLIED = [
-  "The Mid-Chaos Fate CHART. The book has one - its columns read 1, 2-3, 4-6, 7-8, 9 - but its cells were not supplied. Mid-Chaos therefore works here on the Fate Check, where its modifiers are quoted, and not on the chart.",
-  "What Track +1, Track +2 and Strengthen Progress do on a Discovery Check. The table's ranges and its Progress and Flashpoint awards are quoted; those four results are named with no stated effect, so the app rolls them and applies nothing."
+  "What Track +1, Track +2, Strengthen Progress +1 and Strengthen Progress +2 actually do. All four are printed on the Thread Discovery Check table - their ranges are exact and shipped - but the page that defines the terms was not supplied. The app rolls them, names them, and applies nothing rather than guessing at whether Track +1 lengthens the track, advances a marker, or something else."
 ];

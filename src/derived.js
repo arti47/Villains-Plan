@@ -252,7 +252,8 @@ export function normalizeAdventure(raw) {
   a.resolution = ["chart", "check"].includes(a.resolution) ? a.resolution : "chart";
   a.chaosMode = CHAOS_MODES.some((m) => m.key === a.chaosMode) ? a.chaosMode : "standard";
   // Mid-Chaos is a Fate Check rule here; on the chart it falls back to standard (A32).
-  if (a.chaosMode === "mid-chaos" && a.resolution !== "check") a.chaosMode = "standard";
+  // Mid-Chaos was Check-only while its chart was unsupplied; the page arrived, so every
+  // mode now works on both resolutions and nothing is forced back to standard.
   a.threads = normalizeList(a.threads);
   a.characters = normalizeList(a.characters);
   a.track = normalizeTrack(a.track, a.threads);
@@ -268,6 +269,8 @@ export function normalizeAdventure(raw) {
       event: sc.event && sc.event.focus ? sc.event : null,
       words: Array.isArray(sc.words) ? sc.words.filter(Boolean) : [],
       control: ["in", "out", "random"].includes(sc.control) ? sc.control : null,
+      // an Exceptional No on a Discovery Check shuts Discovery for the rest of the scene
+      discoveryClosed: sc.discoveryClosed === true,
       startedAt: sc.startedAt || now(),
       endedAt: sc.endedAt || null
     }));

@@ -72,7 +72,9 @@ export const SCENE_ADJUSTMENT_TABLE = {
 
 /**
  * T27 — picking an entry from a Threads or Characters list. GME2e, supplied as a written
- * summary rather than a page, so it is marked provisional (§2.1).
+ * The procedure is now quoted from the book ("Lists As Random Tables"), so it is no
+ * longer provisional. One detail still is not quoted: how the section die's faces map
+ * onto the sections. The printed Adventure Lists sheet settles it - see `inferred`.
  *
  * Sections go active as lines fill, top to bottom. Roll for the section with a die sized
  * to the active sections, then 1d10 for the line within it. A blank line is a "Choose"
@@ -80,10 +82,10 @@ export const SCENE_ADJUSTMENT_TABLE = {
  */
 export const LIST_SELECTION = {
   cite: "GME2e",
-  provisional: true,
-  provenance: "summary",
+  provisional: false,
+  provenance: "quotation",
   sectionDice: [
-    { sections: 1, die: null, note: "Only the first section is active, so there is nothing to roll for." },
+    { sections: 1, die: null, note: "Up to 5 elements: only the first section is active, so there is nothing to roll for." },
     { sections: 2, die: 4 },
     { sections: 3, die: 6 },
     { sections: 4, die: 8 },

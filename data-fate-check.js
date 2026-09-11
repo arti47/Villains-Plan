@@ -21,6 +21,12 @@ export const FATE_CHECK = {
   // Mid-Chaos, quoted: the same ladder flattened. Note what it is: +2/+1/0/-1/-2 are the
   // standard modifiers for chaos 7/6/5/4/3, so Mid-Chaos compresses the Chaos Factor into
   // the middle of its range rather than changing the maths.
+  // Low-Chaos Fate Check modifiers (GME2e), printed as bands: 8-9 is +1, 3-7 is none,
+  // 1-2 is -1. Expanded per Chaos Factor here, the way the standard ladder is stored.
+  lowChaosModifiers: { 9: 1, 8: 1, 7: 0, 6: 0, 5: 0, 4: 0, 3: 0, 2: -1, 1: -1 },
+  lowChaosBands: [
+    { min: 8, max: 9, mod: 1 }, { min: 3, max: 7, mod: 0 }, { min: 1, max: 2, mod: -1 }
+  ],
   midChaosModifiers: { 9: 2, 8: 1, 7: 1, 6: 0, 5: 0, 4: 0, 3: -1, 2: -1, 1: -2 },
   midChaosBands: [
     { chaos: [9, 9], modifier: 2 }, { chaos: [7, 8], modifier: 1 }, { chaos: [4, 6], modifier: 0 },

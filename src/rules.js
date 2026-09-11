@@ -19,7 +19,8 @@ import {
   CHAOS, SCENE_TEST, LISTS, BOOKKEEPING, NOT_SUPPLIED, SCENES_SOURCE, CHAOS_MODES,
   PROGRESS_TRACK
 } from "../data-scenes.js";
-import { FATE_CHART, FATE_LADDER, FATE_LADDER_OFFSETS } from "../data-fate-chart.js";
+import { FATE_CHART, FATE_LADDER, FATE_LADDER_OFFSETS, CHART_VARIANTS,
+  VARIANT_EQUIVALENCE } from "../data-fate-chart.js";
 import { FATE_CHECK } from "../data-fate-check.js";
 import {
   ACTION_TABLES, EVENT_FOCUS, SCENE_ADJUSTMENT_TABLE, LIST_SELECTION
@@ -92,25 +93,20 @@ export function sceneOutcome(d10, chaos) {
 }
 
 export const chaosModes = () => CHAOS_MODES;
-/** Mid-Chaos is a Check rule here: its chart was not supplied (ruling A32). */
-export function chaosModeAvailable(key, resolutionKey) {
-  if (key !== "mid-chaos") return true;
-  return resolutionKey === "check";
-}
 export function chaosMode(key) {
   return CHAOS_MODES.find((m) => m.key === key) || CHAOS_MODES.find((m) => m.default) || CHAOS_MODES[0];
 }
 export const progressTrack = () => PROGRESS_TRACK;
 
 /**
- * Which chart column a question is read at. Standard uses the adventure's chaos; No-Chaos
- * reads the middle column so the odds alone decide (ruling A31); and a question standing
- * in for a game rule is always read at 5, quoted (ruling A30).
+ * Which Chaos Factor a question is read at. A question standing in for a game rule is
+ * always read at 5, quoted (ruling A30); otherwise it is the adventure's own chaos.
+ *
+ * A chaos VARIANT no longer changes this number - it changes which chart that number is
+ * looked up in, because each variant has its own printed chart with its own columns.
  */
-export function chartChaos(chaos, { mode = "standard", forMechanic = false } = {}) {
+export function chartChaos(chaos, { forMechanic = false } = {}) {
   if (forMechanic) return CHAOS.fixedForMechanics;
-  const variant = chaosMode(mode);
-  if (variant.readsChartAt) return variant.readsChartAt;
   return clampChaos(chaos);
 }
 
@@ -158,6 +154,13 @@ export const mythicSource = () => MYTHIC_SOURCE;
 export const stillNotInSource = () => STILL_NOT_IN_SOURCE;
 
 export const fateChart = () => FATE_CHART;
+export const chartVariants = () => CHART_VARIANTS;
+export const variantEquivalence = () => VARIANT_EQUIVALENCE;
+
+/** The chart a chaos mode reads. Standard has none of its own and uses the Fate Chart. */
+export function chartFor(mode = "standard") {
+  return CHART_VARIANTS.find((v) => v.key === mode) || FATE_CHART;
+}
 export const fateLadder = () => ({ ladder: FATE_LADDER, offsets: FATE_LADDER_OFFSETS });
 export const opmChart = () => ASK_ODDS;   // the corroborating chaos-5 transcription
 
@@ -166,13 +169,29 @@ export function oddsRow(key) {
 }
 export function defaultOdds() { return (FATE_CHART.rows.find((o) => o.default) || FATE_CHART.rows[0]).key; }
 
-/** The four bands for one odds row at one Chaos Factor, as inclusive ranges. */
-export function fateBands(oddsKey, chaos) {
+/**
+ * The four bands for one odds row at one Chaos Factor, as inclusive ranges.
+ *
+ * `mode` picks the chart: the standard Fate Chart has one column per Chaos Factor, while
+ * each variant chart groups them into bands, so the chaos is looked up in that chart's
+ * own columns rather than used as an index.
+ */
+export function fateBands(oddsKey, chaos, mode = "standard") {
   const row = oddsRow(oddsKey);
-  const level = Math.min(FATE_CHART.chaosRange[1], Math.max(FATE_CHART.chaosRange[0], Math.round(Number(chaos)) || 5));
-  const [exYes, yes, exNo] = row.cells[level - 1];
+  const level = clampChaos(chaos);
+  const chart = chartFor(mode);
+  let cell, column = null;
+  if (chart === FATE_CHART) {
+    cell = row.cells[level - 1];
+  } else {
+    const index = chart.columns.findIndex((c) => level >= c.min && level <= c.max);
+    if (index < 0) throw new Error(`${chart.name}: no column holds Chaos Factor ${level}`);
+    column = chart.columns[index];
+    cell = chart.rows.find((r) => r.key === row.key).cells[index];
+  }
+  const [exYes, yes, exNo] = cell;
   return {
-    row, chaos: level,
+    row, chaos: level, chart, column,
     exYes: exYes ? [1, exYes] : null,
     yes: [exYes ? exYes + 1 : 1, yes],
     no: [yes + 1, exNo ? exNo - 1 : 100],
@@ -187,11 +206,11 @@ function isDouble(roll) { return RANDOM_EVENT.doubles.includes(roll); }
  * Read one d100 against one odds row at one Chaos Factor (GME2e Fate Chart).
  * Chaos moves the odds: that is the whole point of the chart.
  */
-export function askResult(oddsKey, roll, chaos = 5) {
+export function askResult(oddsKey, roll, chaos = 5, mode = "standard") {
   if (!Number.isInteger(roll) || roll < 1 || roll > 100) {
     throw new Error(`Ask The Game Master: ${roll} is not a d100 result`);
   }
-  const bands = fateBands(oddsKey, chaos);
+  const bands = fateBands(oddsKey, chaos, mode);
   const band = ["exYes", "yes", "no", "exNo"].find((k) => bands[k] && roll >= bands[k][0] && roll <= bands[k][1]);
   if (!band) throw new Error(`Ask The Game Master: roll ${roll} is outside the ${bands.row.label} row at chaos ${bands.chaos}`);
   const answerKey = { exYes: "exceptional-yes", yes: "yes", no: "no", exNo: "exceptional-no" }[band];
@@ -214,6 +233,7 @@ export function resolution(key) { return RESOLUTIONS.find((r) => r.key === key) 
 export function checkChaosModifier(chaos, mode = "standard") {
   const level = clampChaos(chaos);
   if (mode === "mid-chaos") return FATE_CHECK.midChaosModifiers[level];
+  if (mode === "low-chaos") return FATE_CHECK.lowChaosModifiers[level];
   if (mode === "no-chaos") return 0;               // answers come purely from the odds
   return FATE_CHECK.chaosModifiers[level];
 }

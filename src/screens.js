@@ -12,6 +12,7 @@ import * as store from "./store.js";
 import { Settings, apply as applySettings } from "./settings.js";
 import { NOT_IN_SOURCE, LOG_CAP } from "../data.js";
 import { stillNotInSource, mythicSource, crafterSource, elementsSource, scenesSource, notSupplied } from "./rules.js";
+import { chartsCard } from "./oracle.js";
 import { refresh, go } from "./router.js";
 
 const PAGE = 25;   // lists page rather than grow without bound (§6.5)
@@ -246,7 +247,7 @@ export function renderLibrary(params = {}) {
   add(content, body);
   renderLibraryBody(body, params);
 
-  add(content, notInSourceCard(), examplesCard(), sourceCard());
+  add(content, chartsCard(), notInSourceCard(), examplesCard(), sourceCard());
   return { content, afterMount: () => focusEntry(params.entry) };
 }
 

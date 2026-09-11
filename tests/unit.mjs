@@ -703,14 +703,13 @@ test("a list roll lands on a real entry or reports Choose, and is logged either 
 
 test("what is still unsupplied is recorded, and what arrived is no longer listed", () => {
   const missing = rules.notSupplied().join(" ");
-  for (const name of ["Mid-Chaos Fate CHART", "Track \\+1"]) {
-    assert(new RegExp(name, "i").test(missing), `${name} is still listed as not supplied`);
-  }
+  assert(/Track \+1/i.test(missing), "what four Discovery results do is still not supplied");
   // F45: this only ever read notSupplied(), so the OTHER gap list - the one the Rules
   // screen prints first - stayed four sources out of date. Read both.
   const both = missing + " " + rules.stillNotInSource().join(" ");
   for (const name of ["Fate Chart", "Event Focus", "Scene Adjustment", "Thread Progress Track",
-                      "Villain Crafter", "Chaos Factor", "scene setup", "Bookkeeping"]) {
+                      "Villain Crafter", "Chaos Factor", "scene setup", "Bookkeeping",
+                      "Mid-Chaos", "Low-Chaos", "Fate Check"]) {
     assert(!new RegExp("(" + name + ")\\s*(itself|table|is|are)?[^.]{0,40}(not |never |no )", "i").test(both),
       `${name} arrived, so no gap list may still call it missing`);
   }
@@ -721,7 +720,12 @@ test("what is still unsupplied is recorded, and what arrived is no longer listed
   for (const rule of [sceneData.CHAOS, sceneData.SCENE_TEST, sceneData.LISTS, sceneData.BOOKKEEPING]) {
     equal(rule.provisional, false, "each confirmed rule drops the flag");
   }
-  equal(rules.listSelectionRule().provisional, true, "and the one that is still summary-only keeps it");
+  // The list-selection procedure was the last summary-only rule; it has since been
+  // quoted, so nothing in the app rests on a summary any more.
+  equal(rules.listSelectionRule().provisional, false, "the list procedure is quoted now");
+  equal(rules.listSelectionRule().provenance, "quotation", "and says so");
+  assert(/Adventure Lists sheet/i.test(rules.listSelectionRule().inferred),
+    "with its one unquoted detail - the die's faces - still named and sourced to the printed sheet");
 });
 
 // ---------------------------------------------------------------- the Fate Check
@@ -796,20 +800,114 @@ test("the ask engine uses whichever resolution the adventure is set to", () => {
   const onCheck = oracle.ask({ question: "check", odds: "50-50" });
   equal(onCheck.dice.length, 2, "a check rolls two d10");
   assert(Number.isInteger(onCheck.total), "and totals them");
-  const row = store.rollLog({ kind: "ask" })[0];
-  equal(row.dice.length, 2, "both dice are logged");
-  equal(row.dice[0].die, "d10", "as d10s");
+  // F46: this asserted the row held exactly two dice, which is false ~5% of the time -
+  // a double at or under the chaos fires a random event, whose focus and two words are
+  // appended to the SAME row. Assert what is actually invariant: the check's own dice.
+  const row = store.rollLog({ kind: "ask" }).find((r) => r.question === "check");
+  const pair = row.dice.filter((d) => d.die === "d10");
+  equal(pair.length, 2, "both dice are logged, as d10s");
+  deepEqual(pair.map((d) => d.value), onCheck.dice, "with the rolled values");
+  equal(row.dice.length, onCheck.double ? 5 : 2,
+    "and a double appends the random event's focus and two words to the same row");
 });
 
-test("Mid-Chaos is only selectable on the Fate Check, and falls back if the chart is chosen", () => {
+test("every chaos mode survives a switch of resolution, now that all three charts are in", () => {
   const adv = freshAdventure();
-  store.setResolution(adv.id, "check");
-  store.setChaosMode(adv.id, "mid-chaos");
-  equal(derived.chaosMode(store.active()), "mid-chaos", "allowed on the check");
-  store.setResolution(adv.id, "chart");
+  for (const mode of ["mid-chaos", "low-chaos", "no-chaos", "random-chaos"]) {
+    store.setResolution(adv.id, "check");
+    store.setChaosMode(adv.id, mode);
+    store.setResolution(adv.id, "chart");
+    const reloaded = store.__setState(JSON.parse(store.exportJSON()));
+    equal(derived.chaosMode(reloaded.adventures[0]), mode,
+      `${mode} is kept on the chart - it was only dropped while its chart was unsupplied`);
+  }
+});
+
+test("the three variant Fate Charts are transcribed, and each is a slice of the standard chart", () => {
+  const std = rules.fateChart();
+  const equivalence = rules.variantEquivalence();
+  let cells = 0;
+  for (const variant of rules.chartVariants()) {
+    const columns = equivalence[variant.key];
+    equal(variant.columns.length, columns.length, `${variant.key} has one equivalence per column`);
+    equal(variant.rows.length, 9, `${variant.key} has all nine odds rows`);
+    for (const row of variant.rows) {
+      const standard = std.rows.find((r) => r.key === row.key);
+      assert(standard, `${variant.key}: ${row.key} is a real odds row`);
+      row.cells.forEach((cell, i) => {
+        cells += 1;
+        deepEqual(cell, standard.cells[columns[i] - 1],
+          `${variant.key} ${row.key} column ${variant.columns[i].label} is standard chaos ${columns[i]}`);
+      });
+    }
+    // the columns must cover 1-9 with no gap and no overlap
+    for (let chaos = 1; chaos <= 9; chaos += 1) {
+      const hits = variant.columns.filter((c) => chaos >= c.min && chaos <= c.max);
+      equal(hits.length, 1, `${variant.key}: exactly one column holds chaos ${chaos}`);
+    }
+  }
+  equal(cells, 81, "all 81 variant cells checked against the standard chart");
+});
+
+test("a chaos mode changes which chart is read, not which column of the standard one", () => {
+  // Mid-Chaos at chaos 9 is the standard chart at 7; at chaos 1 it is the standard at 3.
+  deepEqual(rules.fateBands("50-50", 9, "mid-chaos").yes, rules.fateBands("50-50", 7).yes,
+    "Mid-Chaos at its top is the standard chart at 7");
+  deepEqual(rules.fateBands("50-50", 1, "mid-chaos").yes, rules.fateBands("50-50", 3).yes,
+    "and at its bottom, the standard chart at 3");
+  deepEqual(rules.fateBands("50-50", 9, "low-chaos").yes, rules.fateBands("50-50", 6).yes,
+    "Low-Chaos tops out at the standard chart's 6");
+  for (const chaos of [1, 5, 9]) {
+    deepEqual(rules.fateBands("50-50", chaos, "no-chaos").yes, rules.fateBands("50-50", 5).yes,
+      `No-Chaos reads the same band whatever the chaos (${chaos})`);
+  }
+  // and the mode reports which chart it used, so the answer card can say so
+  equal(rules.fateBands("50-50", 4, "mid-chaos").chart.name, "Mid-Chaos Fate Chart", "named");
+  equal(rules.fateBands("50-50", 4, "mid-chaos").column.label, "4-6", "with its column");
+  equal(rules.fateBands("50-50", 4).chart.name, "Fate Chart", "standard by default");
+});
+
+test("the Low-Chaos Fate Check modifiers match the page", () => {
+  const check = rules.fateCheck();
+  for (const [chaos, mod] of [[9, 1], [8, 1], [7, 0], [5, 0], [3, 0], [2, -1], [1, -1]]) {
+    equal(check.lowChaosModifiers[chaos], mod, `chaos ${chaos} is ${mod}`);
+    equal(rules.checkChaosModifier(chaos, "low-chaos"), mod, "and the engine reads it");
+  }
+  // Low-Chaos on the Check is the standard ladder at chaos 6/5/4 - the same compression
+  // the Low-Chaos CHART turned out to be
+  for (const [low, standard] of [[9, 6], [5, 5], [1, 4]]) {
+    equal(rules.checkChaosModifier(low, "low-chaos"), rules.checkChaosModifier(standard, "standard"),
+      `Low-Chaos at ${low} is the standard ladder at ${standard}`);
+  }
+});
+
+test("an Exceptional No shuts Discovery down for the rest of the scene, and only that scene", () => {
+  const adv = freshAdventure();
+  sceneEngine.testScene(store.active(), {});
+  const scene = derived.currentScene(store.active());
+  equal(scene.discoveryClosed, false, "a fresh scene allows a Discovery Check");
+  store.updateScene(adv.id, scene.id, { discoveryClosed: true });
+  equal(derived.currentScene(store.active()).discoveryClosed, true, "an Exceptional No closes it");
+  // it survives a save/reload, because it gates a control
   const reloaded = store.__setState(JSON.parse(store.exportJSON()));
-  equal(derived.chaosMode(reloaded.adventures[0]), "standard",
-    "normalization drops it on the chart rather than applying a rule the app does not have");
+  equal(derived.currentScene(reloaded.adventures[0]).discoveryClosed, true, "and it is persisted");
+  // ...and the NEXT scene opens it again, which is the whole point of the rule
+  sceneEngine.endScene(store.active(), "in");
+  sceneEngine.testScene(store.active(), {});
+  equal(derived.currentScene(store.active()).discoveryClosed, false, "the next scene opens it again");
+});
+
+test("the Discovery Fate Question decides how many times the table is rolled", () => {
+  const answers = rules.progressTrack().discovery.answers;
+  const by = (key) => answers.find((a) => a.key === key);
+  equal(by("exceptional-yes").rolls, 2, "an Exceptional Yes rolls twice and combines");
+  equal(by("yes").rolls, 1, "a Yes rolls once");
+  equal(by("no").rolls, 0, "a No does not roll");
+  equal(by("exceptional-no").rolls, 0, "nor an Exceptional No");
+  equal(by("exceptional-no").closesScene, true, "which also shuts Discovery down for the scene");
+  for (const key of ["yes", "no", "exceptional-yes"]) {
+    assert(!by(key).closesScene, `${key} does not close the scene`);
+  }
 });
 
 test("the Discovery Check table covers its range and only awards what the source states", () => {
@@ -830,7 +928,7 @@ test("the Discovery Check table covers its range and only awards what the source
   for (const key of ["track-1", "track-2", "strengthen-1", "strengthen-2"]) {
     const row = rule.rows.find((r) => r.key === key);
     equal(row.award, null, `${key} applies nothing`);
-    assert(/not in the source/i.test(row.text), `${key} says why`);
+    assert(/not stated/i.test(row.text), `${key} says why`);
   }
   deepEqual(rule.rows.filter((r) => r.award).map((r) => r.award.points), [2, 2, 3, 3], "and the stated awards are the quoted ones");
 });
@@ -850,16 +948,16 @@ test("a question standing in for a game rule is always read at chaos 5 (quoted)"
   equal(fair.chaos, 5, "one standing in for a rule does not");
 });
 
-test("No-Chaos reads the middle column and leaves chaos running underneath", () => {
-  const mode = rules.chaosMode("no-chaos");
-  equal(mode.readsChartAt, 5, "answers come from the odds alone");
-  for (const chaos of [1, 4, 9]) {
-    equal(rules.chartChaos(chaos, { mode: "no-chaos" }), 5, `chaos ${chaos} does not reach the chart`);
-  }
+test("No-Chaos answers from the odds alone and leaves chaos running underneath", () => {
+  equal(rules.chaosMode("no-chaos").chart, "no-chaos", "it has its own printed chart");
   const adv = freshAdventure();
   store.setChaosMode(adv.id, "no-chaos");
   store.setChaos(adv.id, 8);
-  equal(oracle.ask({ question: "no-chaos", odds: "50-50" }).chaos, 5, "the ask reads five");
+  // The ask still carries the adventure's real chaos - what changes is the chart it reads
+  const asked = oracle.ask({ question: "no-chaos", odds: "50-50" });
+  equal(asked.chaos, 8, "the ask keeps the real chaos");
+  equal(asked.bands.chart.name, "No-Chaos Fate Chart", "and reads the No-Chaos chart");
+  deepEqual(asked.bands.yes, rules.fateBands("50-50", 5).yes, "whose band is the standard chart's 5");
   // ...but the scene test still uses the real chaos, because scenes are still tested
   sceneEngine.testScene(store.active(), {});
   equal(store.active().scenes.slice(-1)[0].test.chaos, 8, "the scene test still uses the real value");
@@ -952,13 +1050,14 @@ test("the track survives a reload, and an old adventure has none", () => {
 
 test("what is still unsupplied, after everything", () => {
   const missing = rules.notSupplied().join(" ");
-  assert(/Mid-Chaos Fate CHART/i.test(missing), "the Mid-Chaos chart's cells are still missing");
-  assert(/Track \+1|Strengthen Progress/i.test(missing), "and what four Discovery Check results do");
-  // Mid-Chaos is offered, but only where its numbers are known
-  assert(rules.chaosModes().some((m) => m.key === "mid-chaos"), "Mid-Chaos is a mode now");
-  equal(rules.chaosModeAvailable("mid-chaos", "check"), true, "on the Fate Check");
-  equal(rules.chaosModeAvailable("mid-chaos", "chart"), false, "and not on the chart");
-  equal(rules.chaosModeAvailable("no-chaos", "chart"), true, "the others are available on both");
+  assert(/Track \+1|Strengthen Progress/i.test(missing),
+    "what four Discovery Check results do is the one thing left");
+  equal(rules.notSupplied().length, 1, "and it is the only entry");
+  // every chaos mode the book prints is now offered, on both resolutions
+  const modes = rules.chaosModes().map((m) => m.key);
+  for (const key of ["standard", "low-chaos", "mid-chaos", "no-chaos", "random-chaos"]) {
+    assert(modes.includes(key), `${key} is a mode`);
+  }
 });
 
 // ---------------------------------------------------------------- Elements (GME2e)

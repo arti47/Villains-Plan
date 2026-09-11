@@ -86,11 +86,29 @@ modifiers a total runs −8 to 30, so the app reads the table as thresholds (rul
 A random event fires when **both dice match and that number is at or under the Chaos
 Factor** — so a double 10 never fires one, because chaos stops at 9.
 
-Which resolution an adventure uses is a setting on the Ask screen. **Mid-Chaos is available
-on the Check only**: its Check modifiers are quoted (+2 at chaos 9 down to −2 at chaos 1 —
-which are precisely the standard modifiers for chaos 7/6/5/4/3, so it compresses the range
-rather than changing the arithmetic). The book's Mid-Chaos *Chart* exists but its cells were
-not supplied, so the app refuses the mode there and says why.
+Which resolution an adventure uses is a setting on the Ask screen, and **every chaos mode
+works on both**. On the Check the variants arrive as smaller modifier ladders: Mid-Chaos
+runs +2 at chaos 9 down to −2 at chaos 1, Low-Chaos +1 down to −1. Both are the standard
+ladder compressed — Mid-Chaos is the standard ladder at chaos 7/6/5/4/3, Low-Chaos at
+6/5/4 — so a variant narrows chaos's swing without changing the arithmetic.
+
+## The four charts
+
+The book prints a separate Fate Chart for each variant, and what differs is the columns:
+
+| Chart | Columns | A 50/50 Yes runs |
+|---|---|---|
+| Fate Chart | one per Chaos Factor (9) | 1-10 to 1-90 |
+| Mid-Chaos | 1 · 2-3 · 4-6 · 7-8 · 9 | 1-25 to 1-75 |
+| Low-Chaos | 1-2 · 3-7 · 8-9 | 1-35 to 1-65 |
+| No-Chaos | one, for any chaos | always 1-50 |
+
+Every variant column turns out to be a column of the standard chart copied whole —
+Mid-Chaos is its columns 3 to 7, Low-Chaos 4 to 6, No-Chaos column 5 alone. The app reads
+each chart's own printed cells; that equivalence is asserted by the suite, which is how 117
+transcribed cells check each other. It also settles ruling A31 with a printed page: No-Chaos
+was read at column 5 on the reasoning that a chart whose columns *are* the modifier has its
+neutral at 5, and the No-Chaos chart is exactly column 5.
 
 ## The Action tables
 
@@ -107,8 +125,9 @@ question, and whatever lands is written to `fateAnswer`, which the pivot gate al
 honoured — a No blocks the pivot roll. A table using physical dice can still record the
 answer by hand.
 
-## Still not in either source
+## Still not supplied
 
-The Chaos Factor (the one-page edition drops it by design), scene setup, the Bookkeeping
-phase, Threads and Characters lists, and the Villain Crafter. Listed in the rules library
-and never approximated.
+Nothing in the oracle. Everything this section once listed — the Chaos Factor, scene setup,
+Bookkeeping, the two lists, the Villain Crafter — has since arrived and is built. The one
+gap left in the whole app is what four results on the Thread Discovery Check table do; see
+`scenes.md`.
