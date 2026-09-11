@@ -52,9 +52,9 @@ design), scene setup, the Bookkeeping phase and the Threads and Characters lists
 none of them, so the app does not roll them and does not approximate them. Villain
 statistics are also left alone: no game system is attached here.
 
-Three narrow bands of the Villain Crafter's Minion column did not survive the page this was
-built from (42-44, 68-69, 75-76). Rather than invent entries, the app tells you when a roll
-lands on one and offers you the choice. One photo of that page would close it.
+Every table in here is read from its page. Three bands of the Villain Crafter's Minion
+column were unreadable in the first pass and the app said so rather than inventing them;
+page photographs closed that gap, and nothing ships guessed at.
 
 ## Development
 

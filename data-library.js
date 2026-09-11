@@ -81,8 +81,8 @@ export const LIBRARY = [
   { id: "crafter-stats", group: "crafter", title: "Statistics stay at your table", cite: "MM41:p8",
     body: "The article turns a villain into numbers by guessing a value and asking the Game Master whether that is it - Yes takes the guess, Exceptional Yes raises it, No lowers it, and a random event means the statistic comes with a condition. This app has no game system attached and holds no stat blocks, so it does not do that part for you." },
 
-  { id: "crafter-gap", group: "crafter", title: "The cells this app cannot read", cite: "MM41:p14-15",
-    body: "Three narrow bands of the Minion column - 42-44, 68-69 and 75-76 - did not survive the page this app was built from. Rather than invent entries, the app tells you when a roll lands on one, shows the Lieutenant entry from the same band as context, and lets you roll again or take that entry by your own choice. One photograph of that page would close the gap." },
+  { id: "crafter-provenance", group: "crafter", title: "Where these tables came from", cite: "MM41:p14-15",
+    body: "Three bands of the Minion column - 42-44, 68-69 and 75-76 - were unreadable in the text this app was first built from, and it shipped saying so rather than filling them in. Photographs of the page closed the gap: Soldier is one cell spanning 40-44, and On A Mission spans 68-76. Every band you can roll here is now read from the page." },
 
   { id: "ask-chart", group: "oracle", title: "Ask the Game Master", cite: "OPM",
     body: "A Yes/No question, an honest read of the odds, one d100. Nine odds rows run from Certain to Impossible with 50/50 in the middle, and each row splits the hundred into Exceptional Yes, Yes, No and Exceptional No. At 50/50 a Yes of some kind lands on 1-50; at Likely it is 1-65; at Unlikely, 1-35. The app shows you the bands for the odds you picked before you roll." },

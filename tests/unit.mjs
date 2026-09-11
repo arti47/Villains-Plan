@@ -464,24 +464,30 @@ test("the minion column overrides the lieutenant one where the table splits it",
   assert(!shared.minion, "with no separate minion entry");
 });
 
-test("the three unreadable minion bands are marked, never invented (A19)", () => {
+test("every band of the minion column is readable - the source gap is closed (A19)", () => {
   const gaps = vc.UNDERLINGS.rows.filter((r) => r.minion && r.minion.unrecovered);
-  deepEqual(gaps.map((r) => `${r.min}-${r.max}`), ["42-44", "68-69", "75-76"], "the bands the page did not yield");
-  for (const row of gaps) {
-    equal(Object.keys(row.minion).length, 1, "the cell carries the flag and nothing else");
-    assert(row.label && row.text, "the lieutenant entry beside it is intact, and is offered as context");
+  equal(gaps.length, 0, "no band ships marked unrecovered any more");
+  for (let total = -20; total <= 120; total += 1) {
+    const entry = rules.lookupOpen(vc.UNDERLINGS, total);
+    const minion = entry.minion || entry;
+    assert(minion.label && (minion.text || entry.shared), `minion result at ${total} has an archetype`);
   }
-  // a minion roll landing there reports the gap rather than a made-up archetype
-  let sawGap = false;
-  for (let i = 0; i < 400 && !sawGap; i += 1) {
-    const result = crafter.rollUnderling("minion", 0);
-    if (!result.unrecovered) continue;
-    sawGap = true;
-    const part = result.parts.find((p) => p.unrecovered);
-    assert(part.lieutenantLabel && part.lieutenantText, "the lieutenant entry travels with it as context");
-    assert(!part.text || part.text === undefined || part.lieutenantText, "no invented minion text");
+  // the three bands the photographs recovered, and the merged cells they belong to
+  const at = (n) => { const r = rules.lookupOpen(vc.UNDERLINGS, n); return r.minion ? r.minion.label : r.label; };
+  deepEqual([at(40), at(43)], ["Soldier", "Soldier"], "the Soldier cell spans 40-44");
+  deepEqual([at(68), at(71), at(73), at(75)], ["On A Mission", "On A Mission", "On A Mission", "On A Mission"],
+    "the On A Mission cell spans 68-76");
+  deepEqual([at(43) === at(41), at(68) === at(70)], [true, true], "which is what merged cells mean");
+});
+
+test("no minion roll can come back without an archetype", () => {
+  for (let i = 0; i < 400; i += 1) {
+    const result = crafter.rollUnderling("minion", (i % 9) * 10 - 20);
+    for (const part of result.parts) {
+      assert(part.label, "every part is named");
+      assert(!part.unrecovered, "and none is a gap");
+    }
   }
-  assert(sawGap, "the gap surfaces in 400 minion rolls");
 });
 
 test("crafter rolls are logged with their dice and recorded", () => {

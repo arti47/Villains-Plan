@@ -32,9 +32,6 @@ function entryFor(row, kind) {
     mods: row.mods ? { ...row.mods } : null
   };
   if (kind === "minion" && row.minion) {
-    if (row.minion.unrecovered) {
-      return { ...entry, unrecovered: true, lieutenantLabel: row.label, lieutenantText: row.text, text: null };
-    }
     return { ...entry, key: row.minion.key, label: row.minion.label, text: row.minion.text };
   }
   return entry;
@@ -134,7 +131,6 @@ export function rollUnderling(kind, mod = 0) {
   const result = {
     id: uid("und"), at: now(), kind, rolls, parts, words,
     teamwork: parts.some((p) => p.special === "teamwork"),
-    unrecovered: parts.some((p) => p.unrecovered),
     mod, name: "", note: ""
   };
   logCrafter(kind, rolls, parts, words);
@@ -357,8 +353,7 @@ function underlingLine(adv, entry) {
   const summary = el("summary", { class: "phase-summary" });
   add(summary,
     el("span", { class: "phase-title", text: entry.name || entry.parts.map((p) => p.label).join(" + ") }),
-    entry.name ? el("span", { class: "phase-gist", text: entry.parts.map((p) => p.label).join(" + ") }) : null,
-    entry.unrecovered ? el("span", { class: "phase-open-leads", text: "source gap" }) : null);
+    entry.name ? el("span", { class: "phase-gist", text: entry.parts.map((p) => p.label).join(" + ") }) : null);
   add(wrap, summary);
   let filled = false;
   wrap.addEventListener("toggle", () => {
@@ -383,8 +378,7 @@ function underlingBody(adv, entry) {
   const box = el("div", { class: "underling-body" });
   add(box, diceRow(entry.rolls, "Lieutenants & Minions"));
 
-  if (entry.unrecovered) add(box, gapBlock(adv, entry));
-  add(box, partList(entry.parts.filter((p) => !p.unrecovered)));
+  add(box, partList(entry.parts));
   if (entry.teamwork) add(box, el("p", { class: "block-note", text: "Teamwork: a pair or more, working together - give them the second archetype between them, or roll one each." }));
 
   const name = el("input", { type: "text", placeholder: "Give them a name", "aria-label": "Name" });
@@ -407,36 +401,6 @@ function underlingBody(adv, entry) {
       onConfirm: () => { store.removeUnderling(adv.id, entry.kind, entry.id); refresh(); showToast("Deleted."); }
     })
   }, "Delete"));
-  return box;
-}
-
-/** A band the supplied page did not yield. Say so; never fill it in (A19). */
-function gapBlock(adv, entry) {
-  const gap = entry.parts.find((p) => p.unrecovered);
-  const box = el("div", { class: "block gap-block" });
-  add(box, el("h4", { class: "block-title" }, "This roll landed on a cell the app cannot read", citeLink("crafter-gap", "why")),
-    el("p", { class: "block-note", text: crafterGuidance("gap").text }),
-    el("p", { class: "block-text", text: `The Lieutenant entry for the same band is "${gap.lieutenantLabel}": ${gap.lieutenantText}` }));
-  const actions = el("div", { class: "row-actions" });
-  add(actions,
-    el("button", { class: "btn btn-quiet", type: "button", onclick: () => {
-      store.removeUnderling(adv.id, entry.kind, entry.id);
-      const replacement = rollUnderling(entry.kind, entry.mod);
-      store.addUnderling(adv.id, entry.kind, replacement);
-      refresh();
-      showToast("Rolled again.");
-    } }, "Roll again"),
-    el("button", { class: "btn btn-quiet", type: "button", onclick: () => {
-      store.updateUnderling(adv.id, entry.kind, entry.id, {
-        parts: entry.parts.map((p) => (p.unrecovered
-          ? { key: p.key, label: p.lieutenantLabel, text: p.lieutenantText, chosen: true, mods: null }
-          : p)),
-        unrecovered: false
-      });
-      refresh();
-      showToast("Using the Lieutenant entry, by your choice.");
-    } }, "Use the Lieutenant entry"));
-  add(box, actions);
   return box;
 }
 
@@ -484,7 +448,7 @@ function rollUnderlingInto(adv) {
   const entry = rollUnderling(underlingKind, mod);
   store.addUnderling(adv.id, underlingKind, entry);
   refresh();
-  showToast(entry.unrecovered ? "That band is unreadable in the source - see the card." : `${underlingKind === "lieutenant" ? "Lieutenant" : "Minion"} rolled.`);
+  showToast(`${underlingKind === "lieutenant" ? "Lieutenant" : "Minion"} rolled.`);
 }
 
 function rerollArchetype(adv) {

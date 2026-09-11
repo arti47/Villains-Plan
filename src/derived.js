@@ -217,8 +217,7 @@ function normalizeCrafted(raw) {
     kind: u.kind === "minion" ? "minion" : "lieutenant",
     name: u.name || "",
     note: u.note || "",
-    mod: Number.isFinite(u.mod) ? u.mod : 0,
-    unrecovered: !!u.unrecovered
+    mod: Number.isFinite(u.mod) ? u.mod : 0
   }));
   return {
     archetype: c.archetype && Array.isArray(c.archetype.parts) ? c.archetype : null,

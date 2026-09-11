@@ -12,9 +12,10 @@ Sources of record, in precedence order (§2.1):
 3. **The Villain Crafter**, *Mythic Magazine* Vol. 41, pp. 3–16. Cited `MM41:p<page>`.
    Supplies the villain, their organization, and their lieutenants and minions — the thing
    the reveal system reveals. Extracted into `data-villain-crafter.js`.
-   **Blocked data (§2.1):** three bands of its Minion column (42–44, 68–69, 75–76) did not
-   survive the supplied transcription. They ship marked `unrecovered`, never guessed; one
-   photograph of MM41:p14–15 would close the gap.
+   **Blocked data: none outstanding.** Three bands of its Minion column (42–44, 68–69,
+   75–76) were unreadable in the first transcription and shipped marked `unrecovered`;
+   photographs of MM41:p14–15 closed the gap (the Soldier cell is merged across 40–44 and
+   On A Mission across 68–76). Every band is now read from the page.
 
 ---
 
@@ -170,7 +171,7 @@ see `docs/AUDIT.md` F28.
 | A16 | Crafter modifier accumulation | The archetype modifies the organization roll; archetype and organization together modify lieutenant and minion rolls. A Double Archetype adds both halves. The screen prints the arithmetic. |
 | A17 | Crafter "Meaning Table" results | Rolled on One-Page Mythic's Action column — the only Action meaning table this app has. With the oracle off, the row is reported without a word rather than faked. |
 | A18 | Nested Double / Upscale / Teamwork | Re-rolled at the draw, never expanded, exactly as the tables say. This is also what makes the cascades finite (F28). |
-| A19 | The three unreadable Minion bands | Marked `unrecovered` and never invented. A roll landing there says so, shows the Lieutenant entry from the same band as context, and offers a re-roll or that entry by the player's explicit choice. |
+| A19 | The three unreadable Minion bands | *Closed.* They shipped marked `unrecovered` and never invented; page photographs then supplied them (merged cells: Soldier 40–44, On A Mission 68–76). The gap-handling UI was removed with the gap rather than left inert. |
 | A20 | Lieutenant or minion | Chosen before the roll, as the article instructs, because the modifier differs. |
 | A21 | Modifiers past the ends of a table | No clamping: the Crafter's top and bottom bands are open-ended and are what absorb them. |
 | A22 | Underlings before an organization | Allowed. The organization's contribution counts as 0 and the breakdown says "organization not rolled yet" rather than implying the modifier is complete. |
@@ -304,7 +305,7 @@ box means no UI may be built against it.
 | T13 | Ask procedure + oracle guidance + what is still unsourced | `data-mythic.js` | `oracle`, `screens` | 4+5+5 | [x] |
 | T14 | Villain Archetype (d100) with o/l/m modifiers | `data-villain-crafter.js` | `crafter.rollArchetype` | 23 | [x] |
 | T15 | Villain Organization (d100 + mod) with l/m modifiers | `data-villain-crafter.js` | `crafter.rollOrganization` | 18 | [x] |
-| T16 | Lieutenants & Minions (d100 + mod), both columns | `data-villain-crafter.js` | `crafter.rollUnderling` | 23 | [~] three Minion cells unrecovered (§2.1) |
+| T16 | Lieutenants & Minions (d100 + mod), both columns | `data-villain-crafter.js` | `crafter.rollUnderling` | 23 | [x] all bands verified against page photographs |
 | T17 | Crafter guidance: staging, interpretation, modifiers, statistics, the gap | `data-villain-crafter.js` | `crafter` | 6 | [x] |
 
 ### 9.1a Rules Traceability Ledger
@@ -340,7 +341,7 @@ box means no UI may be built against it.
 | Upscale: roll again bigger, both sets of modifiers | Cascade | `SPECIAL.upscale` | `crafter.expand` | Upscale note on the organization card | `Upscale rolls again and keeps both sets of modifiers` |
 | Teamwork: a partner archetype; a second reads As Expected | Cascade | `UNDERLINGS` teamwork row | `crafter.expand` | Teamwork note on the card | `Teamwork rolls a partner archetype` |
 | Open-ended bands absorb the modifiers | Lookup | `±Infinity` bands | `rules.lookupOpen` | — | `the modified tables are open-ended` |
-| Three Minion cells are unrecovered source | — (blocked data) | `UNDERLINGS[].minion.unrecovered` | `crafter.entryFor` → gap block | A card that says so and offers a re-roll or the Lieutenant entry by choice | `the three unreadable minion bands are marked, never invented` |
+| Every minion band resolves to an archetype | Lookup | `UNDERLINGS[].minion` | `crafter.entryFor` | Underling card | `every band of the minion column is readable`, `no minion roll can come back without an archetype` |
 | Villain statistics stay at your table | guidance only | `CRAFTER_GUIDANCE.stats` | not automated, and marked so | Rules library entry | — |
 | The oracle is one toggle, on by default | — | `Settings.mythicOracle` | `router` tab gating | Settings + a gated route that explains itself | `the oracle toggle hides its tab and its routes explain themselves` |
 
@@ -380,5 +381,6 @@ see README. Repository stays private while it carries a transcription.
 | 2026-09-11 | Rules read-through found two inert rules: a recorded Fate Question answer read by nothing (F20) and the "villain behind the villain" permission with no control (F21) | §0 defect class | unit tests added for both | `schemer-v1` |
 | 2026-09-11 | Second source extracted (One-Page Mythic): `data-mythic.js`, `src/oracle.js`, an Oracle tab with Ask and Meaning, random events, and the pivot question wired to the gate that already honoured it | The user supplied the page; it unblocks everything ruling A7 had marked not-in-source | `npm test` 81, `npm run smoke` 403, `npm run interaction` 286, probes read, screenshots checked | `schemer-v2` |
 | 2026-09-11 | Third source extracted (The Villain Crafter): `data-villain-crafter.js`, `src/crafter.js`, a Villain screen under the Dossier tab, modifiers carried between the three tables, and the three cascades | The user supplied the pages; MM41 was the last thing `STILL_NOT_IN_SOURCE` named that the app could use | `npm test` 98, `npm run smoke` 436, `npm run interaction` 331, probes read, screenshot checked | `schemer-v3` |
+| 2026-09-11 | Minion column completed from page photographs; `unrecovered` handling and its UI removed with the gap | The user supplied MM41:p14–15; merged cells explain all three bands | `npm test` 99, `npm run smoke` 436, `npm run interaction` 331 | `schemer-v4` |
 | 2026-09-11 | Audit cycle 3: F28–F31 (Double Archetypes expanded recursively and diverged at large modifiers; the villain roster hit 8.7 viewports; the seeds did not cover the crafted state; the citation check was a source behind) | New source, new passes | all harnesses green; a cascade-termination test now runs at a hostile modifier | `schemer-v3` |
 | 2026-09-11 | Audit cycle 2: F24–F27 (six tabs collided at 320px and the harness could not see it; the Settings gear was inert on Settings; a card written and never mounted; the citation check assumed one source) | New source, new passes | all harnesses green; `fixedBarFit` added so the tab bar is measured on every route | `schemer-v2` |

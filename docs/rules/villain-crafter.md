@@ -51,13 +51,14 @@ Both tables can send you to Mythic's Action meaning table. This app has that tab
 One-Page Mythic, so the result is rolled and a real word comes back (A17) — logged like any
 other die. With the oracle switched off the row is reported without a word.
 
-## The source gap
+## Provenance of the Minion column
 
-Three bands of the **Minion** column did not survive the supplied page: **42–44, 68–69,
-75–76**. They are marked `unrecovered` in the data and never filled in (A19, §2.1). When a
-minion roll lands on one the app says so, shows the Lieutenant entry from the same band as
-context, and offers two honest outs: roll again, or take that entry by your own choice
-(recorded as chosen, not as the source). One photograph of that page would close it.
+Three bands — **42–44, 68–69, 75–76** — were unreadable in the first transcription, because
+the page merges cells vertically and the flattening lost which band each belonged to. They
+shipped marked `unrecovered`, with the app saying so on any roll that landed there, rather
+than reconstructed (§2.1). Photographs of MM41:p14–15 then closed it: **Soldier is one cell
+spanning 40–44** and **On A Mission spans 68–76**. All 23 bands are now read from the page,
+and the gap-handling code went out with the gap rather than staying behind as dead weight.
 
 ## What this app does not take from the article
 

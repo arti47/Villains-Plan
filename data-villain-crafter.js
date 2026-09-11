@@ -2,9 +2,11 @@
 // The article "The Villain's Plan" names this as where the villain itself comes from.
 // Numbers verbatim, every description rewritten (§12).
 //
-// SOURCE GAP: three bands of the Minion column did not survive the supplied
-// transcription (42-44, 68-69, 75-76). They are marked `unrecovered` rather than
-// guessed at (ruling A19, §2.1 - never reconstruct a flattened table).
+// Provenance: the Minion column's merged cells were unreadable in the first
+// transcription (42-44, 68-69, 75-76) and shipped marked `unrecovered` rather than
+// guessed at. Page photographs of MM41:p14-15 then closed the gap: the Soldier cell is
+// merged across 40-44 and the On A Mission cell across 68-76. All 23 bands are now read
+// from the page (ruling A19, §2.1 - ask for the page, never reconstruct one).
 
 export const CRAFTER_SOURCE = {
   title: "The Villain Crafter",
@@ -155,7 +157,7 @@ export const UNDERLINGS = {
       minion: { key: "soldier", label: "Soldier", text: "A soldier, probably one of many, ready to fight for the villain." } },
     { min: 42, max: 44, key: "tough-stuff", label: "Tough Stuff",
       text: "Intimidation and force are the whole approach.",
-      minion: { unrecovered: true } },
+      minion: { key: "soldier", label: "Soldier", text: "A soldier, probably one of many, ready to fight for the villain." } },
     { min: 45, max: 49, key: "specialist", label: "Specialist", shared: true,
       text: "Extremely good at one thing, which is the thing they are here for." },
     { min: 50, max: 52, key: "a-little-different", label: "A Little Different",
@@ -176,7 +178,7 @@ export const UNDERLINGS = {
       text: "Related to the villain, or close to them in some personal way." },
     { min: 68, max: 69, key: "protege", label: "Protege",
       text: "A rising star in the organization, and the villain's favourite.",
-      minion: { unrecovered: true } },
+      minion: { key: "on-a-mission", label: "On A Mission", text: "One specific important job, handed down: plant the thing, deliver the thing, be somewhere at a time." } },
     { min: 70, max: 72, key: "right-hand", label: "Right Hand",
       text: "Second only to the villain, and able to stand in for them.",
       minion: { key: "on-a-mission", label: "On A Mission", text: "One specific important job, handed down: plant the thing, deliver the thing, be somewhere at a time." } },
@@ -185,7 +187,7 @@ export const UNDERLINGS = {
       minion: { key: "on-a-mission", label: "On A Mission", text: "One specific important job, handed down: plant the thing, deliver the thing, be somewhere at a time." } },
     { min: 75, max: 76, key: "mini-ruler", label: "Mini-Ruler",
       text: "A minor villain in their own right, running a domain of their own.",
-      minion: { unrecovered: true } },
+      minion: { key: "on-a-mission", label: "On A Mission", text: "One specific important job, handed down: plant the thing, deliver the thing, be somewhere at a time." } },
     { min: 77, max: 82, key: SPECIAL.meaning, label: "Meaning Table", shared: true, special: SPECIAL.meaning,
       text: "Roll on a meaning table and read an underling out of the word." },
     { min: 83, max: Infinity, key: SPECIAL.double, label: "Double Archetypes", shared: true, special: SPECIAL.double,
@@ -219,9 +221,9 @@ export const CRAFTER_GUIDANCE = {
     cite: "MM41:p8",
     text: "The article converts a villain into numbers by guessing the value and asking the Game Master whether that is what it is - Yes takes the guess, Exceptional Yes raises it, No lowers it. This app has no attached system and holds no stat blocks, so that stays at your table."
   },
-  gap: {
-    title: "A cell this app could not read",
+  provenance: {
+    title: "Where these tables came from",
     cite: "MM41:p14-15",
-    text: "Three narrow bands of the Minion column did not survive the page this app was built from. Rather than invent an entry, the app tells you when a roll lands on one, shows the Lieutenant entry from the same band as context, and lets you re-roll or pick."
+    text: "Three bands of the Minion column were unreadable in the text this app was first built from, and shipped saying so rather than guessed at. Photographs of the page closed the gap: the Soldier entry is one cell spanning 40-44, and On A Mission spans 68-76. Every band here is now read from the page."
   }
 };

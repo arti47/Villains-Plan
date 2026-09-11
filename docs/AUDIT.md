@@ -234,6 +234,22 @@ same passes run against it.
 - **Layout and interaction.** 436 smoke checks over thirteen routes and three seeds; 331
   controls clicked in isolation, including the crafted state.
 
+## Cycle 3b — the source gap closed
+
+### F32 · The Minion column's three unreadable bands
+- **Rule:** MM41:p14-15
+- **Fix:** the user supplied photographs of both pages. The page merges cells vertically:
+  **Soldier is one cell spanning 40-44** and **On A Mission spans 68-76**, which is exactly
+  the information a flattened transcription destroys. All three bands filled from the page;
+  the `unrecovered` flag, the engine branch that carried it, the gap block in the UI and the
+  toast that mentioned it were all removed **in the same change** — a caveat kept after its
+  cause is gone is §0 wearing a third coat.
+- **Why it mattered:** it is the §2.1 process working end to end. The table was flagged, not
+  reconstructed; the app told the truth to the player while it was incomplete; and one
+  request for a photo resolved it. Two tests replaced the gap tests: every total from -20 to
+  120 resolves to a named minion archetype, and the merged-cell spans are pinned so a future
+  edit cannot quietly reintroduce a hole.
+
 ## Not yet run
 
 - **Cycle 4.** Cycle 3 found four more, so the stopping rule is still not met — and two of
