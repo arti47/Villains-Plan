@@ -207,6 +207,83 @@ export function removeUnderling(advId, kind, id) {
   return adv.villain.crafted[list];
 }
 
+// ------------------------------------------------------------------ scenes, chaos, lists
+export function addScene(advId, scene) {
+  const adv = adventure(advId);
+  if (!adv) return null;
+  adv.scenes = [...(adv.scenes || []), scene];
+  adv.updatedAt = now();
+  save();
+  return adv.scenes[adv.scenes.length - 1];
+}
+
+export function updateScene(advId, sceneId, patch) {
+  const adv = adventure(advId);
+  const scene = adv && (adv.scenes || []).find((sc) => sc.id === sceneId);
+  if (!scene) return null;
+  Object.assign(scene, patch);
+  adv.updatedAt = now();
+  save();
+  return scene;
+}
+
+export function setChaos(advId, value) {
+  const adv = adventure(advId);
+  if (!adv) return null;
+  adv.chaos = value;
+  adv.updatedAt = now();
+  save();
+  return adv.chaos;
+}
+
+function listKey(kind) { return kind === "characters" ? "characters" : "threads"; }
+
+export function addListItem(advId, kind, text) {
+  const adv = adventure(advId);
+  if (!adv || !String(text || "").trim()) return null;
+  const key = listKey(kind);
+  const item = { id: uid("li"), text: String(text).trim(), entries: 1, removed: false, createdAt: now() };
+  adv[key] = [...(adv[key] || []), item];
+  adv.updatedAt = now();
+  save();
+  return item;
+}
+
+export function setListEntries(advId, kind, itemId, entries) {
+  const adv = adventure(advId);
+  const item = adv && (adv[listKey(kind)] || []).find((i) => i.id === itemId);
+  if (!item) return null;
+  item.entries = entries;
+  adv.updatedAt = now();
+  save();
+  return item;
+}
+
+/** Crossing out removes every line the element held (GME2e, via summary). */
+export function removeListItem(advId, kind, itemId) {
+  const adv = adventure(advId);
+  const item = adv && (adv[listKey(kind)] || []).find((i) => i.id === itemId);
+  if (!item) return null;
+  item.removed = true;
+  adv.updatedAt = now();
+  save();
+  return item;
+}
+
+/** The clean-up transfer: live elements move across, three-line ones come over with two. */
+export function cleanupList(advId, kind, cleanupTo) {
+  const adv = adventure(advId);
+  if (!adv) return null;
+  const key = listKey(kind);
+  snapshot(`cleaning up the ${kind} list`);
+  const live = (adv[key] || []).filter((item) => !item.removed);
+  const reduced = live.filter((item) => item.entries > cleanupTo).length;
+  adv[key] = live.map((item) => ({ ...item, entries: Math.min(item.entries, cleanupTo) }));
+  adv.updatedAt = now();
+  save();
+  return { carried: adv[key].length, reduced };
+}
+
 // ------------------------------------------------------------------ villain details
 function detailHolder(adv, target) {
   if (!target || target.kind === "villain") return adv.villain;

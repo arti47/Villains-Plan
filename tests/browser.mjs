@@ -158,6 +158,23 @@ export async function fixedBarFit(page) {
   });
 }
 
+/** The persistent header scrolls, but a clipped cell reads as broken. Measure it. */
+export async function headerFit(page) {
+  return page.evaluate(() => {
+    const header = document.querySelector(".resource-header");
+    if (!header) return { cells: 0, clipped: [] };
+    const box = header.getBoundingClientRect();
+    const clipped = [];
+    for (const cell of header.querySelectorAll(".stat-link")) {
+      const r = cell.getBoundingClientRect();
+      if (r.right > box.right + 1 || r.left < box.left - 1) {
+        clipped.push((cell.textContent || "").trim().slice(0, 24));
+      }
+    }
+    return { cells: header.querySelectorAll(".stat-link").length, clipped };
+  });
+}
+
 export async function explainNote(page) {
   return page.evaluate(() => {
     const note = document.querySelector("#screen details.explain");

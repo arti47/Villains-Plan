@@ -294,9 +294,58 @@ same passes run against it.
 - **Details state.** They attach to the villain and to one named underling, survive a
   reload, back-fill empty on old records, and a removal touches only its own holder.
 
+## Cycle 4 — after adding scenes, chaos and the lists
+
+### F36 · `Number(x) || default` swallowed a legitimate zero
+- **Rule:** the Chaos Factor floors at 1 (GME2e, via summary)
+- **Target:** `rules.clampChaos`, `derived.normalizeAdventure`
+- **Fix:** `Number.isFinite` instead of `||`.
+- **Why it mattered:** "in control at chaos 1" produces `clampChaos(0)`, and 0 is falsy, so
+  it returned the **start value of 5** rather than the floor of 1 — a four-point jump in
+  the number that governs every scene, silently, at exactly the moment a calm adventure
+  should be calmest. The test that caught it checks the boundary rather than the middle;
+  a test at chaos 5 would have passed forever. The same idiom was fixed on list entries.
+
+### F37 · Disabled list controls explained themselves in a `title`
+- **Target:** `scenes.listRow`, the add-to-list button
+- **Fix:** the controls stay enabled and refuse out loud, naming the rule ("already holds
+  three lines, which is the most any element may have").
+- **Why it mattered:** §13 D-26 — a gate living in a tooltip, on a phone, where there is no
+  hover. The interaction audit's "a disabled control must explain itself on screen" rule
+  found all five in one pass.
+
+### F38 · The header grew to five cells and clipped
+- **Fix:** open leads left the header; it was already the Dossier tab's badge, so the
+  number was in two places. A new `headerFit` check measures the header at 360px on every
+  route, the way `fixedBarFit` measures the tab bar.
+- **Why it mattered:** the header scrolls, so nothing overflowed the document and the
+  existing checks stayed green — the same blind spot as F24, in the other fixed bar. Two
+  bars, two measurements; that is the whole lesson.
+
+## Verified clean (cycle 4)
+
+- **The scene test.** All 90 roll-by-chaos combinations asserted against the rule, plus the
+  boundaries: 6 clears a chaos of 5, 5 alters, 4 interrupts, chaos 9 is cleared only by a
+  10, chaos 1 is failed only by a 1.
+- **Chaos.** Clamps at both ends, starts at 5, moves one step per scene, reports "already at
+  its floor/ceiling" rather than pretending to move, and **never reaches the ask odds**.
+- **Bookkeeping.** Refuses with no scene running and with an unstated control; snapshots, so
+  the whole boundary undoes in one step.
+- **Lists.** The three-line cap holds through normalization whatever the store is told;
+  twenty-five lines counted by weighting; crossing out frees every line; the clean-up
+  carries live elements and reduces threes to twos; the house-aid pick is labelled and its
+  weighting measured at ~3× over 2,000 draws.
+- **Provenance.** The subsystem is marked summary-sourced and provisional, the five
+  unsupplied pieces are listed in the app, and the adjustment options are flagged
+  `rollable: false`.
+
 ## Not yet run
 
-- **Cycle 4.** Cycle 3 found four more, so the stopping rule is still not met — and two of
+- **Cycle 5.** Cycle 4 found three, one of them a real arithmetic bug in the newest
+  subsystem and two of them repeats of earlier findings in new places (a gate in a tooltip,
+  a fixed bar that clips). The habit to build next: when a screen gains a control that can
+  refuse, write the refusal before the disable; when a fixed bar gains a cell, measure it.
+- **Cycle 4 (historical).** Cycle 3 found four more, so the stopping rule is still not met — and two of
   them (a density defect on a new screen, a seed that did not cover new state) were repeats
   of cycle 1 and 2 findings in a new place, which says the passes work and the *habits*
   have not caught up. Next cycle: walk the module seams (crafter ↔ oracle ↔ store, where

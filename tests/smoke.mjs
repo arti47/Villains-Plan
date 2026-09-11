@@ -2,7 +2,7 @@
 // (§6.7) on every route, in the fresh, mid-session and stress states.
 
 import { launch, openPage, strayText, horizontalOverflow, tapTargets, primaryAction,
-  buriedControls, explainNote, smallInputs, fixedBarFit, WIDTHS, PHONE } from "./browser.mjs";
+  buriedControls, explainNote, smallInputs, fixedBarFit, headerFit, WIDTHS, PHONE } from "./browser.mjs";
 import { results, report } from "./harness.mjs";
 
 const { routes } = await import("../src/router.js").catch(() => ({ routes: null }));
@@ -16,7 +16,7 @@ function check(name, fn) {
 function assert(cond, message) { if (!cond) throw new Error(message); }
 
 const ROUTES = [
-  "#/dossier", "#/villain", "#/adventures", "#/record", "#/reveal", "#/arc",
+  "#/dossier", "#/villain", "#/adventures", "#/record", "#/scene", "#/reveal", "#/lists", "#/arc",
   "#/ask", "#/meaning", "#/log", "#/rules", "#/tutorial", "#/settings", "#/new"
 ];
 
@@ -64,6 +64,13 @@ for (const seed of ["fresh", "mid-session", "stress"]) {
     await check(`${label}: nothing is buried under the fixed bars`, async () => {
       const buried = await buriedControls(page);
       assert(buried.length === 0, `buried: ${buried.join(" | ")}`);
+    });
+
+    await check(`${label}: the persistent header shows every cell at 360px`, async () => {
+      await page.setViewportSize({ width: 360, height: PHONE.height });
+      const fit = await headerFit(page);
+      assert(fit.clipped.length === 0, `header cells clipped: ${fit.clipped.join(" | ")}`);
+      await page.setViewportSize(PHONE);
     });
 
     await check(`${label}: the tab bar fits its labels at 320px`, async () => {
@@ -120,7 +127,9 @@ await check("walk: new adventure -> reveal -> dossier -> lead -> arc", async () 
   await page.waitForSelector("#screen .lead");
 
   const header = await page.textContent(".resource-header");
-  assert(/1/.test(header), "the header counts the phase and the lead");
+  assert(/1/.test(header), "the header counts the phase");
+  const badge = await page.textContent(".tab-bar .tab-badge");
+  assert(badge.trim() === "1", "and the open lead is the Dossier tab's badge, not a second header cell");
 
   await page.goto(`${url}#/arc`, { waitUntil: "domcontentloaded" });
   await page.waitForSelector("#screen h1");

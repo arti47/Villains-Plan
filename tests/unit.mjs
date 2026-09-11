@@ -105,7 +105,7 @@ test("every library entry with a citation cites one of the four sources", () => 
   const lib = rules.libraryGroups().flatMap((g) => g.entries);
   const ok = /^(MM69:p\d|MM41:p\d|OPM$|GME2e$)/;
   for (const entry of lib) if (entry.cite) assert(ok.test(entry.cite), `${entry.id} cites ${entry.cite}`);
-  assert(lib.length >= 30, "the library covers every automated rule from all four sources");
+  assert(lib.length >= 36, "the library covers every automated rule from all four sources");
 });
 
 // ---------------------------------------------------------------- the Threshold
@@ -346,6 +346,197 @@ test("Discover Meaning rolls one word at a time and logs each (A15)", () => {
   const word = oracle.discover("description");
   equal(store.rollLog({ kind: "meaning" }).length, before + 1, "one roll, one row");
   assert(word.word, "and a word came back");
+});
+
+// ---------------------------------------------------------------- scenes & chaos (GME2e)
+const sceneData = await import("../data-scenes.js");
+const house = await import("../data-house.js");
+const sceneEngine = await import("../src/scenes.js");
+
+test("the scene test reads the way the rule states, at every chaos level", () => {
+  for (let chaos = 1; chaos <= 9; chaos += 1) {
+    for (let d10 = 1; d10 <= 10; d10 += 1) {
+      const outcome = rules.sceneOutcome(d10, chaos);
+      const expected = d10 > chaos ? "expected" : (d10 % 2 === 1 ? "altered" : "interrupt");
+      equal(outcome.key, expected, `d10 ${d10} against chaos ${chaos}`);
+    }
+  }
+});
+
+test("the scene test's boundaries: at chaos, under it, over it", () => {
+  equal(rules.sceneOutcome(6, 5).key, "expected", "a 6 clears a chaos of 5");
+  equal(rules.sceneOutcome(5, 5).key, "altered", "a 5 does not, and 5 is odd");
+  equal(rules.sceneOutcome(4, 5).key, "interrupt", "a 4 does not, and 4 is even");
+  equal(rules.sceneOutcome(1, 1).key, "altered", "at chaos 1 only a 1 fails, and it alters");
+  equal(rules.sceneOutcome(2, 1).key, "expected", "everything else runs as expected");
+  for (let d10 = 1; d10 <= 9; d10 += 1) assert(rules.sceneOutcome(d10, 9).key !== "expected", `chaos 9 catches a ${d10}`);
+  equal(rules.sceneOutcome(10, 9).key, "expected", "only a 10 clears chaos 9");
+});
+
+test("chaos clamps to 1-9 and starts at 5", () => {
+  equal(sceneData.CHAOS.start, 5, "the adventure starts at five");
+  equal(rules.clampChaos(0), 1, "floor");
+  equal(rules.clampChaos(-4), 1, "well under the floor");
+  equal(rules.clampChaos(10), 9, "ceiling");
+  equal(rules.clampChaos(5), 5, "and leaves a legal value alone");
+  equal(rules.clampChaos(undefined), 5, "an absent value falls back to the start");
+  equal(rules.clampChaos("not a number"), 5, "so does rubbish");
+  // The floor case is the one that broke: 0 is falsy, and `Number(x) || 5` read it as
+  // absent, so "in control at chaos 1" jumped to 5 (docs/AUDIT.md F36).
+  equal(rules.clampChaos(0), 1, "zero is a number, not an absence");
+  const adv = freshAdventure();
+  equal(derived.chaos(store.active()), 5, "a new adventure starts at five");
+});
+
+test("bookkeeping moves chaos one step, and refuses to run past the ends", () => {
+  const adv = freshAdventure();
+  sceneEngine.testScene(store.active(), { expectation: "The PC reaches the mine." });
+  const out = sceneEngine.endScene(store.active(), "out");
+  assert(out.ok, "the scene closed");
+  equal(derived.chaos(store.active()), 6, "out of control raises it");
+  sceneEngine.testScene(store.active(), {});
+  sceneEngine.endScene(store.active(), "in");
+  equal(derived.chaos(store.active()), 5, "in control lowers it");
+  store.setChaos(adv.id, 9);
+  sceneEngine.testScene(store.active(), {});
+  const capped = sceneEngine.endScene(store.active(), "out");
+  equal(derived.chaos(store.active()), 9, "it cannot pass nine");
+  assert(/ceiling/.test(capped.summary.join(" ")), "and the summary says so rather than claiming a change");
+  store.setChaos(adv.id, 1);
+  sceneEngine.testScene(store.active(), {});
+  sceneEngine.endScene(store.active(), "in");
+  equal(derived.chaos(store.active()), 1, "nor under one");
+});
+
+test("a scene must be running to be ended, and control must be stated", () => {
+  const adv = freshAdventure();
+  equal(sceneEngine.endScene(store.active(), "in").ok, false, "nothing to end");
+  sceneEngine.testScene(store.active(), {});
+  equal(sceneEngine.endScene(store.active(), "sideways").ok, false, "an unknown control is refused");
+  equal(derived.chaos(store.active()), 5, "and nothing moved");
+});
+
+test("a scene is logged with its die and its chaos, and recorded", () => {
+  const adv = freshAdventure();
+  const scene = sceneEngine.testScene(store.active(), { expectation: "Into the mine." });
+  const row = store.rollLog({ kind: "scene" })[0];
+  equal(row.dice[0].die, "d10", "one d10");
+  equal(row.dice[0].value, scene.test.d10, "the one that was rolled");
+  assert(/chaos/.test(row.dice[0].table), "read against the chaos factor");
+  equal(row.question, "Into the mine.", "the expectation is kept with the roll");
+  assert(store.sessionRecord(adv.id).some((r) => r.kind === "scene"), "and the session record shows it");
+});
+
+test("the Chaos Factor never touches the Ask The Game Master odds", () => {
+  // GME2e's Fate Chart moves with chaos; One-Page Mythic's chart does not have it, and
+  // that chart is what ships. Nothing in the ask path may read chaos (ruling A24).
+  const ask = readFileSync("src/oracle.js", "utf8");
+  const rulesSrc = readFileSync("src/rules.js", "utf8");
+  assert(!/askResult[\s\S]{0,400}chaos/i.test(rulesSrc), "askResult does not consult chaos");
+  assert(!/function ask\([\s\S]{0,600}chaos/i.test(ask), "neither does the ask engine");
+  const adv = freshAdventure();
+  store.setChaos(adv.id, 9);
+  const high = rules.askResult("50-50", 50).answer.key;
+  store.setChaos(adv.id, 1);
+  equal(rules.askResult("50-50", 50).answer.key, high, "the same roll gives the same answer at any chaos");
+});
+
+test("scenes survive a reload and renumber from the store", () => {
+  const adv = freshAdventure();
+  sceneEngine.testScene(store.active(), { expectation: "one" });
+  sceneEngine.endScene(store.active(), "in");
+  sceneEngine.testScene(store.active(), { expectation: "two" });
+  const reloaded = store.__setState(JSON.parse(store.exportJSON()));
+  const saved = reloaded.adventures[0];
+  deepEqual(saved.scenes.map((sc) => sc.n), [1, 2], "numbered in order");
+  equal(saved.chaos, 4, "and the chaos factor came back");
+  equal(derived.currentScene(saved).expectation, "two", "the open scene is the one still running");
+});
+
+test("an old adventure back-fills a chaos factor and empty lists", () => {
+  const older = store.__setState({ version: 1, adventures: [{ name: "old", villain: { name: "x" } }], rollLog: [] });
+  const adv = older.adventures[0];
+  equal(adv.chaos, 5, "chaos");
+  deepEqual([adv.threads, adv.characters, adv.scenes], [[], [], []], "and the rest");
+});
+
+test("list weighting caps at three lines and the sheet caps at twenty-five", () => {
+  const adv = freshAdventure();
+  const item = store.addListItem(adv.id, "threads", "Find out who pays the diggers");
+  equal(item.entries, 1, "one line to start");
+  store.setListEntries(adv.id, "threads", item.id, 5);
+  equal(store.active().threads[0].entries, 5, "the store writes what it is told");
+  const normalized = store.__setState(JSON.parse(store.exportJSON()));
+  equal(normalized.adventures[0].threads[0].entries, sceneData.LISTS.maxEntries,
+    "and normalization holds it to three, so no path can exceed the cap");
+  equal(sceneData.LISTS.lines, 25, "twenty-five lines");
+  equal(sceneData.LISTS.sections, 5, "in five sections");
+});
+
+test("lines are counted by weighting, and a full list is a full list", () => {
+  const adv = freshAdventure();
+  for (let i = 0; i < 8; i += 1) {
+    const item = store.addListItem(adv.id, "characters", `Character ${i + 1}`);
+    store.setListEntries(adv.id, "characters", item.id, 3);
+  }
+  equal(derived.listLines(store.active(), "characters"), 24, "eight elements at three lines");
+  equal(derived.listFull(store.active(), "characters"), false, "twenty-four is not full");
+  store.addListItem(adv.id, "characters", "One more");
+  equal(derived.listLines(store.active(), "characters"), 25, "twenty-five is");
+  equal(derived.listFull(store.active(), "characters"), true, "and the screen refuses another");
+});
+
+test("crossing out frees every line the element held", () => {
+  const adv = freshAdventure();
+  const item = store.addListItem(adv.id, "threads", "Stop the ore shipment");
+  store.setListEntries(adv.id, "threads", item.id, 3);
+  equal(derived.listLines(store.active(), "threads"), 3, "three lines");
+  store.removeListItem(adv.id, "threads", item.id);
+  equal(derived.listLines(store.active(), "threads"), 0, "and none once crossed out");
+  equal(derived.listItems(store.active(), "threads").length, 0, "it is off the live list");
+});
+
+test("the clean-up transfer drops crossed-out elements and reduces three to two", () => {
+  const adv = freshAdventure();
+  const big = store.addListItem(adv.id, "threads", "The general's war");
+  store.setListEntries(adv.id, "threads", big.id, 3);
+  const small = store.addListItem(adv.id, "threads", "A rumour in the village");
+  const gone = store.addListItem(adv.id, "threads", "Finished business");
+  store.removeListItem(adv.id, "threads", gone.id);
+  const result = store.cleanupList(adv.id, "threads", sceneData.LISTS.cleanupTo);
+  equal(result.carried, 2, "two live elements came across");
+  equal(result.reduced, 1, "one of them was reduced");
+  equal(store.active().threads.find((t) => t.id === big.id).entries, 2, "three became two");
+  equal(store.active().threads.find((t) => t.id === small.id).entries, 1, "one stayed one");
+  assert(!store.active().threads.some((t) => t.id === gone.id), "the crossed-out one did not travel");
+});
+
+test("the weighted pick is a labelled house aid, and weighting actually bites", () => {
+  equal(house.HOUSE_AID, true, "the file flags itself");
+  assert(/house aid/i.test(house.WEIGHTED_PICK.label), "and the control says so where it is used");
+  const adv = freshAdventure();
+  const heavy = store.addListItem(adv.id, "characters", "Gorazon");
+  store.setListEntries(adv.id, "characters", heavy.id, 3);
+  store.addListItem(adv.id, "characters", "A passing merchant");
+  const counts = { Gorazon: 0, "A passing merchant": 0 };
+  for (let i = 0; i < 2000; i += 1) counts[sceneEngine.pickFromList(store.active(), "characters").item.text] += 1;
+  const ratio = counts.Gorazon / counts["A passing merchant"];
+  assert(ratio > 2.2 && ratio < 4, `three lines should come up about three times as often, got ${ratio.toFixed(2)}`);
+});
+
+test("an empty list picks nothing rather than throwing", () => {
+  const adv = freshAdventure();
+  equal(sceneEngine.pickFromList(store.active(), "threads"), null, "nothing to pick");
+});
+
+test("what the summary named but did not specify is recorded, not built", () => {
+  const missing = rules.notSupplied().join(" ");
+  for (const name of ["Fate Chart", "Event Focus", "Scene Adjustment", "Thread Progress", "Chaos"]) {
+    assert(new RegExp(name, "i").test(missing), `${name} is listed as not supplied`);
+  }
+  equal(rules.sceneAdjustments().rollable, false, "the adjustment options are offered, never rolled");
+  equal(rules.scenesSource().provenance, "summary", "and the whole subsystem is marked as summary-sourced");
+  assert(rules.scenesSource().provisional, "every value in it is provisional until a page confirms it");
 });
 
 // ---------------------------------------------------------------- Elements (GME2e)
@@ -786,7 +977,9 @@ test("a lead persists, toggles and counts in the header", () => {
   equal(derived.openLeads(store.active()).length, 1, "counted while open");
   store.toggleLead(adv.id, r.phase.id, store.active().phases[0].leads[0].id);
   equal(derived.openLeads(store.active()).length, 0, "not counted once resolved");
-  equal(derived.headerStats(store.active()).openLeads, 0, "and the header agrees");
+  // The count lives on the Dossier tab's badge, not in the header: one number, one place
+  // (docs/AUDIT.md F38).
+  equal(derived.headerStats(store.active()).openLeads, undefined, "the header does not carry it");
 });
 
 test("the session record grows as the adventure is played", () => {
@@ -879,6 +1072,8 @@ test("dead-data scan: every export is imported somewhere (§11.2.1)", () => {
     // outside it; the harness drives them directly and every one has a test.
     "rollArchetype", "rollOrganization", "rollUnderling",
     "modifierBreakdown", "canRollOrganization", "canRollUnderling",
+    // The scene engine and its screens share one module, as the Crafter's do.
+    "testScene", "interruptWord", "endScene", "pickFromList",
     "routes",                                // the layout probe's single source of routes
     "die", "d10", "d100",                    // dice primitives, reached through the roller
     "clearNode", "clearUndo", "deepClone",

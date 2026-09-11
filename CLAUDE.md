@@ -12,6 +12,12 @@ Sources of record, in precedence order (§2.1):
 3. **The Villain Crafter**, *Mythic Magazine* Vol. 41, pp. 3–16. Cited `MM41:p<page>`.
    Supplies the villain, their organization, and their lieutenants and minions — the thing
    the reveal system reveals. Extracted into `data-villain-crafter.js`.
+5. **Scenes, the Chaos Factor and Bookkeeping**, *Mythic Game Master Emulator Second
+   Edition*. Cited `GME2e`, **supplied as a written summary rather than page images**, so
+   every value ships `provisional: true` and the app says so on the Scene screen (§2.1).
+   Extracted into `data-scenes.js`. What the summary names but does not specify — the Fate
+   Chart's odds, the Event Focus table, the Scene Adjustment Table's ranges, the Thread
+   Progress Track, the chaos variants — is listed, not built.
 4. **Meaning Tables: Elements**, *Mythic Game Master Emulator Second Edition* (Word Mill
    Games), supplied as page images. Cited `GME2e`. Twelve d100 word tables — the detail
    tables MM41:p5 sends you to for who the villain actually is. Extracted into
@@ -36,7 +42,7 @@ Sources of record, in precedence order (§2.1):
 | **Scope decision** | Build the Villain's Plan tool only (user decision, Stage B), plus the Mythic oracle once One-Page Mythic was supplied. What is in neither source — Chaos Factor, scene setup, Bookkeeping, Threads/Characters lists — stays **not implemented and not invented** (§2 hard rule). |
 | **Audience** | A solo player/GM emulating a GM (Stage B: seat = solo). No GM screen. |
 | **Platforms** | Phone-first installable PWA; browser and desktop follow. |
-| **Core job** | Villain Crafter (archetype, organization, underlings) · adventure/villain dossier · earned-Discovery reveal engine · End Goal Roll state machine · Pivot Plan coda · the Mythic oracle (Ask, random events, Discover Meaning) · roll log · rules library · tutorial. |
+| **Core job** | Mythic's scene loop (expectation → d10 against the Chaos Factor → expected, altered or interrupt → bookkeeping) · Threads & Characters lists · Villain Crafter (archetype, organization, underlings) · adventure/villain dossier · earned-Discovery reveal engine · End Goal Roll state machine · Pivot Plan coda · the Mythic oracle (Ask, random events, Discover Meaning) · roll log · rules library · tutorial. |
 | **Backend** | None built. `firebase-config.js` + `database.rules.json` ship as the Phase 5 schema only (Stage B: local-first, sync later). |
 | **Theme** | Dossier ink: aged paper light / near-black dark; crimson = villain & threat, gold = revealed knowledge. System default, in-app override. |
 
@@ -142,8 +148,8 @@ Oracle tab (Ask · Meaning), gated by one setting that is on by default.
 | Shape | Count | Rules |
 |---|---|---|
 | Lookup | 22 | Villain Plan Focus, End Goal Focus, Pivot Plan Focus, Plot Twists, Ask The Game Master (9 rows × 4 bands), Discover Meaning Action, Discover Meaning Description, Villain Archetype, Villain Organization, Lieutenants & Minions, and the twelve GME2e Elements tables behind one registry |
-| Threshold | 1 | `d10 + 2×phases ≥ 11` reveals the End Goal |
-| Escalation | 2 | +2 per known phase · the Crafter's modifiers carried archetype → organization → underlings |
+| Threshold | 2 | `d10 + 2×phases ≥ 11` reveals the End Goal · `d10 > chaos` runs the scene as expected |
+| Escalation | 3 | +2 per known phase · the Crafter's modifiers carried archetype → organization → underlings · the Chaos Factor moving ±1 per scene within 1–9 |
 | Once-per-X | 2 | End Goal once per adventure; Pivot once per adventure |
 | Gate | 3 | Pivot requires survival / underlings at large / a failsafe · a recorded or rolled No on the pivot question blocks it · the organization roll needs the archetype whose modifier it carries |
 | Exception | 3 | "No Context" branches (81–100 and 84–100) skip the Focus text; a double-digit Ask roll fires a random event as well as the answer |
@@ -183,6 +189,10 @@ see `docs/AUDIT.md` F28.
 | A19 | The three unreadable Minion bands | *Closed.* They shipped marked `unrecovered` and never invented; page photographs then supplied them (merged cells: Soldier 40–44, On A Mission 68–76). The gap-handling UI was removed with the gap rather than left inert. |
 | A20 | Lieutenant or minion | Chosen before the roll, as the article instructs, because the modifier differs. |
 | A21 | Modifiers past the ends of a table | No clamping: the Crafter's top and bottom bands are open-ended and are what absorb them. |
+| A23 | The Scene Adjustment Table | Named by the summary, never given ranges. The kinds of adjustment are offered as choices and the app does not roll them (`rollable: false`). |
+| A24 | Chaos and the ask odds | The Chaos Factor does **not** move Ask The Game Master. GME2e's Fate Chart varies by chaos, but that chart was not supplied and One-Page Mythic's — which ships — has no chaos in it. A test asserts the ask path never reads chaos. |
+| A25 | Picking from a list | GME2e's selection roll was not supplied, so the app's weighted pick is a **house aid** (§2.2): own file, `HOUSE_AID = true`, labelled in the UI. Every line is equally likely, which is what makes the book's weighting bite. |
+| A26 | The Interrupt's Event Focus | Not supplied. An interrupt rolls meaning words — the One-Page Mythic random-event shape — and the card says the focus is yours. |
 | A22 | Underlings before an organization | Allowed. The organization's contribution counts as 0 and the breakdown says "organization not rolled yet" rather than implying the modifier is complete. |
 
 **End Goal Roll thresholds** (the arithmetic the whole app turns on):
@@ -216,6 +226,8 @@ Storage is plain JSON, exported and re-imported in one tap, round-trip tested.
 | `data-mythic.js` | Second source (OPM): the odds chart, the four answers, the random-event rule, Discover Meaning, and what is still unsourced |
 | `data-villain-crafter.js` | Third source (MM41): villain archetypes with their modifiers, organizations, lieutenants and minions |
 | `data-elements.js` | Fourth source (GME2e): the twelve Elements meaning tables, and which seven MM41 names for villain details |
+| `data-scenes.js` | Fifth source (GME2e, summary): the scene test, the Chaos Factor, bookkeeping, the two lists — all marked provisional — and what was named but not supplied |
+| `data-house.js` | House aids (§2.2): the weighted list pick, flagged and labelled |
 | `data-library.js` | Rules-library entries + tutorial steps + the two worked examples |
 | `firebase-config.js` | Placeholder + `FIREBASE_ENABLED` flag (Phase 5, not built) |
 | `database.rules.json` | RTDB rules for the Phase 5 shape |
@@ -237,6 +249,7 @@ Storage is plain JSON, exported and re-imported in one tap, round-trip tested.
 | `store.js` | Adventures CRUD, active adventure, phases, roll log, session record, export/import, undo stack |
 | `roller.js` | The reveal engine: End Goal Roll, phase reveal, pivot reveal, roll-log writes |
 | `oracle.js` | The Mythic oracle: Ask The Game Master, random events, Discover Meaning, the pivot question, and both oracle screens |
+| `scenes.js` | The scene loop: the scene test, altered/interrupt handling, the bookkeeping boundary, and the Threads & Characters lists |
 | `crafter.js` | The Villain Crafter: archetype, organization and underling rolls with their cascades and carried modifiers, and the Villain screen |
 | `sheet.js` | The in-play screens: persistent header, dossier (phase timeline, leads, editing), Reveal, Arc |
 | `lifecycle.js` | Arc boundaries with confirmation summary + one-step undo |
@@ -268,6 +281,11 @@ schemer.v1 = {
                 check: { d10, modifier, total, needed, fired }|null,
                 earnedNote, interpretation, leads: [ { id, text, resolved } ],
                 override|null, createdAt, revisedAt } ],
+    chaos: 1..9,                         // GME2e, starts at 5
+    threads:    [ { id, text, entries: 1..3, removed, createdAt } ],   // 25 lines each
+    characters: [ { …the same shape } ],
+    scenes: [ { id, n, test: { d10, chaos, kind, label }, expectation, notes,
+                adjustments[], words[], control: "in"|"out"|null, startedAt, endedAt } ],
     pivotEligible: { survived, underlings, failsafe },
     pivotOverride,                       // one use, cleared by use and by normalization
     fateAnswer|null,                     // resolved outside the app; blocks the pivot on a No

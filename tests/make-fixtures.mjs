@@ -9,6 +9,7 @@ const store = await import("../src/store.js");
 const roller = await import("../src/roller.js");
 const derived = await import("../src/derived.js");
 const crafter = await import("../src/crafter.js");
+const sceneEngine = await import("../src/scenes.js");
 const oracle = await import("../src/oracle.js");
 
 /** Roll up the villain the way a player would, so the seeds cover the crafted state. */
@@ -63,6 +64,21 @@ function writeInterpretations(adv) {
   }
 }
 
+/** A few scenes played, the lists populated and weighted, one scene still running. */
+function playScenes(adv, { played = 2, threads = [], characters = [], leaveOpen = true } = {}) {
+  for (const text of threads) store.addListItem(adv.id, "threads", text);
+  for (const text of characters) store.addListItem(adv.id, "characters", text);
+  const first = store.active().characters[0];
+  if (first) store.setListEntries(adv.id, "characters", first.id, 3);
+  for (let i = 0; i < played; i += 1) {
+    sceneEngine.testScene(store.active(), { expectation: `The character follows the lead, ${i + 1}.` });
+    const scene = store.active().scenes.slice(-1)[0];
+    store.updateScene(adv.id, scene.id, { notes: "It went about as well as these things go: something learned, something else broken." });
+    sceneEngine.endScene(store.active(), i % 2 ? "in" : "out");
+  }
+  if (leaveOpen) sceneEngine.testScene(store.active(), { expectation: "The PC reaches the mine and finds it guarded." });
+}
+
 // ------------------------------------------------------------------ mid-session
 reset();
 const mid = store.createAdventure({
@@ -76,6 +92,11 @@ addLeads(mid, 2);
 writeInterpretations(mid);
 craftVillain(mid, { lieutenants: 1, minions: 1 });
 oracle.ask({ question: "Is the mine still guarded?", odds: "likely" });
+playScenes(mid, {
+  played: 2,
+  threads: ["Find out who is paying the diggers", "Stop the ore shipment"],
+  characters: ["General Gorazon", "The seized mine", "A raid on the road"]
+});
 writeFileSync("tests/fixtures/mid-session.json", JSON.stringify(JSON.parse(store.exportJSON()), null, 2));
 
 // ------------------------------------------------------------------ stress
@@ -98,6 +119,11 @@ addLeads(deep, 3);
 writeInterpretations(deep);
 craftVillain(deep, { lieutenants: 4, minions: 6, details: 5 });
 for (let i = 0; i < 12; i += 1) oracle.ask({ question: `Does the guard look up? (${i + 1})`, odds: i % 2 ? "unlikely" : "50-50" });
+playScenes(deep, {
+  played: 7,
+  threads: ["Destroy the wazonite stockpile", "Find out who funded the island", "Get off the island alive", "Warn the rivals"],
+  characters: ["Max Vathen", "The island facility", "Fabian Torres", "The security chief", "A helicopter", "The cold caverns"]
+});
 // drive it to an End Goal, then a defeat and a pivot
 let guard = 0;
 while (!derived.endGoalRevealed(store.active()) && guard < 50) { guard += 1; roller.revealNext(store.active()); }

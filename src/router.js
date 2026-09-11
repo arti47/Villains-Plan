@@ -7,9 +7,10 @@ import { renderAdventures, renderRecord, renderLog, renderLibrary, renderSetting
 import { renderWizard, resetWizard } from "./wizard.js";
 import { renderAsk, renderMeaning } from "./oracle.js";
 import { renderVillain } from "./crafter.js";
+import { renderScene, renderLists } from "./scenes.js";
 import { renderTutorial } from "./tutorial.js";
 import * as store from "./store.js";
-import { openLeads, endGoalRevealed, arcStageKey, pivotPhases, canRevealPivot } from "./derived.js";
+import { openLeads, endGoalRevealed, arcStageKey, pivotPhases, canRevealPivot, currentScene } from "./derived.js";
 import { Settings } from "./settings.js";
 
 const TABS = [
@@ -25,7 +26,9 @@ const ROUTES = [
   { path: "/villain", tab: "dossier", title: "Craft the villain", render: renderVillain, inPlay: true, section: "Villain" },
   { path: "/adventures", tab: "dossier", title: "Adventures", render: renderAdventures, inPlay: true, section: "Adventures" },
   { path: "/record", tab: "dossier", title: "Session record", render: renderRecord, inPlay: true, section: "Session record" },
+  { path: "/scene", tab: "reveal", title: "Scene", render: renderScene, inPlay: true, section: "Scene" },
   { path: "/reveal", tab: "reveal", title: "Reveal", render: renderReveal, inPlay: true, section: "Reveal" },
+  { path: "/lists", tab: "reveal", title: "Threads & Characters", render: renderLists, inPlay: true, section: "Lists" },
   { path: "/arc", tab: "reveal", title: "Arc", render: renderArc, inPlay: true, section: "Arc" },
   { path: "/ask", tab: "oracle", title: "Ask the Game Master", render: renderAsk, inPlay: true, section: "Ask" },
   { path: "/meaning", tab: "oracle", title: "Discover Meaning", render: renderMeaning, inPlay: true, section: "Meaning" },
@@ -64,7 +67,8 @@ function badges() {
   const leads = openLeads(adv).length;
   if (leads) out.dossier = { text: String(leads), title: `${leads} open lead${leads === 1 ? "" : "s"}` };
   const stage = arcStageKey(adv);
-  if (stage === "discovery" && endGoalRevealed(adv)) out.reveal = { text: "!", title: "The End Goal is out - move the arc on" };
+  if (currentScene(adv)) out.reveal = { text: "\u25b6", title: "A scene is running" };
+  else if (stage === "discovery" && endGoalRevealed(adv)) out.reveal = { text: "!", title: "The End Goal is out - move the arc on" };
   else if (stage === "pivot" && pivotPhases(adv).length === 0 && canRevealPivot(adv).ok) out.reveal = { text: "!", title: "A Plan B is available" };
   else if (stage === "foiling") out.reveal = { text: "•", title: "Foiling the plan" };
   return out;

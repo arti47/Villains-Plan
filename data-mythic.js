@@ -108,10 +108,12 @@ export const MYTHIC_GUIDANCE = {
 };
 
 // What is still not in either source, after One-Page Mythic (CLAUDE.md §1.2).
+// What remains unsourced after four sources. The scene loop, the Chaos Factor, the
+// bookkeeping phase and the two lists arrived with data-scenes.js (as a summary); what is
+// still missing from THOSE rules is listed in NOT_SUPPLIED there.
 export const STILL_NOT_IN_SOURCE = [
-  "The Chaos Factor (the one-page edition leaves it out by design)",
-  "Scene setup: Expected, Altered and Interrupt scenes",
-  "The Bookkeeping phase",
-  "Threads and Characters lists, and their lists' rolls",
-  "The Villain Crafter (Mythic Magazine #41)"
+  "The Fate Chart itself - Mythic's odds by Chaos Factor. This app asks on One-Page Mythic's chart, which has no Chaos Factor in it.",
+  "The Event Focus table that a full random event or interrupt rolls first.",
+  "The Scene Adjustment Table's ranges - the kinds of adjustment are known, the numbers are not.",
+  "The Thread Progress Track, and the Mid-Chaos, No-Chaos and Random Chaos variants."
 ];

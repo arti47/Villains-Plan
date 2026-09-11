@@ -15,6 +15,10 @@ import {
   CRAFTER_SOURCE, SPECIAL
 } from "../data-villain-crafter.js";
 import { ELEMENT_TABLES, ELEMENTS_SOURCE, VILLAIN_DETAIL_TABLES } from "../data-elements.js";
+import {
+  CHAOS, SCENE_TEST, SCENE_ADJUSTMENTS, LISTS, BOOKKEEPING, NOT_SUPPLIED, SCENES_SOURCE
+} from "../data-scenes.js";
+import { WEIGHTED_PICK } from "../data-house.js";
 
 const FOCUS = {
   phase: VILLAIN_PLAN_FOCUS,
@@ -59,6 +63,35 @@ export function lookupOpen(table, total) {
   const row = table.rows.find((r) => total >= r.min && total <= r.max);
   if (!row) throw new Error(`${table.name}: ${total} is outside the table`);
   return row;
+}
+
+// ---------------------------------------------------------------- scenes & chaos
+export const chaosRule = () => CHAOS;
+export const sceneTestRule = () => SCENE_TEST;
+export const sceneAdjustments = () => SCENE_ADJUSTMENTS;
+export const listsRule = () => LISTS;
+export const bookkeepingSteps = () => BOOKKEEPING.steps;
+export const notSupplied = () => NOT_SUPPLIED;
+export const scenesSource = () => SCENES_SOURCE;
+export const housePick = () => WEIGHTED_PICK;
+
+export function listKind(key) {
+  return LISTS.kinds.find((k) => k.key === key) || LISTS.kinds[0];
+}
+
+/**
+ * The scene test: roll over the Chaos Factor and the scene is as expected; at or under it,
+ * an odd roll alters and an even roll interrupts (GME2e, via summary - provisional).
+ */
+export function sceneOutcome(d10, chaos) {
+  if (d10 > chaos) return SCENE_TEST.outcomes.find((o) => o.key === "expected");
+  return SCENE_TEST.outcomes.find((o) => o.key === (d10 % 2 === 1 ? "altered" : "interrupt"));
+}
+
+export function clampChaos(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return CHAOS.start;
+  return Math.min(CHAOS.max, Math.max(CHAOS.min, Math.round(n)));
 }
 
 export function arcStage(key) {

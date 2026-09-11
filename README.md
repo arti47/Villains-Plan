@@ -27,6 +27,11 @@ account, no server and no telemetry.
 
 ## What it does
 
+- **Scene** — Mythic's own loop: write what you expect, roll a d10 against the Chaos
+  Factor, and get the scene you pictured, a twisted one, or an interruption. Ending a scene
+  runs bookkeeping: it moves the Chaos Factor and points you at the lists.
+- **Lists** — Threads and Characters, twenty-five lines each, with the weighting that makes
+  the busiest parts of your story likeliest to come back.
 - **Villain** — the Villain Crafter: an archetype for who the villain is, the Elements
   tables for who they actually are (identity, skills, motivations, personality, appearance,
   traits and flaws, background), a shape for the organization behind them, and rolls for the
@@ -49,8 +54,10 @@ account, no server and no telemetry.
 
 ## What it does not do
 
-Four sources are in here: the Villain's Plan article, the One-Page Mythic Game Master
-Emulator, the Villain Crafter, and Mythic Second Edition's Elements meaning tables. The Chaos Factor (which the one-page edition drops by
+Five sources are in here: the Villain's Plan article, the One-Page Mythic Game Master
+Emulator, the Villain Crafter, Mythic Second Edition's Elements meaning tables, and its
+scene/Chaos Factor/bookkeeping rules. That last one arrived as a written summary rather
+than pages, so it ships marked provisional and the Scene screen says so. The Chaos Factor (which the one-page edition drops by
 design), scene setup, the Bookkeeping phase and the Threads and Characters lists are in
 none of them, so the app does not roll them and does not approximate them. Villain
 statistics are also left alone: no game system is attached here.

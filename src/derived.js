@@ -2,6 +2,7 @@
 // normalization/migration path. No DOM, no storage.
 
 import { END_GOAL_ROLL, PIVOT_GATE, ARC_STAGES, FATE_ANSWERS } from "../data.js";
+import { CHAOS, LISTS } from "../data-scenes.js";
 import { uid, now } from "./core.js";
 
 // ------------------------------------------------------------------ phases
@@ -118,6 +119,25 @@ export function leads(adv) {
 }
 export const openLeads = (adv) => leads(adv).filter((l) => !l.resolved);
 
+// ------------------------------------------------------------------ scenes & lists
+export const chaos = (adv) => (adv ? adv.chaos : CHAOS.start);
+export const scenes = (adv) => (adv && Array.isArray(adv.scenes) ? adv.scenes : []);
+export const currentScene = (adv) => scenes(adv).find((sc) => !sc.endedAt) || null;
+export const sceneCount = (adv) => scenes(adv).length;
+
+export function listItems(adv, kind) {
+  const list = (adv && adv[kind === "characters" ? "characters" : "threads"]) || [];
+  return list.filter((item) => !item.removed);
+}
+/** Lines used: the weighting is entries, and the sheet holds twenty-five of them. */
+export function listLines(adv, kind) {
+  return listItems(adv, kind).reduce((sum, item) => sum + item.entries, 0);
+}
+export function listFull(adv, kind) { return listLines(adv, kind) >= LISTS.lines; }
+export function listNeedsCleanup(adv, kind) {
+  return listFull(adv, kind) && listItems(adv, kind).some((item) => item.entries > LISTS.cleanupTo);
+}
+
 // ------------------------------------------------------------------ header
 /** The numbers that decide what you do next (§6.2 persistent header). */
 export function headerStats(adv) {
@@ -125,13 +145,14 @@ export function headerStats(adv) {
   const needed = endGoalNeeded(adv);
   const revealed = endGoalRevealed(adv);
   return {
+    chaos: chaos(adv),
+    scene: currentScene(adv),
     phases: phaseCount(adv),
     endGoalRevealed: revealed,
     needed,
     chance: endGoalChance(adv),
     modifier: endGoalModifier(adv),
     stage: arcStageKey(adv),
-    openLeads: openLeads(adv).length,
     pivots: pivotPhases(adv).length
   };
 }
@@ -207,7 +228,41 @@ export function normalizeAdventure(raw) {
   a.pivotOverride = false;
   a.fateAnswer = a.fateAnswer || null;
   a.record = (Array.isArray(a.record) ? a.record : []).filter((r) => r && r.text);
+
+  // Scenes, the Chaos Factor and the two lists (GME2e).
+  const storedChaos = Number(a.chaos);
+  a.chaos = Number.isFinite(storedChaos)
+    ? Math.min(CHAOS.max, Math.max(CHAOS.min, Math.round(storedChaos)))
+    : CHAOS.start;
+  a.threads = normalizeList(a.threads);
+  a.characters = normalizeList(a.characters);
+  a.scenes = (Array.isArray(a.scenes) ? a.scenes : [])
+    .filter((sc) => sc && sc.test)
+    .map((sc, i) => ({
+      id: sc.id || uid("scene"),
+      n: i + 1,
+      test: sc.test,
+      expectation: sc.expectation || "",
+      notes: sc.notes || "",
+      adjustments: Array.isArray(sc.adjustments) ? sc.adjustments.filter(Boolean) : [],
+      words: Array.isArray(sc.words) ? sc.words.filter(Boolean) : [],
+      control: ["in", "out"].includes(sc.control) ? sc.control : null,
+      startedAt: sc.startedAt || now(),
+      endedAt: sc.endedAt || null
+    }));
   return a;
+}
+
+function normalizeList(list) {
+  return (Array.isArray(list) ? list : [])
+    .filter((item) => item && item.text)
+    .map((item) => ({
+      id: item.id || uid("li"),
+      text: String(item.text),
+      entries: Math.min(LISTS.maxEntries, Math.max(1, Math.round(Number.isFinite(Number(item.entries)) ? Number(item.entries) : 1))),
+      removed: !!item.removed,
+      createdAt: item.createdAt || now()
+    }));
 }
 
 function normalizeDetails(list) {

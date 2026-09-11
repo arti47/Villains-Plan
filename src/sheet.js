@@ -51,10 +51,11 @@ export function renderResourceHeader(adv) {
       : stat("End Goal", `${s.needed}+`, "stat-crimson");
 
   add(wrap,
+    statLink("#/scene", s.scene ? `Scene ${s.scene.n}: ${s.scene.test.label}` : "The Chaos Factor decides how the next scene opens",
+      stat("chaos", s.chaos, s.chaos >= 7 ? "stat-crimson" : s.chaos <= 3 ? "stat-quiet" : "")),
     statLink("#/dossier", adv.name, stat(s.phases === 1 ? "phase" : "phases", s.phases)),
     statLink("#/reveal", `d10 + ${s.modifier} against ${endGoalRule().threshold}`, endGoalCell),
-    statLink("#/arc", "The arc this adventure is in", stat("arc", arcStage(s.stage).label, "stat-text")),
-    statLink("#/record", "What has happened so far", stat("open leads", s.openLeads, s.openLeads ? "" : "stat-quiet")));
+    statLink("#/arc", "The arc this adventure is in", stat("arc", arcStage(s.stage).label, "stat-text")));
   return wrap;
 }
 

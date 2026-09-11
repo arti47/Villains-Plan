@@ -11,7 +11,7 @@ import { headerStats, phaseCount } from "./derived.js";
 import * as store from "./store.js";
 import { Settings, apply as applySettings } from "./settings.js";
 import { NOT_IN_SOURCE, LOG_CAP } from "../data.js";
-import { stillNotInSource, mythicSource, crafterSource, elementsSource } from "./rules.js";
+import { stillNotInSource, mythicSource, crafterSource, elementsSource, scenesSource, notSupplied } from "./rules.js";
 import { refresh, go } from "./router.js";
 
 const PAGE = 25;   // lists page rather than grow without bound (§6.5)
@@ -290,6 +290,9 @@ function notInSourceCard() {
   const list = el("ul", {});
   for (const item of stillNotInSource()) add(list, el("li", { text: item }));
   add(box, list, el("p", { class: "block-note", text: NOT_IN_SOURCE.fateQuestion.text }));
+  const more = el("ul", {});
+  for (const item of notSupplied()) add(more, el("li", { text: item }));
+  add(box, el("p", { class: "block-note", text: "The scene, chaos and list rules came from a written summary rather than pages, so they ship marked provisional - and these parts of them were named but never specified, so they are not built:" }), more);
   return box;
 }
 
@@ -320,6 +323,7 @@ function sourceCard() {
     el("p", { text: `${m.title}, ${m.publisher} - Ask The Game Master, Random Events and Discover Meaning, cited ${m.cite}.` }),
     el("p", { text: `${crafterSource().title}, ${crafterSource().publication} volume ${crafterSource().volume}, pages ${crafterSource().pages} - the villain, their organization and their underlings, cited ${crafterSource().cite}.` }),
     el("p", { text: `${elementsSource().title}: ${elementsSource().section} - the twelve detail tables, cited ${elementsSource().cite}.` }),
+    el("p", { text: `${scenesSource().title}: ${scenesSource().section} - supplied as a written summary, so those values ship marked provisional.` }),
     el("p", { class: "block-note", text: "Every number and table comes from those four; every wording here is the app's own." }));
   return box;
 }

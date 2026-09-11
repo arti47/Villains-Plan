@@ -9,6 +9,7 @@ export const LIBRARY_GROUPS = [
   { key: "endgoal", label: "The End Goal" },
   { key: "arc", label: "Arcs and foiling" },
   { key: "pivot", label: "The Pivot" },
+  { key: "scenes", label: "Scenes and chaos" },
   { key: "crafter", label: "Crafting the villain" },
   { key: "oracle", label: "The Mythic oracle" },
   { key: "app", label: "How the app behaves" }
@@ -59,6 +60,24 @@ export const LIBRARY = [
 
   { id: "pivot-timing", group: "pivot", title: "Reveal it immediately, keep it short", cite: "MM69:p25",
     body: "Put the Plan B in the scene right after the plan falls - the celebration, the debrief - because a pivot you know is coming and are waiting for reads as padding. One to three scenes. If you would rather be surprised, ask a Fate Question in that cleanup scene instead and record the answer here." },
+
+  { id: "chaos-factor", group: "scenes", title: "The Chaos Factor", cite: "GME2e",
+    body: "One number, one to nine, starting at five, measuring how much control your character has over events. It is what the scene test is rolled against: high chaos means more scenes that are not the one you pictured. At the end of every scene you decide whether the characters were generally in control - progress and successes - or not, and it moves one step, floor of one, ceiling of nine. Note that it does not touch this app's Ask The Game Master odds: those come from One-Page Mythic, whose chart has no Chaos Factor in it." },
+
+  { id: "scene-test", group: "scenes", title: "Testing the expected scene", cite: "GME2e",
+    body: "Say how you expect the next scene to open - usually whatever your character means to do - then roll one d10 against the Chaos Factor. Over it, and the scene runs as you pictured. At or under it, an odd roll alters the scene and an even roll interrupts it. The expectation has to exist before the roll, because both of the other outcomes are defined against it." },
+
+  { id: "altered-scene", group: "scenes", title: "Altered scenes", cite: "GME2e",
+    body: "The scene still happens, but not as you saw it: take the next most likely version, or twist one element - someone missing, someone extra, more or less going on, an object changed. Mythic has a Scene Adjustment Table for this; its ranges are not in the source this app was built from, so the app offers the kinds of adjustment as choices and does not roll them. Asking the Game Master or rolling a meaning word are both fair ways to decide." },
+
+  { id: "interrupt-scene", group: "scenes", title: "Interrupt scenes", cite: "GME2e",
+    body: "Your expectation is set aside and something else happens. An interrupt is built exactly like a random event - Mythic rolls an Event Focus first, then meaning. That focus table is not in the source here, so the app rolls the meaning words and leaves the focus to you, which is the same shape as One-Page Mythic's random events." },
+
+  { id: "bookkeeping", group: "scenes", title: "The bookkeeping phase", cite: "GME2e",
+    body: "When the action of a scene wraps up, two things happen before the next one. Update the lists: add what the scene introduced, give another line to anything prominent, cross out what is finished. Then move the Chaos Factor one step by whether the characters held control. The app fires both as one step with a summary and one undo." },
+
+  { id: "threads-characters", group: "scenes", title: "Threads and Characters", cite: "GME2e",
+    body: "Two lists of twenty-five lines each. Threads are the goals your character is chasing - Mythic never invents one for you. Characters are the people who matter, and anything else that should be able to walk into a scene: a place, an object, a recurring event. Something prominent earns another line, to a maximum of three, so the busiest parts of the story are likeliest to come back. When the lines fill up you clean up, and three-line elements come across with two." },
 
   { id: "villain-archetype", group: "crafter", title: "Villain Archetype", cite: "MM41:p6-7",
     body: "A d100 for who the villain is and what drives them - revenge, domination, duty, money, a need they cannot put down, or no free will at all. It is rolled flat, with no modifier, because the modifiers come out of it: every archetype carries three, one each for the organization, lieutenant and minion rolls that follow. Roll 81 or more and you take two archetypes and combine them, modifiers included." },
@@ -138,6 +157,10 @@ export const TUTORIAL = [
     body: "Dossier - Villain rolls the villain's archetype, the organization behind them, and the lieutenants and minions you will actually meet. Each roll feeds a modifier into the next and the app shows the arithmetic. You can do all three now for a running start, or leave them until your character learns each piece - nothing downstream needs them." },
   { id: "t2c", title: "Give the villain details",
     body: "The archetype says what kind of villain they are; step 4 on the Villain screen says who they are. Pick a table - identity, skills, motivations, personality, appearance, traits and flaws, background - roll a word, and read it against everything you have. Lieutenants and minions can take details too, which is how a Tough Stuff lieutenant becomes a specific gargoyle." },
+  { id: "t7b", title: "Run the adventure as scenes",
+    body: "The Scene screen is Mythic's own loop. Write what you expect to happen next, roll the d10 against the Chaos Factor, and take what you get: the scene you pictured, a twisted version, or an interruption that sends you somewhere else. When the scene is done, End the scene - that is bookkeeping: it asks whether you were in control, moves the Chaos Factor, and points you at the lists." },
+  { id: "t7c", title: "Keep the two lists",
+    body: "Threads are what you are chasing; Characters are who and what can walk into a scene - people, places, a recurring event. Add what a scene introduced, give another line to whatever was prominent (three lines maximum), and cross out what is finished. More lines mean more chance of coming back when you pick at random." },
   { id: "t9b", title: "Ask when you do not know",
     body: "The Oracle tab is Mythic itself: type a Yes/No question, pick the odds honestly - 50/50 is for not knowing - and roll. Yes and No follow whatever you expected when you asked; the Exceptional results overshoot it. Roll a double and a random event lands in the same moment, on top of the answer. When you want detail rather than an answer, Discover Meaning rolls a word: Action for what something does, Description for what it is like." },
   { id: "t10", title: "Back it up",
