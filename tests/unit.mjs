@@ -365,6 +365,14 @@ test("the scene test reads the way the rule states, at every chaos level", () =>
   }
 });
 
+test("a 10 always clears, which is why the book's even list stops at 8", () => {
+  for (let chaos = 1; chaos <= 9; chaos += 1) {
+    equal(rules.sceneOutcome(10, chaos).key, "expected", `a 10 at chaos ${chaos}`);
+  }
+  const evens = [2, 4, 6, 8].map((n) => rules.sceneOutcome(n, 9).key);
+  deepEqual(evens, ["interrupt", "interrupt", "interrupt", "interrupt"], "2, 4, 6 and 8 interrupt");
+});
+
 test("the scene test's boundaries: at chaos, under it, over it", () => {
   equal(rules.sceneOutcome(6, 5).key, "expected", "a 6 clears a chaos of 5");
   equal(rules.sceneOutcome(5, 5).key, "altered", "a 5 does not, and 5 is odd");
@@ -619,19 +627,44 @@ test("crossing out frees every line the element held", () => {
   equal(derived.listItems(store.active(), "threads").length, 0, "it is off the live list");
 });
 
-test("the clean-up transfer drops crossed-out elements and reduces three to two", () => {
+test("the clean-up transfer: a single entry each, except threes, which get two", () => {
+  // The book's words: "copy over ... with a single entry for each element. For any with
+  // three entries on the original List, give them two entries on the new List." The app
+  // carried twos across at two until a quote corrected it (docs/AUDIT.md F41).
+  deepEqual(sceneData.LISTS.cleanupEntries, { 1: 1, 2: 1, 3: 2 }, "1 stays 1, 2 drops to 1, 3 drops to 2");
   const adv = freshAdventure();
   const big = store.addListItem(adv.id, "threads", "The general's war");
   store.setListEntries(adv.id, "threads", big.id, 3);
+  const middling = store.addListItem(adv.id, "threads", "The seized mine");
+  store.setListEntries(adv.id, "threads", middling.id, 2);
   const small = store.addListItem(adv.id, "threads", "A rumour in the village");
   const gone = store.addListItem(adv.id, "threads", "Finished business");
+  store.setListEntries(adv.id, "threads", gone.id, 3);
   store.removeListItem(adv.id, "threads", gone.id);
-  const result = store.cleanupList(adv.id, "threads", sceneData.LISTS.cleanupTo);
-  equal(result.carried, 2, "two live elements came across");
-  equal(result.reduced, 1, "one of them was reduced");
+
+  const before = derived.listLines(store.active(), "threads");
+  equal(before, 6, "three live elements on six lines");
+  const result = store.cleanupList(adv.id, "threads", sceneData.LISTS.cleanupEntries);
+  equal(result.carried, 3, "three live elements came across");
+  equal(result.reduced, 2, "the three and the two were both reduced");
   equal(store.active().threads.find((t) => t.id === big.id).entries, 2, "three became two");
+  equal(store.active().threads.find((t) => t.id === middling.id).entries, 1, "two became one");
   equal(store.active().threads.find((t) => t.id === small.id).entries, 1, "one stayed one");
   assert(!store.active().threads.some((t) => t.id === gone.id), "the crossed-out one did not travel");
+  equal(derived.listLines(store.active(), "threads"), 4, "six lines became four");
+});
+
+test("a clean-up on a full list always frees room", () => {
+  const adv = freshAdventure();
+  for (let i = 0; i < 8; i += 1) {
+    const item = store.addListItem(adv.id, "characters", `Character ${i + 1}`);
+    store.setListEntries(adv.id, "characters", item.id, 3);
+  }
+  store.addListItem(adv.id, "characters", "The last line");
+  equal(derived.listFull(store.active(), "characters"), true, "twenty-five lines");
+  store.cleanupList(adv.id, "characters", sceneData.LISTS.cleanupEntries);
+  equal(derived.listLines(store.active(), "characters"), 17, "eight threes become twos, the single stays one");
+  equal(derived.listFull(store.active(), "characters"), false, "and there is room again");
 });
 
 test("a list roll reads section then line, the way the procedure says", () => {
@@ -677,7 +710,11 @@ test("what is still unsupplied is recorded, and what arrived is no longer listed
     assert(!new RegExp(name + " itself|" + name + " table", "i").test(missing),
       `${name} arrived, so it must not still be listed as missing`);
   }
-  assert(rules.scenesSource().provisional, "the summary-sourced values stay provisional until pages confirm them");
+  equal(rules.scenesSource().provisional, false, "the summary-sourced values were confirmed by quotation");
+  for (const rule of [sceneData.CHAOS, sceneData.SCENE_TEST, sceneData.LISTS, sceneData.BOOKKEEPING]) {
+    equal(rule.provisional, false, "each confirmed rule drops the flag");
+  }
+  equal(rules.listSelectionRule().provisional, true, "and the one that is still summary-only keeps it");
 });
 
 // ---------------------------------------------------------------- Elements (GME2e)

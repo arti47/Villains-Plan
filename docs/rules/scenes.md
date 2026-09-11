@@ -4,10 +4,12 @@ From the Mythic Game Master Emulator Second Edition, cited `GME2e`.
 
 ## Provenance — read this first
 
-**This subsystem arrived as a written summary first.** The scene test, the Scene
-Adjustment Table and the Event Focus table have since been confirmed or supplied as page
-photographs; the Chaos Factor range, the bookkeeping steps and the list sizes are still
-summary-only. Under §2.1 a
+**This subsystem arrived as a written summary first**, and shipped with every value marked
+provisional. The scene test, the Scene Adjustment Table and the Event Focus table were then
+confirmed or supplied as photographs; the Chaos Factor, list and bookkeeping rules were
+confirmed by direct quotation — which also **corrected the clean-up rule** (F41). Those
+flags are gone. The only summary-only rule left is how a random event picks an entry from a
+list, which keeps its flag and its recorded inference. Under §2.1 a
 summary corroborates and never decides, so everything below ships marked
 `provisional: true` in `data-scenes.js`, the Scene screen carries a fold saying where the
 rules came from, and a page image can confirm or correct any of it. What the summary
@@ -32,6 +34,7 @@ Roll 1d10 against the Chaos Factor:
 | Roll | Result |
 |---|---|
 | Over the Chaos Factor | **Expected** — the scene opens as you pictured |
+| (a 10 always clears: chaos never exceeds 9, which is why the book's even list stops at 8) | |
 | At or under, **odd** | **Altered** — the same scene, twisted |
 | At or under, **even** | **Interrupt** — something else happens instead |
 
@@ -72,8 +75,10 @@ should be able to walk into a scene.
 - **Weighting**: something prominent earns another line, to a maximum of three. The cap is
   enforced in normalization, so no path can exceed it.
 - **Crossing out** frees every line an element held.
-- **Clean-up** when the sheet is full: live elements carry across and three-line ones come
-  over with two.
+- **Clean-up** when the sheet is full: every kept element carries across with **one** line,
+  except ones holding three, which carry across with two (`{1:1, 2:1, 3:2}`). The app had
+  this wrong from the summary — twos stayed at two — until the book's own wording corrected
+  it. A test pins all three cases and asserts a full list always frees room.
 - **Rolling on a list** is the book's own two-step procedure (ruling A25, revised — the
   house aid that stood in for it was deleted with the gap): a section die sized to the
   active sections (none / d4 / d6 / d8 / d10), then 1d10 for the line, two faces per line.

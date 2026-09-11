@@ -379,9 +379,33 @@ which list each focus points at; the Scene Adjustment table covers 1–10 and it
 cascade terminates over 300 runs; both Action tables are 100 unique words with their page
 anchors; the list roll reads section then line and reports Choose on a blank.
 
+## Cycle 5b — the summary's values confirmed by quotation
+
+### F41 · The clean-up transfer kept two-entry elements at two
+- **Rule (quoted):** "copy over the Threads and Characters you want to keep, **with a single
+  entry for each element**. For any Threads or Characters with three entries on the
+  original List, give them two entries on the new List." (GME2e)
+- **Target:** `store.cleanupList`, `LISTS.cleanupEntries`
+- **Fix:** the mapping is now explicit data — `{1: 1, 2: 1, 3: 2}` — instead of a
+  `Math.min(entries, 2)` that quietly left twos alone.
+- **Why it mattered:** a real rules error, shipped, from a summary that said "elements that
+  maxed out at three entries are reduced to two" and did not mention what happens to the
+  rest. The wrong version freed less room and left the list weighted more heavily than the
+  book intends. It is the §2.1 rule paying off a third time: **a summary corroborates, it
+  never decides** — and the thing it got wrong was not a number it stated, but one it
+  omitted. The test now pins all three cases and asserts a full list always frees room.
+
+### The rest of the summary, confirmed
+Direct quotations confirmed the scene test (including why the book's even list stops at 8 —
+a 10 can never be within a Chaos Factor capped at 9), the Chaos Factor's start, step and
+clamps, the five-sections-of-five structure, the three-entry cap, and both bookkeeping
+steps. Those values dropped their `provisional` flags; `LIST_SELECTION` is the only
+summary-only rule left and keeps its flag and its recorded inference (A28).
+
 ## Not yet run
 
-- **Cycle 6.** Cycle 5 found two, both from the dead-data scan, both from *removing* and
+- **Cycle 6.** Cycle 5 found two, and 5b found a real rules error the quotes exposed.
+  Cycle 5 found two, both from the dead-data scan, both from *removing* and
   *adding* data in the same change. The stopping rule is still not met. Next: a full
   rules read-through of `docs/rules/*.md` against the engine now that six sources are in —
   the last one was three sources ago.

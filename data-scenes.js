@@ -1,27 +1,28 @@
 // Schemer — scenes, the Chaos Factor, bookkeeping, and the Threads & Characters lists,
 // from the Mythic Game Master Emulator Second Edition. Cited GME2e.
 //
-// PROVENANCE (§2.1): this source was supplied as a WRITTEN SUMMARY of the rules, not as
-// page images. A summary corroborates; it never decides. Everything here is a value the
-// summary states exactly - the scene test, the Chaos Factor range and its adjustment, the
-// weighting cap, the list size, the cleanup rule - and each is marked `provisional: true`
-// so a later page image can confirm or correct it. Anything the summary NAMES but does
-// not specify is in NOT_SUPPLIED below and is not implemented: no ranges are invented.
+// PROVENANCE (§2.1): this subsystem arrived first as a WRITTEN SUMMARY, and shipped with
+// every value marked provisional. The scene test has since been confirmed against a
+// photograph, and the Chaos Factor rules, the list rules and the bookkeeping procedure
+// have been confirmed against DIRECT QUOTATIONS from the book - which also corrected the
+// clean-up rule the summary had blurred (see LISTS.cleanupEntries, docs/AUDIT.md F41).
+// Those values are no longer provisional. LIST_SELECTION in data-actions.js is still
+// summary-only and still marked. Anything named but not specified is in NOT_SUPPLIED.
 
 export const SCENES_SOURCE = {
   title: "Mythic Game Master Emulator Second Edition",
   section: "Scenes, the Chaos Factor and Bookkeeping",
   publisher: "Word Mill Games",
   cite: "GME2e",
-  provenance: "summary, since confirmed in part",
-  provisional: true,
-  note: "This subsystem arrived as a written summary rather than page images. The scene test has since been confirmed against a photograph of the Testing The Expected Scene table, and the Scene Adjustment and Event Focus tables arrived as photographs too. The Chaos Factor range, the bookkeeping steps and the list sizes are still summary-only, so they stay marked provisional."
+  provenance: "summary, since confirmed by quotation",
+  provisional: false,
+  note: "This subsystem arrived as a written summary and shipped marked provisional. The scene test was then confirmed against a photograph, and the Chaos Factor, list and bookkeeping rules against direct quotations from the book - which corrected the clean-up rule in the process. What remains summary-only is how a random event picks an entry from a list, which is still marked provisional where it lives."
 };
 
 // T19 — the Chaos Factor. GME2e, via summary.
 export const CHAOS = {
   cite: "GME2e",
-  provisional: true,
+  provisional: false,   // confirmed by quotation
   min: 1,
   max: 9,
   start: 5,
@@ -39,7 +40,7 @@ export const CHAOS = {
 // T20 — the scene test. Roll 1d10 against the Chaos Factor. GME2e, via summary.
 export const SCENE_TEST = {
   cite: "GME2e",
-  provisional: true,
+  provisional: false,   // confirmed by photograph and by quotation
   die: 10,
   outcomes: [
     { key: "expected", label: "Expected Scene",
@@ -49,17 +50,20 @@ export const SCENE_TEST = {
     { key: "interrupt", label: "Interrupt Scene",
       text: "Your expectation is set aside. Something else happens instead, and the adventure goes somewhere you did not plan." }
   ],
-  rule: "Roll over the Chaos Factor and the Expected Scene happens. Roll at or under it and an odd result alters the scene, an even result interrupts it."
+  rule: "Roll over the Chaos Factor and the Expected Scene happens. Roll at or under it and an odd result alters the scene, an even result interrupts it.",
+  note: "A 10 always clears the chart, because the Chaos Factor never exceeds 9 - which is why the book lists the even results as 2, 4, 6 and 8."
 };
 
 // T21 — the Threads and Characters lists. GME2e, via summary.
 export const LISTS = {
   cite: "GME2e",
-  provisional: true,
+  provisional: false,   // confirmed by quotation, which corrected the clean-up rule
   lines: 25,
   sections: 5,
   maxEntries: 3,          // an element may hold at most three lines
-  cleanupTo: 2,           // on a clean-up transfer, three-entry elements drop to two
+  // The clean-up transfer, in the book's own terms: every element carried across gets a
+  // single entry, EXCEPT ones that held three, which get two. So 1 -> 1, 2 -> 1, 3 -> 2.
+  cleanupEntries: { 1: 1, 2: 1, 3: 2 },
   kinds: [
     { key: "threads", label: "Threads", singular: "thread",
       text: "The goals, missions and questions the characters are pursuing. Mythic never invents a new thread for you - your character decides what matters.",
@@ -69,13 +73,13 @@ export const LISTS = {
       placeholder: "General Gorazon · the seized mine · a raid on the road" }
   ],
   weighting: "An element that played a prominent part in the scene earns another line, to a maximum of three. More lines mean more chance of being picked, which is the whole point of the weighting.",
-  cleanup: "When the twenty-five lines are full, carry the live elements to a fresh sheet: anything holding three lines comes across with two."
+  cleanup: "When the twenty-five lines are full, carry the live elements to a fresh sheet with one entry each - except anything that held three lines, which comes across with two. That resets the lists while keeping the most prominent elements weighted."
 };
 
 // T22 — the bookkeeping phase. GME2e, via summary.
 export const BOOKKEEPING = {
   cite: "GME2e",
-  provisional: true,
+  provisional: false,   // confirmed by quotation
   steps: [
     { key: "lists", title: "Update the lists",
       text: "Add goals and characters the scene introduced. Give another line to anything that was prominent, up to three. Cross out what is finished, abandoned or gone." },

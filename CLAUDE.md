@@ -13,10 +13,11 @@ Sources of record, in precedence order (§2.1):
    Supplies the villain, their organization, and their lieutenants and minions — the thing
    the reveal system reveals. Extracted into `data-villain-crafter.js`.
 5. **Scenes, the Chaos Factor and Bookkeeping**, *Mythic Game Master Emulator Second
-   Edition*. Cited `GME2e`. Arrived first as a **written summary**, so the Chaos Factor
-   range, the bookkeeping steps and the list sizes still ship `provisional: true` and the
-   Scene screen says so (§2.1). The scene test has since been confirmed against a
-   photograph. In `data-scenes.js`.
+   Edition*. Cited `GME2e`. Arrived first as a **written summary** and shipped marked
+   provisional; since **confirmed by photograph (the scene test) and by direct quotation
+   (the Chaos Factor, list and bookkeeping rules)**, so those flags are gone. The quotes
+   also **corrected the clean-up rule** the summary had blurred — see `docs/AUDIT.md` F41.
+   In `data-scenes.js`. Still summary-only: how a random event picks an entry from a list.
 6. **The Fate Chart, the Action meaning tables, the Random Event Focus table and the Scene
    Adjustment Table**, *GME2e*, supplied as **page photographs**. Cited `GME2e`. In
    `data-fate-chart.js` and `data-actions.js`. The Fate Chart replaces One-Page Mythic's
@@ -203,6 +204,7 @@ see `docs/AUDIT.md` F28.
 | A25 | *Revised.* Picking from a list | The book's procedure arrived: a section die sized to the active sections, then 1d10 for the line, with a blank line reading "Choose". The house aid and its file were deleted with the gap. |
 | A26 | *Revised.* The Interrupt's Event Focus | The table arrived. An interrupt — and any random event — rolls the Event Focus and then two Action words. Where the focus names a thread or an NPC, the app offers a list roll rather than making the choice for you. |
 | A27 | A nested "Make 2 Adjustments" | The table does not say what happens when a 7–10 comes up inside a 7–10. The app expands it the same way (roll two more), which converges: each roll spawns two with probability 0.4, a branching factor of 0.8, so the cascade terminates on its own. Guarded at depth 4. |
+| A29 | The clean-up transfer | Quoted: every kept element carries across with **one** entry, except three-entry elements, which carry across with two. The app's first version (from the summary) left twos at two; the mapping is now explicit data, `{1:1, 2:1, 3:2}`. |
 | A28 | The section die's faces | The summary gives the die per active-section count but not how its faces map to sections. The app pairs them the way the line roll is explicitly paired — two faces per section, which is exactly what makes a d4 cover two sections and a d10 cover five. Recorded in the data as `inferred`; confirm from the page. |
 | A22 | Underlings before an organization | Allowed. The organization's contribution counts as 0 and the breakdown says "organization not rolled yet" rather than implying the modifier is complete. |
 

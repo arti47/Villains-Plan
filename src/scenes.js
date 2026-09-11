@@ -203,7 +203,7 @@ export function renderScene() {
 
 function provenanceNote() {
   const src = scenesSource();
-  const box = el("details", { class: "guidance provisional" });
+  const box = el("details", { class: `guidance ${src.provisional ? "provisional" : ""}` });
   add(box, el("summary", { text: "Where these rules came from" }), el("p", { text: src.note }));
   const list = el("ul", {});
   for (const item of notSupplied()) add(list, el("li", { text: item }));
@@ -478,13 +478,13 @@ function listCard(adv, kind) {
         onclick: () => confirmModal({
           title: `Clean up the ${kind.label.toLowerCase()} list?`,
           message: rule.cleanup,
-          loss: `Crossed-out elements are dropped for good, and anything holding ${rule.maxEntries} lines comes across with ${rule.cleanupTo}. One step of undo is kept.`,
+          loss: `Crossed-out elements are dropped for good. Everything else comes across with a single line, except anything holding ${rule.maxEntries}, which comes across with two. One step of undo is kept.`,
           confirmLabel: "Clean up",
           danger: false,
           onConfirm: () => {
-            const result = store.cleanupList(adv.id, kind.key, rule.cleanupTo);
+            const result = store.cleanupList(adv.id, kind.key, rule.cleanupEntries);
             refresh();
-            showToast(`${result.carried} carried across, ${result.reduced} reduced to ${rule.cleanupTo}.`);
+            showToast(`${result.carried} carried across on ${result.lines} lines; ${result.reduced} reduced.`);
           }
         })
       }, "Clean up the list"));

@@ -270,18 +270,26 @@ export function removeListItem(advId, kind, itemId) {
   return item;
 }
 
-/** The clean-up transfer: live elements move across, three-line ones come over with two. */
-export function cleanupList(advId, kind, cleanupTo) {
+/**
+ * The clean-up transfer. Every live element is copied with a single entry, except ones
+ * holding three, which come across with two (GME2e, quoted). Crossed-out elements do not
+ * travel. `entriesFor` is the mapping from the data file, so the rule is not inlined here.
+ */
+export function cleanupList(advId, kind, entriesFor) {
   const adv = adventure(advId);
   if (!adv) return null;
   const key = listKey(kind);
   snapshot(`cleaning up the ${kind} list`);
   const live = (adv[key] || []).filter((item) => !item.removed);
-  const reduced = live.filter((item) => item.entries > cleanupTo).length;
-  adv[key] = live.map((item) => ({ ...item, entries: Math.min(item.entries, cleanupTo) }));
+  let reduced = 0;
+  adv[key] = live.map((item) => {
+    const entries = entriesFor[item.entries] || 1;
+    if (entries < item.entries) reduced += 1;
+    return { ...item, entries };
+  });
   adv.updatedAt = now();
   save();
-  return { carried: adv[key].length, reduced };
+  return { carried: adv[key].length, reduced, lines: adv[key].reduce((n, i) => n + i.entries, 0) };
 }
 
 // ------------------------------------------------------------------ villain details
