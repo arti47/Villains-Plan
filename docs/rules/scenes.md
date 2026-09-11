@@ -88,6 +88,39 @@ should be able to walk into a scene.
   how its faces map to sections, so the app pairs them the way the line roll is explicitly
   paired. Confirm from the page.
 
+## The Thread Progress Track
+
+Pick one active thread as the focus and give it a track of 10, 15 or 20 points. Any
+progress toward it in a scene is 2 points; a flashpoint — a dramatic event directly
+involving it — is another 2.
+
+- **Plot armour** is a Gate: until the track fills, that thread cannot be resolved. The
+  app refuses to cross it out and says why.
+- **The Conclusion** is "a flashpoint with the plot armour removed": a random event with an
+  **automatic** Event Focus of Current Context (no focus die) plus two Action words, read
+  toward something that ends the thread — now, or next scene.
+- The **Discovery Check**, for when progress stalls, is named in the source but its
+  procedure is not supplied, so the app does not roll it.
+
+## Chaos variants
+
+- **Standard** — the Chaos Factor moves by whether the characters held control.
+- **No-Chaos** — questions read the chart's middle column, so the odds alone decide, while
+  chaos keeps running underneath for scene tests and events (ruling A31: on a chart whose
+  columns *are* the modifier, the neutral column is 5 — which the book itself calls the
+  "default, middle of the road percentiles").
+- **Random Chaos** — at the end of a scene roll a d10: equal-or-under drops the Chaos
+  Factor by one, over raises it. Bookkeeping stops asking about control and rolls instead.
+- **Mid-Chaos is not offered** (ruling A32). Its modifiers are written for the Fate
+  **Check**; this app asks on the Fate **Chart**, and converting between them would be
+  inventing a rule.
+
+## A question standing in for a game rule
+
+Quoted: "Treat the Chaos Factor as a value of 5 for these Questions, regardless of what the
+actual Chaos Factor value is right now." A checkbox on the Ask screen, so a to-hit roll is
+not skewed by the story's tension.
+
 ## Still not supplied — so still not built
 
 The Thread Progress Track · the Mid-Chaos, No-Chaos and Random Chaos variants · the Fate

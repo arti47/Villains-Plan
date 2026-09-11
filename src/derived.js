@@ -2,7 +2,7 @@
 // normalization/migration path. No DOM, no storage.
 
 import { END_GOAL_ROLL, PIVOT_GATE, ARC_STAGES, FATE_ANSWERS } from "../data.js";
-import { CHAOS, LISTS } from "../data-scenes.js";
+import { CHAOS, LISTS, CHAOS_MODES, PROGRESS_TRACK } from "../data-scenes.js";
 import { uid, now } from "./core.js";
 
 // ------------------------------------------------------------------ phases
@@ -125,6 +125,20 @@ export const scenes = (adv) => (adv && Array.isArray(adv.scenes) ? adv.scenes : 
 export const currentScene = (adv) => scenes(adv).find((sc) => !sc.endedAt) || null;
 export const sceneCount = (adv) => scenes(adv).length;
 
+export const chaosMode = (adv) => (adv && adv.chaosMode) || "standard";
+export const track = (adv) => (adv && adv.track) || null;
+export function focusThread(adv) {
+  const t = track(adv);
+  if (!t) return null;
+  return listItems(adv, "threads").find((item) => item.id === t.threadId) || null;
+}
+export const trackComplete = (adv) => { const t = track(adv); return !!t && t.points >= t.length; };
+/** Plot armour: the focus thread cannot be resolved until the track is full. */
+export function plotArmoured(adv, threadId) {
+  const t = track(adv);
+  return !!t && t.threadId === threadId && !trackComplete(adv);
+}
+
 export function listItems(adv, kind) {
   const list = (adv && adv[kind === "characters" ? "characters" : "threads"]) || [];
   return list.filter((item) => !item.removed);
@@ -234,8 +248,10 @@ export function normalizeAdventure(raw) {
   a.chaos = Number.isFinite(storedChaos)
     ? Math.min(CHAOS.max, Math.max(CHAOS.min, Math.round(storedChaos)))
     : CHAOS.start;
+  a.chaosMode = CHAOS_MODES.some((m) => m.key === a.chaosMode) ? a.chaosMode : "standard";
   a.threads = normalizeList(a.threads);
   a.characters = normalizeList(a.characters);
+  a.track = normalizeTrack(a.track, a.threads);
   a.scenes = (Array.isArray(a.scenes) ? a.scenes : [])
     .filter((sc) => sc && sc.test)
     .map((sc, i) => ({
@@ -247,11 +263,28 @@ export function normalizeAdventure(raw) {
       adjustments: Array.isArray(sc.adjustments) ? sc.adjustments.filter(Boolean) : [],
       event: sc.event && sc.event.focus ? sc.event : null,
       words: Array.isArray(sc.words) ? sc.words.filter(Boolean) : [],
-      control: ["in", "out"].includes(sc.control) ? sc.control : null,
+      control: ["in", "out", "random"].includes(sc.control) ? sc.control : null,
       startedAt: sc.startedAt || now(),
       endedAt: sc.endedAt || null
     }));
   return a;
+}
+
+/** The Thread Progress Track, if one is running, pinned to a live thread. */
+function normalizeTrack(raw, threads) {
+  if (!raw || !raw.threadId) return null;
+  if (!threads.some((t) => t.id === raw.threadId && !t.removed)) return null;
+  const length = PROGRESS_TRACK.lengths.includes(raw.length) ? raw.length : PROGRESS_TRACK.lengths[0];
+  return {
+    threadId: raw.threadId,
+    length,
+    points: Math.min(length, Math.max(0, Math.round(Number(raw.points)) || 0)),
+    awards: (Array.isArray(raw.awards) ? raw.awards : []).filter((a) => a && a.key).map((a) => ({
+      key: a.key, label: a.label || a.key, points: Number(a.points) || 0, note: a.note || "", at: a.at || now()
+    })),
+    concluded: !!raw.concluded,
+    conclusion: raw.conclusion && raw.conclusion.focus ? raw.conclusion : null
+  };
 }
 
 function normalizeList(list) {

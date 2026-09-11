@@ -6,7 +6,7 @@
 // every value it rests on is marked provisional in data-scenes.js and the screens say so
 // (§2.1). What the summary names but does not specify is not implemented.
 
-import { el, add, d100 as rollD100, die, uid, now, formatDate, formatTime, plural } from "./core.js";
+import { el, add, die, uid, now, formatDate, formatTime, plural, truncate } from "./core.js";
 import {
   explain, actionBar, sectionTitle, citeLink, diePill, emptyState, showToast, confirmModal,
   promptModal, modal, inlineRow
@@ -14,12 +14,14 @@ import {
 import {
   chaosRule, sceneTestRule, sceneOutcome, clampChaos, listsRule, listKind,
   bookkeepingSteps, notSupplied, scenesSource, sceneAdjustment, sceneAdjustmentTable,
-  listSelectionRule, activeSections, sectionFromRoll, lineFromRoll
+  listSelectionRule, activeSections, sectionFromRoll, lineFromRoll, chaosModes,
+  chaosMode as chaosModeRule, randomChaosDelta, progressTrack, eventFocus
 } from "./rules.js";
 import {
-  chaos, currentScene, scenes, sceneCount, listItems, listLines, listFull, listNeedsCleanup
+  chaos, currentScene, scenes, sceneCount, listItems, listLines, listFull, listNeedsCleanup,
+  chaosMode as chaosModeOf, track as trackOf, focusThread, trackComplete, plotArmoured
 } from "./derived.js";
-import { discover, rollEvent, eventBlock } from "./oracle.js";
+import { rollEvent, eventBlock } from "./oracle.js";
 import * as store from "./store.js";
 import { refresh, go } from "./router.js";
 
@@ -133,24 +135,47 @@ export function rollFromList(adv, kind) {
 export function endScene(adv, control) {
   const scene = currentScene(adv);
   if (!scene) return { ok: false, reason: "No scene is running." };
-  const rule = chaosRule().controls.find((c) => c.key === control);
-  if (!rule) return { ok: false, reason: "Say whether the characters were in control." };
+
+  const mode = chaosModeRule(chaosModeOf(adv));
+  const before = chaos(adv);
+  let rule = null;
+  let roll = null;
+  let delta = 0;
+
+  if (mode.rollsAtSceneEnd) {
+    // Random Chaos: a d10 at the end of the scene decides, not your reading of it.
+    roll = die(sceneTestRule().die);
+    delta = randomChaosDelta(roll, before);
+    rule = { key: "random", label: `Random Chaos (d10 ${roll} against ${before})`, delta };
+  } else {
+    rule = chaosRule().controls.find((c) => c.key === control);
+    if (!rule) return { ok: false, reason: "Say whether the characters were in control." };
+    delta = rule.delta;
+  }
 
   store.snapshot(`ending scene ${scene.n}`);
-  const before = chaos(adv);
-  const after = clampChaos(before + rule.delta);
-  store.updateScene(adv.id, scene.id, { control, endedAt: now() });
+  const after = clampChaos(before + delta);
+  store.updateScene(adv.id, scene.id, { control: mode.rollsAtSceneEnd ? "random" : control, endedAt: now() });
   store.setChaos(adv.id, after);
+  if (roll !== null) {
+    store.pushLog({
+      adventureId: adv.id,
+      kind: "scene",
+      dice: [{ die: "d10", value: roll, table: `Random Chaos against ${before}` }],
+      summary: delta < 0 ? "chaos down" : "chaos up",
+      outcome: `Random Chaos: ${before} \u2192 ${after}`
+    });
+  }
   store.record(adv.id, "bookkeeping",
     `Scene ${scene.n} ended ${rule.label.toLowerCase()}; chaos ${before} → ${after}.`);
 
   const summary = [
     `Scene ${scene.n} is closed as "${rule.label}".`,
     before === after
-      ? `The Chaos Factor stays at ${after} - it is already at its ${rule.delta < 0 ? "floor" : "ceiling"}.`
+      ? `The Chaos Factor stays at ${after} - it is already at its ${delta < 0 ? "floor" : "ceiling"}.`
       : `The Chaos Factor moves ${before} to ${after}.`
   ];
-  return { ok: true, summary, before, after, scene };
+  return { ok: true, summary, before, after, scene, roll };
 }
 
 // ------------------------------------------------------------------ scene screen
@@ -222,13 +247,29 @@ function chaosCard(adv) {
   for (let n = rule.min; n <= rule.max; n += 1) {
     add(track, el("span", { class: `chaos-step ${n === level ? "on" : ""} ${n > 5 ? "high" : ""}`, text: String(n) }));
   }
-  add(box, track,
+  add(box, track, chaosModeRow(adv),
     el("p", { class: "block-note", text: level >= 7
       ? "High: expect interruptions and surprises."
       : level <= 3 ? "Low: the adventure will mostly go as you expect."
         : "Even: as likely to twist as to run to plan." }),
     inlineRow("A scene runs as expected on", `${level + 1}+ of a d10`));
   return box;
+}
+
+function chaosModeRow(adv) {
+  const current = chaosModeOf(adv);
+  const wrap = el("div", { class: "field" });
+  add(wrap, el("span", { class: "field-label", text: "How chaos moves" }));
+  const chips = el("div", { class: "chip-row" });
+  for (const mode of chaosModes()) {
+    add(chips, el("button", {
+      class: `chip ${current === mode.key ? "on" : ""}`, type: "button",
+      "aria-pressed": current === mode.key ? "true" : "false",
+      onclick: () => { store.setChaosMode(adv.id, mode.key); refresh(); showToast(`${mode.label}.`); }
+    }, mode.label));
+  }
+  add(wrap, chips, el("small", { class: "field-hint", text: chaosModeRule(current).text }));
+  return wrap;
 }
 
 function expectationField(adv) {
@@ -362,30 +403,38 @@ function bookkeep(adv, scene) {
     el("p", { class: "block-note" }, "Lists live on ", el("a", { class: "cite", href: "#/lists" }, "the Threads and Characters screen"), " - update them before or after this, whichever suits."),
     el("p", { text: "Were the characters generally in control of that scene?" }));
 
+  const mode = chaosModeRule(chaosModeOf(adv));
+  const actions = mode.rollsAtSceneEnd
+    ? [{ label: "Roll for the Chaos Factor", onClick: () => closeScene() }]
+    : chaosRule().controls.map((control) => ({ label: control.label, onClick: () => closeScene(control.key) }));
+
+  function closeScene(controlKey) {
+    const result = endScene(store.active(), controlKey);
+    if (!result.ok) { showToast(result.reason, "warn"); return; }
+    refresh();
+    modal({
+      title: "Scene closed",
+      body: el("div", {}, el("ul", { class: "summary-list" }, ...result.summary.map((line) => el("li", { text: line }))),
+        el("p", { class: "block-note", text: "One step of undo is kept." })),
+      actions: [
+        { label: "Set the next scene", onClick: () => refresh() },
+        { label: "Undo", kind: "danger", onClick: () => {
+          const label = store.undo();
+          showToast(label ? `Undone: ${label}.` : "Nothing to undo.");
+          refresh();
+        } }
+      ]
+    });
+  }
+
+  if (mode.rollsAtSceneEnd) {
+    add(body, el("p", { class: "block-note", text: `${mode.label}: ${mode.text}` }));
+  }
+
   modal({
     title: `Bookkeeping · scene ${scene.n}`,
     body,
-    actions: chaosRule().controls.map((control) => ({
-      label: control.label,
-      onClick: () => {
-        const result = endScene(store.active(), control.key);
-        if (!result.ok) { showToast(result.reason, "warn"); return; }
-        refresh();
-        modal({
-          title: "Scene closed",
-          body: el("div", {}, el("ul", { class: "summary-list" }, ...result.summary.map((line) => el("li", { text: line }))),
-            el("p", { class: "block-note", text: "One step of undo is kept." })),
-          actions: [
-            { label: "Set the next scene", onClick: () => refresh() },
-            { label: "Undo", kind: "danger", onClick: () => {
-              const label = store.undo();
-              showToast(label ? `Undone: ${label}.` : "Nothing to undo.");
-              refresh();
-            } }
-          ]
-        });
-      }
-    })).concat([{ label: "Not yet" }])
+    actions: actions.concat([{ label: "Not yet" }])
   });
 }
 
@@ -401,9 +450,106 @@ export function renderLists() {
     return { content };
   }
 
+  add(content, trackCard(adv));
   for (const kind of listsRule().kinds) add(content, listCard(adv, kind));
   add(content, selectionNote());
   return { content };
+}
+
+/**
+ * The Thread Progress Track: a focus thread carries plot armour until its track fills,
+ * and the Conclusion is a random event with an automatic focus of Current Context.
+ */
+function trackCard(adv) {
+  const rule = progressTrack();
+  const current = trackOf(adv);
+  const box = el("section", { class: "card track-card" });
+  add(box, el("h2", { class: "card-title" }, "Thread Progress Track", citeLink("progress-track", "rule")));
+
+  if (!current) {
+    const threads = listItems(adv, "threads");
+    if (!threads.length) {
+      add(box, el("p", { class: "block-note", text: "Put a thread on the list first, then you can make it the focus and run a track for it." }));
+      return box;
+    }
+    add(box, el("p", { class: "block-note", text: "Pick one thread to be the focus and give it a track. Until the track fills it carries plot armour: it cannot be finally resolved, however close things look." }));
+    const chips = el("div", { class: "chip-row" });
+    for (const thread of threads) {
+      for (const length of rule.lengths) {
+        add(chips, el("button", {
+          class: "chip", type: "button",
+          onclick: () => {
+            store.setTrack(adv.id, { threadId: thread.id, length, points: 0, awards: [], concluded: false, conclusion: null });
+            refresh();
+            showToast(`${truncate(thread.text, 30)} is the focus thread, on a ${length}-point track.`);
+          }
+        }, `${truncate(thread.text, 22)} · ${length}`));
+      }
+    }
+    add(box, chips);
+    add(box, el("p", { class: "block-note", text: rule.notSupplied }));
+    return box;
+  }
+
+  const thread = focusThread(adv);
+  const complete = trackComplete(adv);
+  add(box, el("p", { class: "block-text" }, el("strong", { text: "Focus thread: " }), thread ? thread.text : "(gone from the list)"));
+
+  const bar = el("div", { class: "track-bar", role: "img", "aria-label": `${current.points} of ${current.length} points` });
+  for (let i = 0; i < current.length; i += 1) {
+    add(bar, el("span", { class: `track-pip ${i < current.points ? "on" : ""}` }));
+  }
+  add(box, bar, inlineRow("Progress", `${current.points} of ${current.length}`));
+
+  if (!complete) {
+    add(box, el("p", { class: "block-note", text: rule.plotArmor }));
+    const actions = el("div", { class: "row-actions" });
+    for (const award of rule.awards) {
+      add(actions, el("button", {
+        class: "btn btn-quiet", type: "button", title: award.text,
+        onclick: () => {
+          store.awardTrack(adv.id, { key: award.key, label: award.label, points: award.points });
+          store.record(adv.id, "track", `${award.label}: +${award.points} on the focus thread's track.`);
+          refresh();
+          showToast(`${award.label}: +${award.points}.`);
+        }
+      }, `${award.label} +${award.points}`));
+    }
+    add(box, actions);
+  } else if (current.conclusion) {
+    add(box, el("p", { class: "block-note", text: "The plot armour is off. Read this event toward something that can finally end the thread - now, or in the next scene if that sits better." }),
+      eventBlock(current.conclusion));
+  } else {
+    add(box, el("p", { class: "block-note", text: rule.conclusion }),
+      el("button", {
+        class: "btn btn-primary", type: "button",
+        onclick: () => {
+          const event = rollEvent({ focusKey: "current-context" });
+          store.setTrack(adv.id, { concluded: true, conclusion: event });
+          store.pushLog({
+            adventureId: adv.id, kind: "track",
+            dice: event.words.map((w) => ({ die: "d100", value: w.roll, table: w.table })),
+            summary: event.words.map((w) => w.word).join(", "),
+            outcome: `Conclusion: ${event.focus.label}`
+          });
+          store.record(adv.id, "track", `Conclusion rolled: ${event.words.map((w) => w.word).join(", ")}.`);
+          refresh();
+          showToast("Conclusion rolled.");
+        }
+      }, "Roll the Conclusion"));
+  }
+
+  add(box, el("button", {
+    class: "btn btn-danger-quiet", type: "button",
+    onclick: () => confirmModal({
+      title: "Drop the track?",
+      message: "The focus thread stops being the focus.",
+      loss: `Its ${current.points} points and the plot armour go with it. The thread itself stays on the list.`,
+      confirmLabel: "Drop it",
+      onConfirm: () => { store.setTrack(adv.id, null); refresh(); showToast("Track dropped."); }
+    })
+  }, "Drop the track"));
+  return box;
 }
 
 function selectionNote() {
@@ -540,13 +686,15 @@ function listRow(adv, kind, item, used) {
     }, "\u2212"),
     el("button", {
       class: "btn-icon", type: "button", "aria-label": `Cross out ${item.text}`,
-      onclick: () => confirmModal({
+      onclick: () => (plotArmoured(adv, item.id)
+        ? showToast(`"${truncate(item.text, 28)}" is the focus thread and carries plot armour: it cannot be resolved until its track is full.`, "warn")
+        : confirmModal({
         title: `Cross out "${item.text}"?`,
         message: "Finished, abandoned, or gone.",
         loss: `All ${plural(item.entries, "line", "lines")} it holds are freed.`,
         confirmLabel: "Cross out",
         onConfirm: () => { store.removeListItem(adv.id, kind.key, item.id); refresh(); showToast("Crossed out."); }
-      })
+      }))
     }, "\u00d7"));
   return row;
 }

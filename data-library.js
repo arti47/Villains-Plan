@@ -76,6 +76,15 @@ export const LIBRARY = [
   { id: "bookkeeping", group: "scenes", title: "The bookkeeping phase", cite: "GME2e",
     body: "When the action of a scene wraps up, two things happen before the next one. Update the lists: add what the scene introduced, give another line to anything prominent, cross out what is finished. Then move the Chaos Factor one step by whether the characters held control. The app fires both as one step with a summary and one undo." },
 
+  { id: "progress-track", group: "scenes", title: "The Thread Progress Track", cite: "GME2e",
+    body: "Pick one active thread as your focus and give it a track of 10, 15 or 20 points. Making any progress toward it in a scene is worth 2 points, and so is a flashpoint - a dramatic event directly involving it. Until the track fills, the thread carries plot armour: it cannot be finally resolved, however close things look. Fill it and you get the Conclusion, which is a flashpoint with the armour off: roll a random event with an automatic focus of Current Context and read it toward something that can end the thread, now or in the next scene. The book's Discovery Check, for when progress stalls, is not in what this app was built from, so the app does not roll it." },
+
+  { id: "chaos-variants", group: "scenes", title: "Other ways to run chaos", cite: "GME2e",
+    body: "No-Chaos takes the Chaos Factor out of your questions entirely: answers come from the odds alone, read at the chart's middle column, while chaos keeps running underneath because scenes are still tested against it. Random Chaos takes the judgement out of your hands: at the end of a scene roll a d10, and equal-or-under drops the Chaos Factor by one while over raises it. Mid-Chaos is not offered here - its modifiers are written for the Fate Check, and this app asks on the Fate Chart, so converting them would be inventing a rule." },
+
+  { id: "fate-question-mechanic", group: "oracle", title: "Asking instead of a game rule", cite: "GME2e",
+    body: "When a Fate Question stands in for something your game system would normally roll - a to-hit, a saving throw - treat the Chaos Factor as 5 regardless of what it actually is. The tension of the story should not decide whether a sword connects. Tick the box on the Ask screen and the chart is read at its middle column for that question only." },
+
   { id: "list-selection", group: "scenes", title: "Rolling on a list", cite: "GME2e",
     body: "Sections go active as the lines fill, five lines at a time, top to bottom. Roll a die sized to the active sections - no roll for one section, a d4 for two, a d6 for three, a d8 for four, a d10 for five - then a d10 for the line inside it, two faces per line. Land on a blank line and the result is Choose: take whichever entry fits what is happening, or roll again. Because an element can hold three lines, the weighting decides how often it comes up." },
 

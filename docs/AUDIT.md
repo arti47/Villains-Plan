@@ -402,9 +402,49 @@ clamps, the five-sections-of-five structure, the three-entry cap, and both bookk
 steps. Those values dropped their `provisional` flags; `LIST_SELECTION` is the only
 summary-only rule left and keeps its flag and its recorded inference (A28).
 
+## Cycle 6 — the last three subsystems
+
+### F42 · `CHAOS.fixedForMechanics` was data with no engine
+- **Rule (quoted):** "Treat the Chaos Factor as a value of 5 for these Questions, regardless
+  of what the actual Chaos Factor value is right now."
+- **Fix:** `rules.chartChaos(chaos, { forMechanic })` and a checkbox on the Ask screen.
+- **Why it mattered:** §0 again, and this one hid from the dead-data scan because it is an
+  **object field**, not an export — the scan reads exports and imports, and a constant
+  buried in a data object is invisible to it. It sat there from the day the scene rules
+  went in. The check that would have caught it is the rules read-through, which had not
+  run since three sources ago. That is the argument for the cadence, not the scan.
+
+### F43 · A half-applied edit lost the Random Chaos log row
+- **Target:** `scenes.endScene`
+- **Fix:** re-applied the block; the scene's `control` is now stored as `"random"` and the
+  d10 lands in the roll log.
+- **Why it mattered:** a two-part edit where only the first part matched. Everything still
+  ran — the chaos moved correctly, the summary read correctly — and the only visible
+  symptom was a missing log row, which a test asserted and reading would not have caught.
+  Every roll this app makes is supposed to be in the log; silence there is a defect.
+
+## Verified clean (cycle 6)
+
+- **Chaos modes.** A mechanic question reads 5 at any chaos; No-Chaos reads 5 for questions
+  while the scene test still uses the real value; Random Chaos rolls, moves one step, stays
+  inside 1–9, and logs its die. Standard mode still refuses to close a scene without an
+  answer about control.
+- **The progress track.** Two points per award, points never pass the track length, plot
+  armour holds until full and lifts exactly at full, it covers only the focus thread, the
+  track dies when its thread is crossed out, and it survives a reload.
+- **The Conclusion.** Focus is `current-context`, marked automatic, no focus die, two Action
+  words.
+- **What is still unsupplied** is listed and *explained*: the Fate Check (exists, procedure
+  not supplied), Mid-Chaos (modifiers written for the Check, not the Chart), the Discovery
+  Check (named, procedure not supplied).
+
 ## Not yet run
 
-- **Cycle 6.** Cycle 5 found two, and 5b found a real rules error the quotes exposed.
+- **Cycle 7.** Cycle 6 found two, one of them an inert rule that had been sitting in the
+  data for two cycles because the scan cannot see object fields. The read-through is the
+  pass that finds those, and it is now overdue by four sources — that is the next cycle's
+  first job, not its last.
+- **Cycle 6 (historical).** Cycle 5 found two, and 5b found a real rules error the quotes exposed.
   Cycle 5 found two, both from the dead-data scan, both from *removing* and
   *adding* data in the same change. The stopping rule is still not met. Next: a full
   rules read-through of `docs/rules/*.md` against the engine now that six sources are in —

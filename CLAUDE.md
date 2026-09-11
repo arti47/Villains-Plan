@@ -204,6 +204,10 @@ see `docs/AUDIT.md` F28.
 | A25 | *Revised.* Picking from a list | The book's procedure arrived: a section die sized to the active sections, then 1d10 for the line, with a blank line reading "Choose". The house aid and its file were deleted with the gap. |
 | A26 | *Revised.* The Interrupt's Event Focus | The table arrived. An interrupt — and any random event — rolls the Event Focus and then two Action words. Where the focus names a thread or an NPC, the app offers a list roll rather than making the choice for you. |
 | A27 | A nested "Make 2 Adjustments" | The table does not say what happens when a 7–10 comes up inside a 7–10. The app expands it the same way (roll two more), which converges: each roll spawns two with probability 0.4, a branching factor of 0.8, so the cascade terminates on its own. Guarded at depth 4. |
+| A30 | A question standing in for a game rule | Quoted: "Treat the Chaos Factor as a value of 5 for these Questions, regardless of what the actual Chaos Factor value is right now." A per-question control on the Ask screen, so the rule fires rather than sitting in the data (it had been an inert field since the scene work — `docs/AUDIT.md` F42). |
+| A31 | No-Chaos on the Fate Chart | The rule says answers come "purely from the Odds" with no chaos modifier. On a chart whose columns *are* the modifier, the neutral column is 5 — which the book itself calls the "default, middle of the road percentiles without the Chaos Factor skewing results". So No-Chaos reads column 5, and chaos keeps running for scene tests and events, as the rule requires. |
+| A32 | Mid-Chaos is not offered | Its modifiers are given for the **Fate Check** (+2 at chaos 9 down to −2 at chaos 1). This app asks on the Fate **Chart**; converting those modifiers into chart columns would be inventing a rule, so Mid-Chaos is listed as unsupplied instead. |
+| A33 | The Discovery Check | Named, with example values ("Track +1, Progress +2, or Progress +3"), but not its procedure. Not implemented; the track's two quoted awards are. |
 | A29 | The clean-up transfer | Quoted: every kept element carries across with **one** entry, except three-entry elements, which carry across with two. The app's first version (from the summary) left twos at two; the mapping is now explicit data, `{1:1, 2:1, 3:2}`. |
 | A28 | The section die's faces | The summary gives the die per active-section count but not how its faces map to sections. The app pairs them the way the line roll is explicitly paired — two faces per section, which is exactly what makes a d4 cover two sections and a d10 cover five. Recorded in the data as `inferred`; confirm from the page. |
 | A22 | Underlings before an organization | Allowed. The organization's contribution counts as 0 and the breakdown says "organization not rolled yet" rather than implying the modifier is complete. |
@@ -239,7 +243,7 @@ Storage is plain JSON, exported and re-imported in one tap, round-trip tested.
 | `data-mythic.js` | Second source (OPM): the odds chart, the four answers, the random-event rule, Discover Meaning, and what is still unsourced |
 | `data-villain-crafter.js` | Third source (MM41): villain archetypes with their modifiers, organizations, lieutenants and minions |
 | `data-elements.js` | Fourth source (GME2e): the twelve Elements meaning tables, and which seven MM41 names for villain details |
-| `data-scenes.js` | Fifth source (GME2e, summary): the Chaos Factor, the scene test, bookkeeping, the two lists — provisional where still summary-only |
+| `data-scenes.js` | GME2e: the Chaos Factor and its variants, the scene test, bookkeeping, the two lists, the Thread Progress Track |
 | `data-fate-chart.js` | Sixth source (GME2e, photograph): the Fate Chart's 81 cells, plus the ladder the harness checks them against |
 | `data-actions.js` | Sixth source (GME2e, photograph): Action 1 & 2, the Random Event Focus table, the Scene Adjustment Table, and the list-selection procedure |
 | `data-library.js` | Rules-library entries + tutorial steps + the two worked examples |
@@ -394,6 +398,12 @@ box means no UI may be built against it.
 | A random event is a Focus plus two Action words | Lookup | `EVENT_FOCUS`, `ACTION_TABLES` | `oracle.rollEvent` | Event block on the answer and on an interrupt scene | `the Random Event Focus table covers 1-100`, `an interrupt rolls a focus and two Action words` |
 | Scene Adjustment 1d10, 7-10 rolls twice more | Cascade | `SCENE_ADJUSTMENT_TABLE` | `scenes.rollAdjustments` | Altered-scene block | `rolling adjustments always yields at least one, and terminates` |
 | Section die, then 1d10 for the line; blank reads Choose | Lookup | `LIST_SELECTION` | `scenes.rollFromList` | Lists screen, with the table shown | `a list roll reads section then line`, `lands on a real entry or reports Choose` |
+| A question standing in for a game rule reads at chaos 5 | — | `CHAOS.fixedForMechanics` | `rules.chartChaos` | Checkbox on the Ask screen | `a question standing in for a game rule is always read at chaos 5` |
+| No-Chaos reads the middle column; chaos still runs underneath | — | `CHAOS_MODES` | `rules.chartChaos` | Chaos-mode chips on the Scene screen | `No-Chaos reads the middle column and leaves chaos running` |
+| Random Chaos rolls a d10 at the end of a scene | — | `CHAOS_MODES` | `rules.randomChaosDelta` → `scenes.endScene` | Bookkeeping asks nothing and rolls | `Random Chaos rolls a d10 instead of asking` |
+| The focus thread carries plot armour until its track fills | Gate | `PROGRESS_TRACK` | `derived.plotArmoured` | Track card + a refusal on crossing it out | `plot armour until it is full`, `only covers the focus thread` |
+| Progress and flashpoints are 2 points each | Escalation | `PROGRESS_TRACK.awards` | `store.awardTrack` | Two buttons on the track card | `two points a time` |
+| The Conclusion is an event with an automatic Current Context focus | — | `EVENT_FOCUS` | `oracle.rollEvent({ focusKey })` | Conclusion block | `an automatic Current Context focus` |
 | The oracle is one toggle, on by default | — | `Settings.mythicOracle` | `router` tab gating | Settings + a gated route that explains itself | `the oracle toggle hides its tab and its routes explain themselves` |
 
 ## 10. Process rules

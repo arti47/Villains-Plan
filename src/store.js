@@ -227,6 +227,34 @@ export function updateScene(advId, sceneId, patch) {
   return scene;
 }
 
+export function setChaosMode(advId, mode) {
+  const adv = adventure(advId);
+  if (!adv) return null;
+  adv.chaosMode = mode;
+  adv.updatedAt = now();
+  save();
+  return adv.chaosMode;
+}
+
+export function setTrack(advId, patch) {
+  const adv = adventure(advId);
+  if (!adv) return null;
+  adv.track = patch ? { ...(adv.track || {}), ...patch } : null;
+  adv.updatedAt = now();
+  save();
+  return adv.track;
+}
+
+export function awardTrack(advId, award) {
+  const adv = adventure(advId);
+  if (!adv || !adv.track) return null;
+  const next = Math.min(adv.track.length, adv.track.points + award.points);
+  adv.track = { ...adv.track, points: next, awards: [...(adv.track.awards || []), { ...award, at: now() }] };
+  adv.updatedAt = now();
+  save();
+  return adv.track;
+}
+
 export function setChaos(advId, value) {
   const adv = adventure(advId);
   if (!adv) return null;

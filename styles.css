@@ -358,6 +358,10 @@ textarea { min-height: 5.5rem; resize: vertical; }
 .mythic-row { display: flex; align-items: center; gap: 0.4rem; border-top: 1px solid var(--rule); padding: 0.3rem 0; }
 .mythic-text { flex: 1 1 auto; font-size: 0.92rem; }
 .mythic-entries { color: var(--crimson); letter-spacing: 0.1em; font-size: 0.7rem; }
+.track-card { border-left: 3px solid var(--gold); }
+.track-bar { display: flex; flex-wrap: wrap; gap: 3px; margin: 0.5rem 0; }
+.track-pip { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--rule); }
+.track-pip.on { background: var(--gold); border-color: var(--gold); }
 
 /* ------------------------------------------------------------ villain crafter */
 .crafter-card { border-left: 3px solid var(--gold); }

@@ -16,7 +16,8 @@ import {
 } from "../data-villain-crafter.js";
 import { ELEMENT_TABLES, ELEMENTS_SOURCE, VILLAIN_DETAIL_TABLES } from "../data-elements.js";
 import {
-  CHAOS, SCENE_TEST, LISTS, BOOKKEEPING, NOT_SUPPLIED, SCENES_SOURCE
+  CHAOS, SCENE_TEST, LISTS, BOOKKEEPING, NOT_SUPPLIED, SCENES_SOURCE, CHAOS_MODES,
+  PROGRESS_TRACK
 } from "../data-scenes.js";
 import { FATE_CHART, FATE_LADDER, FATE_LADDER_OFFSETS } from "../data-fate-chart.js";
 import {
@@ -87,6 +88,29 @@ export function listKind(key) {
 export function sceneOutcome(d10, chaos) {
   if (d10 > chaos) return SCENE_TEST.outcomes.find((o) => o.key === "expected");
   return SCENE_TEST.outcomes.find((o) => o.key === (d10 % 2 === 1 ? "altered" : "interrupt"));
+}
+
+export const chaosModes = () => CHAOS_MODES;
+export function chaosMode(key) {
+  return CHAOS_MODES.find((m) => m.key === key) || CHAOS_MODES.find((m) => m.default) || CHAOS_MODES[0];
+}
+export const progressTrack = () => PROGRESS_TRACK;
+
+/**
+ * Which chart column a question is read at. Standard uses the adventure's chaos; No-Chaos
+ * reads the middle column so the odds alone decide (ruling A31); and a question standing
+ * in for a game rule is always read at 5, quoted (ruling A30).
+ */
+export function chartChaos(chaos, { mode = "standard", forMechanic = false } = {}) {
+  if (forMechanic) return CHAOS.fixedForMechanics;
+  const variant = chaosMode(mode);
+  if (variant.readsChartAt) return variant.readsChartAt;
+  return clampChaos(chaos);
+}
+
+/** Random Chaos: roll a d10 at the end of a scene and let it set the direction. */
+export function randomChaosDelta(d10, chaos) {
+  return d10 <= chaos ? -CHAOS.step : CHAOS.step;
 }
 
 export function clampChaos(value) {

@@ -27,7 +27,10 @@ export const CHAOS = {
   max: 9,
   start: 5,
   step: 1,
-  fixedForMechanics: 5,   // a Fate Question standing in for a core RPG roll always uses 5
+  // Quoted: "Treat the Chaos Factor as a value of 5 for these Questions, regardless of
+  // what the actual Chaos Factor value is right now." Wired to a per-question control on
+  // the Ask screen, so the rule fires instead of sitting here (docs/AUDIT.md F42).
+  fixedForMechanics: 5,
   text: "One to nine, starting at five. It measures how much control the characters have. High chaos means more interruptions and more surprises; low chaos means the adventure goes more as you expect.",
   controls: [
     { key: "in", label: "In control", delta: -1,
@@ -76,6 +79,37 @@ export const LISTS = {
   cleanup: "When the twenty-five lines are full, carry the live elements to a fresh sheet with one entry each - except anything that held three lines, which comes across with two. That resets the lists while keeping the most prominent elements weighted."
 };
 
+// T28 — the Chaos Factor variants. GME2e, quoted.
+// Mid-Chaos is NOT here: the rule as supplied is expressed as Fate CHECK modifiers
+// (CF 9 = +2, 7-8 = +1, 4-6 = 0, 2-3 = -1, CF 1 = -2), and this app asks on the Fate
+// CHART. Applying those numbers to the chart would be inventing a conversion, so it is
+// listed in NOT_SUPPLIED instead (ruling A32).
+export const CHAOS_MODES = [
+  { key: "standard", label: "Standard", cite: "GME2e", default: true,
+    text: "The Chaos Factor moves by whether the characters were in control, and the Fate Chart is read at it." },
+  { key: "no-chaos", label: "No-Chaos", cite: "GME2e",
+    text: "Answers come purely from the odds: the chart is read at its middle column and chaos never skews a question. The Chaos Factor is still tracked in the background, because scenes are still tested against it and random events still trigger.",
+    readsChartAt: 5 },
+  { key: "random-chaos", label: "Random Chaos", cite: "GME2e",
+    text: "The pacing is taken out of your hands. At the end of a scene, roll a d10: equal to the Chaos Factor or under and it drops by one, over it and it rises by one - the same floor and ceiling.",
+    rollsAtSceneEnd: true }
+];
+
+// T29 — the Thread Progress Track. GME2e, quoted.
+export const PROGRESS_TRACK = {
+  cite: "GME2e",
+  lengths: [10, 15, 20],
+  awards: [
+    { key: "progress", label: "Progress in a scene", points: 2,
+      text: "Making any progress toward resolving the focus thread in a scene awards 2 points." },
+    { key: "flashpoint", label: "Flashpoint", points: 2,
+      text: "A dramatic, important event directly involving the focus thread. Also 2 points." }
+  ],
+  plotArmor: "Until the track is full the focus thread carries plot armour: it cannot be finally resolved, however close things look.",
+  conclusion: "Reaching the end of the track is a flashpoint with the plot armour removed. Generate a random event with an automatic Event Focus of Current Context, read toward an event that can finally end this thread - now, or in the next scene if that sits better.",
+  notSupplied: "The Discovery Check, which the book offers when progress stalls, is named but its procedure and its point values are not in what was supplied here - so the app does not roll it."
+};
+
 // T22 — the bookkeeping phase. GME2e, via summary.
 export const BOOKKEEPING = {
   cite: "GME2e",
@@ -93,7 +127,7 @@ export const BOOKKEEPING = {
 // Event Focus and Scene Adjustment tables (data-actions.js) and the list selection
 // procedure. What is still missing:
 export const NOT_SUPPLIED = [
-  "The Thread Progress Track.",
-  "The Mid-Chaos, No-Chaos and Random Chaos variants.",
-  "The Fate Check, if the edition offers it as an alternative to the Fate Chart."
+  "The Fate Check. The edition does have one - the Mid-Chaos rule is written in its modifiers - but its dice and its procedure were not supplied, so the app asks on the Fate Chart only.",
+  "Mid-Chaos. Its modifiers are given for the Fate Check (+2 at chaos 9 down to -2 at chaos 1); converting those to Fate Chart columns would be inventing a rule, so the app does not offer it.",
+  "The Discovery Check, which pushes a stalled Thread Progress Track along. Named, with example point values, but not its procedure."
 ];

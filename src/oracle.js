@@ -4,14 +4,14 @@
 
 import { el, add, d100 as rollD100, uid, now, formatTime, formatDate } from "./core.js";
 import {
-  explain, actionBar, sectionTitle, citeLink, diePill, emptyState, showToast
+  explain, actionBar, sectionTitle, citeLink, diePill, emptyState, showToast, checkRow
 } from "./ui.js";
 import {
   askResult, defaultOdds, oddsRow, fateChart, fateBands, meaningWord, meaningTables,
   meaningTable, askProcedure, randomEventRule, mythicGuidance, mythicSource,
-  elementsSource, eventFocus, eventFocusTable
+  elementsSource, eventFocus, eventFocusTable, chartChaos, chaosMode as chaosModeRule
 } from "./rules.js";
-import { chaos as chaosOf } from "./derived.js";
+import { chaos as chaosOf, chaosMode as chaosModeOf } from "./derived.js";
 import * as store from "./store.js";
 import { Settings } from "./settings.js";
 import { refresh, go } from "./router.js";
@@ -21,16 +21,17 @@ import { refresh, go } from "./router.js";
  * Ask The Game Master. Rolls one d100 against the chosen odds row; a double-digit
  * result also fires a Random Event, which does not overturn the answer (OPM).
  */
-export function ask({ question = "", odds = defaultOdds(), expectation = "" } = {}) {
+export function ask({ question = "", odds = defaultOdds(), expectation = "", forMechanic = false } = {}) {
   const adv = store.active();
-  const level = chaosOf(adv);
+  const mode = chaosModeOf(adv);
+  const level = chartChaos(chaosOf(adv), { mode, forMechanic });
   const roll = rollD100();
   const result = askResult(odds, roll, level);
   const event = result.double ? rollEvent() : null;
 
   const dice = [{ die: "d100", value: roll, table: `Fate Chart - ${result.odds.label} at chaos ${level}` }];
   if (event) {
-    dice.push({ die: "d100", value: event.focus.roll, table: "Random Event Focus" });
+    if (event.focus.roll) dice.push({ die: "d100", value: event.focus.roll, table: "Random Event Focus" });
     for (const word of event.words) dice.push({ die: "d100", value: word.roll, table: word.table });
   }
 
@@ -46,7 +47,7 @@ export function ask({ question = "", odds = defaultOdds(), expectation = "" } = 
     store.record(adv.id, "ask",
       `Asked${question ? ` "${String(question).trim()}"` : ""} at ${result.odds.label}, chaos ${level}: ${result.answer.label} (${roll})${event ? `, and a random event - ${event.focus.label}: ${event.words.map((w) => w.word).join(", ")}` : ""}.`);
   }
-  return { ...result, question: String(question || "").trim(), expectation, event, id: uid("ask"), at: now() };
+  return { ...result, question: String(question || "").trim(), expectation, event, forMechanic, mode, id: uid("ask"), at: now() };
 }
 
 /** One word from one meaning table. Nothing rolls a second on your behalf (ruling A15). */
@@ -70,8 +71,10 @@ export function discover(tableId = "action", { logAs = "meaning", question = "" 
  * (GME2e). The focus may point at the Threads or Characters list - the app offers that
  * pick rather than making it for you, because which entry fits is a reading.
  */
-export function rollEvent() {
-  const focus = eventFocus(rollD100());
+export function rollEvent({ focusKey = null } = {}) {
+  const focus = focusKey
+    ? { ...eventFocusTable().rows.find((r) => r.key === focusKey), roll: null, automatic: true }
+    : eventFocus(rollD100());
   const words = [meaningWord("action-1", rollD100()), meaningWord("action-2", rollD100())];
   return { focus, words };
 }
@@ -87,7 +90,7 @@ export function setPivotOdds(key) { lastPivotOdds = key; return lastPivotOdds; }
 export function pivotOdds() { return lastPivotOdds; }
 
 // ------------------------------------------------------------------ ask screen
-let draft = { question: "", odds: defaultOdds() };
+let draft = { question: "", odds: defaultOdds(), forMechanic: false };
 let lastAsk = null;                 // rendered from what was rolled; never re-rolled
 
 export function renderAsk() {
@@ -121,8 +124,9 @@ export function renderAsk() {
   add(content, oddsWrap);
 
   const odds = oddsRow(draft.odds);
-  const level = chaosOf(store.active());
-  add(content, oddsCard(odds, level), procedureCard());
+  const mode = chaosModeOf(store.active());
+  const level = chartChaos(chaosOf(store.active()), { mode, forMechanic: draft.forMechanic });
+  add(content, mechanicRow(mode, level), oddsCard(odds, level), procedureCard());
 
   if (lastAsk) add(content, sectionTitle("The answer"), askCard(lastAsk));
   add(content, guidanceNote(mythicGuidance("odds"), "ask-odds"), guidanceNote(mythicGuidance("expectations"), "ask-odds"), focusTableCard());
@@ -132,12 +136,34 @@ export function renderAsk() {
     label: "Ask",
     context: `${odds.label} · chaos ${level} · Yes on 1-${fateBands(odds.key, level).yes[1]}`,
     onClick: () => {
-      lastAsk = ask({ question: draft.question, odds: draft.odds });
+      lastAsk = ask({ question: draft.question, odds: draft.odds, forMechanic: draft.forMechanic });
       refresh();
       showToast(`${lastAsk.answer.label}${lastAsk.double ? " — and a random event" : ""}.`);
     }
   });
   return { content, action };
+}
+
+/**
+ * "Treat the Chaos Factor as a value of 5 for these Questions, regardless of what the
+ * actual Chaos Factor value is right now" (GME2e). A control, so the rule can fire.
+ */
+function mechanicRow(mode, level) {
+  const wrap = el("div", { class: "field" });
+  add(wrap, checkRow({
+    label: "This question stands in for a game rule",
+    hint: "Read at chaos 5 whatever the adventure's chaos is, so a to-hit roll is not skewed by the story's tension.",
+    checked: draft.forMechanic,
+    onChange: (v) => { draft.forMechanic = v; refresh(); }
+  }));
+  const variant = chaosModeRule(mode);
+  if (mode !== "standard") {
+    add(wrap, el("p", { class: "block-note", text: `${variant.label}: ${variant.text}` }));
+  }
+  if (draft.forMechanic || variant.readsChartAt) {
+    add(wrap, el("p", { class: "block-note", text: `Reading the chart at chaos ${level}.` }));
+  }
+  return wrap;
 }
 
 function oddsCard(odds, level) {
@@ -185,7 +211,10 @@ export function eventBlock(event) {
   add(box, el("h4", { class: "block-title" }, "Random event", citeLink("random-events", "rule")));
 
   const focusRow = el("div", { class: "dice-row" });
-  add(focusRow, diePill({ die: "d100", value: event.focus.roll, table: "Random Event Focus" }),
+  add(focusRow,
+    event.focus.roll
+      ? diePill({ die: "d100", value: event.focus.roll, table: "Random Event Focus" })
+      : el("span", { class: "band-none", text: "automatic focus" }),
     el("span", { class: "focus-label", text: event.focus.label }));
   add(box, focusRow, el("p", { class: "block-note", text: event.focus.reason }));
 

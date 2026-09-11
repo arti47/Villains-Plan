@@ -31,7 +31,8 @@ account, no server and no telemetry.
   Factor, and get the scene you pictured, a twisted one, or an interruption. Ending a scene
   runs bookkeeping: it moves the Chaos Factor and points you at the lists.
 - **Lists** — Threads and Characters, twenty-five lines each, with the weighting that makes
-  the busiest parts of your story likeliest to come back.
+  the busiest parts of your story likeliest to come back, and a Thread Progress Track for
+  the one goal you want to drive to a conclusion.
 - **Villain** — the Villain Crafter: an archetype for who the villain is, the Elements
   tables for who they actually are (identity, skills, motivations, personality, appearance,
   traits and flaws, background), a shape for the organization behind them, and rolls for the
@@ -61,8 +62,9 @@ meaning tables, the Fate Chart, the Random Event Focus and Scene Adjustment tabl
 scene/Chaos Factor/bookkeeping rules. That last part arrived as a written summary rather
 than pages, so what still rests on it ships marked provisional and the Scene screen says so.
 
-Still not in: the Thread Progress Track and the alternative chaos rules. The app does not
-approximate them. The Chaos Factor (which the one-page edition drops by
+Still not in: the Fate Check (the edition has one, but its procedure was not supplied),
+Mid-Chaos (its modifiers are written for that Check, not for the chart this app uses), and
+the Discovery Check. The app does not approximate any of them. The Chaos Factor (which the one-page edition drops by
 design), scene setup, the Bookkeeping phase and the Threads and Characters lists are in
 none of them, so the app does not roll them and does not approximate them. Villain
 statistics are also left alone: no game system is attached here.
