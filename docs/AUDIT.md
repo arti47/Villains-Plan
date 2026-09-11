@@ -438,9 +438,37 @@ summary-only rule left and keeps its flag and its recorded inference (A28).
   not supplied), Mid-Chaos (modifiers written for the Check, not the Chart), the Discovery
   Check (named, procedure not supplied).
 
+## Cycle 7 — the Fate Check
+
+### F44 · A missing import that only fired on one path
+- **Target:** `oracle.checkCard` used `inlineRow` without importing it.
+- **Fix:** imported.
+- **Why it mattered:** the parse gate passes, the unit harness passes (it never touches the
+  DOM), and the screen renders fine — until you click the one chip that switches the
+  resolution to the Fate Check, at which point the page throws. **The interaction audit
+  caught it on the first run**, which is exactly the case it exists for: a control that is
+  fine until someone presses it.
+
+## Verified clean (cycle 7)
+
+- **The Fate Check.** Both quoted modifier ladders asserted cell for cell; the answer
+  thresholds checked at every boundary (11 is a Yes, 10 is not; 18 is Exceptional, 17 is
+  not; 4 is Exceptional No, 5 is not) and past both printed ends (a total of 30 and a total
+  of −8 both land correctly); a d10 out of range throws.
+- **Its random event.** Doubles fire at or under the Chaos Factor, a double 10 never fires
+  because chaos stops at 9, and a non-double never does.
+- **Mid-Chaos.** Its ladder is the standard ladder at chaos 3–7 — asserted, because that
+  equivalence is what tells you Mid-Chaos compresses the range rather than changing the
+  maths. Selectable on the Check, refused on the chart with the reason, and dropped by
+  normalization if the resolution changes under it.
+- **The Discovery Check.** Every total from −5 to 60 finds a row; the four results with no
+  stated effect award nothing and say so; the four that do award exactly the quoted 2/2/3/3.
+
 ## Not yet run
 
-- **Cycle 7.** Cycle 6 found two, one of them an inert rule that had been sitting in the
+- **Cycle 8.** The rules read-through is now overdue by six sources and is the next
+  cycle's first job — F42 showed what it finds that the scans cannot.
+- **Cycle 7 (historical).** Cycle 6 found two, one of them an inert rule that had been sitting in the
   data for two cycles because the scan cannot see object fields. The read-through is the
   pass that finds those, and it is now overdue by four sources — that is the next cycle's
   first job, not its last.

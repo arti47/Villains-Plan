@@ -67,6 +67,31 @@ as it takes.
 - Engine: `rules.discoverWord`, `oracle.discover`. Each roll is logged on its own.
 - Nothing rolls a second word automatically (ruling A15) — the repeat is a control.
 
+## The Fate Check — the alternative
+
+Not an addition to the chart: the book offers it *instead*. Roll 2d10 and add them, plus
+the odds modifier (Certain +5 … Impossible −5) and the Chaos Factor modifier (+5 at chaos 9
+… −5 at chaos 1). Then:
+
+| Total | Answer |
+|---|---|
+| 18 or more | Exceptional Yes |
+| 11 or more | Yes |
+| 5 to 10 | No |
+| 4 or less | Exceptional No |
+
+The printed table gives 18–20 and 2–4, which are the ranges of an *unmodified* 2d10; with
+modifiers a total runs −8 to 30, so the app reads the table as thresholds (ruling A34).
+
+A random event fires when **both dice match and that number is at or under the Chaos
+Factor** — so a double 10 never fires one, because chaos stops at 9.
+
+Which resolution an adventure uses is a setting on the Ask screen. **Mid-Chaos is available
+on the Check only**: its Check modifiers are quoted (+2 at chaos 9 down to −2 at chaos 1 —
+which are precisely the standard modifiers for chaos 7/6/5/4/3, so it compresses the range
+rather than changing the arithmetic). The book's Mid-Chaos *Chart* exists but its cells were
+not supplied, so the app refuses the mode there and says why.
+
 ## The Action tables
 
 Two d100 columns rolled together: what happens, and what it happens to. They are a random

@@ -703,7 +703,7 @@ test("a list roll lands on a real entry or reports Choose, and is logged either 
 
 test("what is still unsupplied is recorded, and what arrived is no longer listed", () => {
   const missing = rules.notSupplied().join(" ");
-  for (const name of ["Thread Progress", "Chaos"]) {
+  for (const name of ["Mid-Chaos Fate CHART", "Track \\+1"]) {
     assert(new RegExp(name, "i").test(missing), `${name} is still listed as not supplied`);
   }
   for (const name of ["Fate Chart", "Event Focus", "Scene Adjustment"]) {
@@ -715,6 +715,117 @@ test("what is still unsupplied is recorded, and what arrived is no longer listed
     equal(rule.provisional, false, "each confirmed rule drops the flag");
   }
   equal(rules.listSelectionRule().provisional, true, "and the one that is still summary-only keeps it");
+});
+
+// ---------------------------------------------------------------- the Fate Check
+const check = await import("../data-fate-check.js");
+
+test("the Fate Check's modifier tables match the page", () => {
+  deepEqual(check.FATE_CHECK.oddsModifiers, {
+    "certain": 5, "nearly-certain": 4, "very-likely": 2, "likely": 1, "50-50": 0,
+    "unlikely": -1, "very-unlikely": -2, "nearly-impossible": -4, "impossible": -5
+  }, "odds");
+  deepEqual(check.FATE_CHECK.chaosModifiers, { 9: 5, 8: 4, 7: 2, 6: 1, 5: 0, 4: -1, 3: -2, 2: -4, 1: -5 }, "chaos");
+  deepEqual(check.FATE_CHECK.dice, { count: 2, sides: 10 }, "2d10");
+});
+
+test("Mid-Chaos is the standard ladder compressed into the middle", () => {
+  // +2/+1/0/-1/-2 are the standard modifiers for chaos 7/6/5/4/3 - so Mid-Chaos does not
+  // change the arithmetic, it narrows how far chaos can push it.
+  const mid = [1, 2, 3, 4, 5, 6, 7, 8, 9].map((c) => rules.checkChaosModifier(c, "mid-chaos"));
+  deepEqual(mid, [-2, -1, -1, 0, 0, 0, 1, 1, 2], "the quoted bands: 1, 2-3, 4-6, 7-8, 9");
+  const standard = check.FATE_CHECK.chaosModifiers;
+  deepEqual([standard[3], standard[4], standard[5], standard[6], standard[7]], [-2, -1, 0, 1, 2],
+    "and those five values are standard chaos 3 through 7");
+  deepEqual([1, 5, 9].map((c) => rules.checkChaosModifier(c, "no-chaos")), [0, 0, 0], "No-Chaos flattens it entirely");
+});
+
+test("a Fate Check reads as thresholds, because modifiers push past the printed range", () => {
+  // Printed: 18-20 Exceptional Yes, 11 or more Yes, 10 or less No, 2-4 Exceptional No.
+  // 2d10 plus modifiers runs -8 to 30, so the printed ranges are read as thresholds (A34).
+  const at = (dice, odds, chaos) => rules.checkResult(odds, dice, chaos).answer.key;
+  equal(at([5, 6], "50-50", 5), "yes", "11 exactly is a Yes");
+  equal(at([5, 5], "50-50", 5), "no", "10 is a No");
+  equal(at([9, 9], "50-50", 5), "exceptional-yes", "18 is an Exceptional Yes");
+  equal(at([8, 9], "50-50", 5), "yes", "17 is not");
+  equal(at([2, 2], "50-50", 5), "exceptional-no", "4 is an Exceptional No");
+  equal(at([2, 3], "50-50", 5), "no", "5 is not");
+  equal(at([10, 10], "certain", 9), "exceptional-yes", "30, past the printed top, is still Exceptional Yes");
+  equal(at([1, 1], "impossible", 1), "exceptional-no", "-8, past the printed bottom, is still Exceptional No");
+});
+
+test("the Fate Check adds both modifiers, and shows its working", () => {
+  const result = rules.checkResult("likely", [4, 6], 7);
+  equal(result.oddsMod, 1, "Likely is +1");
+  equal(result.chaosMod, 2, "chaos 7 is +2");
+  equal(result.total, 13, "4 + 6 + 1 + 2");
+  equal(result.answer.key, "yes", "and 13 is a Yes");
+});
+
+test("a Fate Check random event is doubles at or under the Chaos Factor", () => {
+  for (let face = 1; face <= 9; face += 1) {
+    equal(rules.checkResult("50-50", [face, face], 9).double, true, `double ${face} at chaos 9`);
+  }
+  equal(rules.checkResult("50-50", [10, 10], 9).double, false, "a double 10 never fires: chaos stops at 9");
+  equal(rules.checkResult("50-50", [6, 6], 5).double, false, "a double 6 at chaos 5 does not");
+  equal(rules.checkResult("50-50", [5, 5], 5).double, true, "a double 5 at chaos 5 does");
+  equal(rules.checkResult("50-50", [3, 4], 9).double, false, "and a non-double never does");
+});
+
+test("a d10 out of range is an error on the check too", () => {
+  for (const bad of [[0, 5], [5, 11], [1.5, 2]]) {
+    let threw = false;
+    try { rules.checkResult("50-50", bad, 5); } catch { threw = true; }
+    assert(threw, `${bad.join(",")} is not 2d10`);
+  }
+});
+
+test("the ask engine uses whichever resolution the adventure is set to", () => {
+  const adv = freshAdventure();
+  equal(derived.resolutionMode(store.active()), "chart", "the chart by default");
+  const onChart = oracle.ask({ question: "chart", odds: "50-50" });
+  equal(onChart.dice, undefined, "a chart ask has no dice pair");
+  store.setResolution(adv.id, "check");
+  const onCheck = oracle.ask({ question: "check", odds: "50-50" });
+  equal(onCheck.dice.length, 2, "a check rolls two d10");
+  assert(Number.isInteger(onCheck.total), "and totals them");
+  const row = store.rollLog({ kind: "ask" })[0];
+  equal(row.dice.length, 2, "both dice are logged");
+  equal(row.dice[0].die, "d10", "as d10s");
+});
+
+test("Mid-Chaos is only selectable on the Fate Check, and falls back if the chart is chosen", () => {
+  const adv = freshAdventure();
+  store.setResolution(adv.id, "check");
+  store.setChaosMode(adv.id, "mid-chaos");
+  equal(derived.chaosMode(store.active()), "mid-chaos", "allowed on the check");
+  store.setResolution(adv.id, "chart");
+  const reloaded = store.__setState(JSON.parse(store.exportJSON()));
+  equal(derived.chaosMode(reloaded.adventures[0]), "standard",
+    "normalization drops it on the chart rather than applying a rule the app does not have");
+});
+
+test("the Discovery Check table covers its range and only awards what the source states", () => {
+  const rule = rules.progressTrack().discovery;
+  equal(rule.minimumOdds, "50-50", "asked at no less than 50/50");
+  const at = (total) => rule.rows.find((r) => total >= r.min && total <= r.max);
+  equal(at(1).key, "progress-2", "1-9");
+  equal(at(9).key, "progress-2", "to 9");
+  equal(at(10).key, "flashpoint-2", "10");
+  equal(at(14).key, "track-1", "11-14");
+  equal(at(17).key, "progress-3", "15-17");
+  equal(at(18).key, "flashpoint-3", "18");
+  equal(at(19).key, "track-2", "19");
+  equal(at(24).key, "strengthen-1", "20-24");
+  equal(at(99).key, "strengthen-2", "25+");
+  for (let total = -5; total <= 60; total += 1) assert(at(total), `total ${total} has a row`);
+  // the four results with no stated effect award nothing, and say so
+  for (const key of ["track-1", "track-2", "strengthen-1", "strengthen-2"]) {
+    const row = rule.rows.find((r) => r.key === key);
+    equal(row.award, null, `${key} applies nothing`);
+    assert(/not in the source/i.test(row.text), `${key} says why`);
+  }
+  deepEqual(rule.rows.filter((r) => r.award).map((r) => r.award.points), [2, 2, 3, 3], "and the stated awards are the quoted ones");
 });
 
 // ---------------------------------------------------------------- chaos modes & the track
@@ -834,12 +945,13 @@ test("the track survives a reload, and an old adventure has none", () => {
 
 test("what is still unsupplied, after everything", () => {
   const missing = rules.notSupplied().join(" ");
-  for (const name of ["Fate Check", "Mid-Chaos", "Discovery Check"]) {
-    assert(new RegExp(name, "i").test(missing), `${name} is listed`);
-  }
-  assert(/Mid-Chaos[\s\S]{0,200}Fate Check/.test(missing) || /Fate Check[\s\S]{0,400}Mid-Chaos/.test(missing),
-    "and Mid-Chaos says why: its modifiers are written for the Fate Check");
-  assert(!rules.chaosModes().some((m) => m.key === "mid-chaos"), "so it is not offered as a mode");
+  assert(/Mid-Chaos Fate CHART/i.test(missing), "the Mid-Chaos chart's cells are still missing");
+  assert(/Track \+1|Strengthen Progress/i.test(missing), "and what four Discovery Check results do");
+  // Mid-Chaos is offered, but only where its numbers are known
+  assert(rules.chaosModes().some((m) => m.key === "mid-chaos"), "Mid-Chaos is a mode now");
+  equal(rules.chaosModeAvailable("mid-chaos", "check"), true, "on the Fate Check");
+  equal(rules.chaosModeAvailable("mid-chaos", "chart"), false, "and not on the chart");
+  equal(rules.chaosModeAvailable("no-chaos", "chart"), true, "the others are available on both");
 });
 
 // ---------------------------------------------------------------- Elements (GME2e)

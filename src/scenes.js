@@ -15,13 +15,15 @@ import {
   chaosRule, sceneTestRule, sceneOutcome, clampChaos, listsRule, listKind,
   bookkeepingSteps, notSupplied, scenesSource, sceneAdjustment, sceneAdjustmentTable,
   listSelectionRule, activeSections, sectionFromRoll, lineFromRoll, chaosModes,
-  chaosMode as chaosModeRule, randomChaosDelta, progressTrack, eventFocus
+  chaosMode as chaosModeRule, randomChaosDelta, progressTrack, chaosModeAvailable,
+  resolution as resolutionRule
 } from "./rules.js";
 import {
   chaos, currentScene, scenes, sceneCount, listItems, listLines, listFull, listNeedsCleanup,
-  chaosMode as chaosModeOf, track as trackOf, focusThread, trackComplete, plotArmoured
+  chaosMode as chaosModeOf, track as trackOf, focusThread, trackComplete, plotArmoured,
+  resolutionMode
 } from "./derived.js";
-import { rollEvent, eventBlock } from "./oracle.js";
+import { rollEvent, eventBlock, ask } from "./oracle.js";
 import * as store from "./store.js";
 import { refresh, go } from "./router.js";
 
@@ -260,12 +262,22 @@ function chaosModeRow(adv) {
   const current = chaosModeOf(adv);
   const wrap = el("div", { class: "field" });
   add(wrap, el("span", { class: "field-label", text: "How chaos moves" }));
+  const how = resolutionMode(adv);
   const chips = el("div", { class: "chip-row" });
   for (const mode of chaosModes()) {
+    const available = chaosModeAvailable(mode.key, how);
     add(chips, el("button", {
-      class: `chip ${current === mode.key ? "on" : ""}`, type: "button",
+      class: `chip ${current === mode.key ? "on" : ""} ${available ? "" : "unavailable"}`, type: "button",
       "aria-pressed": current === mode.key ? "true" : "false",
-      onclick: () => { store.setChaosMode(adv.id, mode.key); refresh(); showToast(`${mode.label}.`); }
+      onclick: () => {
+        if (!available) {
+          showToast(`${mode.label} needs the Fate Check: the book's Mid-Chaos chart was not in what this app was built from, so it is not offered on the ${resolutionRule(how).label}.`, "warn");
+          return;
+        }
+        store.setChaosMode(adv.id, mode.key);
+        refresh();
+        showToast(`${mode.label}.`);
+      }
     }, mode.label));
   }
   add(wrap, chips, el("small", { class: "field-hint", text: chaosModeRule(current).text }));
@@ -515,7 +527,7 @@ function trackCard(adv) {
         }
       }, `${award.label} +${award.points}`));
     }
-    add(box, actions);
+    add(box, actions, discoveryBlock(adv, current));
   } else if (current.conclusion) {
     add(box, el("p", { class: "block-note", text: "The plot armour is off. Read this event toward something that can finally end the thread - now, or in the next scene if that sits better." }),
       eventBlock(current.conclusion));
@@ -549,6 +561,58 @@ function trackCard(adv) {
       onConfirm: () => { store.setTrack(adv.id, null); refresh(); showToast("Track dropped."); }
     })
   }, "Drop the track"));
+  return box;
+}
+
+/**
+ * The Discovery Check: ask whether something is discovered at no less than 50/50, and on
+ * a Yes roll 1d10 + current points on the table. Four of its results have no stated
+ * effect in the source, so the app names them and applies nothing.
+ */
+function discoveryBlock(adv, current) {
+  const rule = progressTrack().discovery;
+  const box = el("details", { class: "guidance" });
+  add(box, el("summary", { text: "Stalled? Make a Discovery Check" }),
+    el("p", { text: rule.when }), el("p", { class: "block-note", text: rule.gate }));
+
+  const last = (current.awards || []).filter((a) => a.key === "discovery").slice(-1)[0];
+  if (last) {
+    add(box, el("p", { class: "block-text" }, el("strong", { text: `${last.label}. ` }), last.note || ""));
+  }
+
+  add(box, el("button", {
+    class: "btn btn-primary", type: "button",
+    onclick: () => {
+      const asked = ask({ question: "Is something discovered?", odds: rule.minimumOdds });
+      if (!asked.answer.yes) {
+        store.record(adv.id, "track", `Discovery Check: ${asked.answer.label} - nothing discovered.`);
+        refresh();
+        showToast(`${asked.answer.label}: nothing discovered.`);
+        return;
+      }
+      const roll = die(rule.die);
+      const total = roll + trackOf(store.active()).points;
+      const row = rule.rows.find((r) => total >= r.min && total <= r.max);
+      store.pushLog({
+        adventureId: adv.id, kind: "track",
+        dice: [{ die: "d10", value: roll, table: `Discovery Check +${trackOf(store.active()).points}` }],
+        summary: row.label,
+        outcome: `Discovery Check ${total}: ${row.label}`
+      });
+      if (row.award) {
+        store.awardTrack(adv.id, { key: "discovery", label: row.label, points: row.award.points, note: row.text });
+      } else {
+        store.setTrack(adv.id, {
+          awards: [...(trackOf(store.active()).awards || []), { key: "discovery", label: row.label, points: 0, note: row.text, at: Date.now() }]
+        });
+      }
+      store.record(adv.id, "track", `Discovery Check (d10 ${roll} + ${total - roll}): ${row.label}.`);
+      refresh();
+      showToast(`${row.label}${row.award ? "" : " - effect not in the source"}.`);
+    }
+  }, "Make a Discovery Check"));
+  add(box, el("p", { class: "block-note", text: rule.undefinedResults }),
+    el("p", { class: "source-cite", text: rule.cite }));
   return box;
 }
 

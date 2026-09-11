@@ -126,6 +126,7 @@ export const currentScene = (adv) => scenes(adv).find((sc) => !sc.endedAt) || nu
 export const sceneCount = (adv) => scenes(adv).length;
 
 export const chaosMode = (adv) => (adv && adv.chaosMode) || "standard";
+export const resolutionMode = (adv) => (adv && adv.resolution) || "chart";
 export const track = (adv) => (adv && adv.track) || null;
 export function focusThread(adv) {
   const t = track(adv);
@@ -248,7 +249,10 @@ export function normalizeAdventure(raw) {
   a.chaos = Number.isFinite(storedChaos)
     ? Math.min(CHAOS.max, Math.max(CHAOS.min, Math.round(storedChaos)))
     : CHAOS.start;
+  a.resolution = ["chart", "check"].includes(a.resolution) ? a.resolution : "chart";
   a.chaosMode = CHAOS_MODES.some((m) => m.key === a.chaosMode) ? a.chaosMode : "standard";
+  // Mid-Chaos is a Fate Check rule here; on the chart it falls back to standard (A32).
+  if (a.chaosMode === "mid-chaos" && a.resolution !== "check") a.chaosMode = "standard";
   a.threads = normalizeList(a.threads);
   a.characters = normalizeList(a.characters);
   a.track = normalizeTrack(a.track, a.threads);

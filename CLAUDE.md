@@ -206,10 +206,12 @@ see `docs/AUDIT.md` F28.
 | A27 | A nested "Make 2 Adjustments" | The table does not say what happens when a 7–10 comes up inside a 7–10. The app expands it the same way (roll two more), which converges: each roll spawns two with probability 0.4, a branching factor of 0.8, so the cascade terminates on its own. Guarded at depth 4. |
 | A30 | A question standing in for a game rule | Quoted: "Treat the Chaos Factor as a value of 5 for these Questions, regardless of what the actual Chaos Factor value is right now." A per-question control on the Ask screen, so the rule fires rather than sitting in the data (it had been an inert field since the scene work — `docs/AUDIT.md` F42). |
 | A31 | No-Chaos on the Fate Chart | The rule says answers come "purely from the Odds" with no chaos modifier. On a chart whose columns *are* the modifier, the neutral column is 5 — which the book itself calls the "default, middle of the road percentiles without the Chaos Factor skewing results". So No-Chaos reads column 5, and chaos keeps running for scene tests and events, as the rule requires. |
-| A32 | Mid-Chaos is not offered | Its modifiers are given for the **Fate Check** (+2 at chaos 9 down to −2 at chaos 1). This app asks on the Fate **Chart**; converting those modifiers into chart columns would be inventing a rule, so Mid-Chaos is listed as unsupplied instead. |
-| A33 | The Discovery Check | Named, with example values ("Track +1, Progress +2, or Progress +3"), but not its procedure. Not implemented; the track's two quoted awards are. |
+| A32 | *Superseded by A35.* Mid-Chaos | Was: not offered at all. Now: offered on the Fate Check only. |
+| A33 | *Revised.* The Discovery Check | The table arrived: ask at ≥50/50, then 1d10 + current points. The app rolls it. **Four of its eight results — Track +1, Track +2, Strengthen Progress +1 and +2 — are printed with no stated effect**, so the app names them and applies nothing. |
+| A34 | Fate Check totals outside the printed ranges | The answer table prints 18–20 / 11+ / 10− / 2–4, which are unmodified 2d10 ranges; the modifiers run −10 to +10, so a real total runs −8 to 30. The app reads the table as thresholds (≥18, ≥11, ≤4, else No), the only coherent reading. |
+| A35 | Mid-Chaos, revisited | Its **Check** modifiers are quoted, so Mid-Chaos is offered on the Fate Check. Its **Chart** exists but its cells were not supplied, so the mode is refused on the chart with that reason, and normalization drops it if the resolution changes. Note for whoever gets the page: the Mid-Chaos Check ladder (+2/+1/0/−1/−2) is exactly the standard ladder at chaos 7/6/5/4/3, so the chart version is likely a column compression — but that is a hypothesis, not shipped behaviour. |
 | A29 | The clean-up transfer | Quoted: every kept element carries across with **one** entry, except three-entry elements, which carry across with two. The app's first version (from the summary) left twos at two; the mapping is now explicit data, `{1:1, 2:1, 3:2}`. |
-| A28 | The section die's faces | The summary gives the die per active-section count but not how its faces map to sections. The app pairs them the way the line roll is explicitly paired — two faces per section, which is exactly what makes a d4 cover two sections and a d10 cover five. Recorded in the data as `inferred`; confirm from the page. |
+| A28 | *Corroborated.* The section die's faces | No quoted rule maps the die's faces onto sections, but the printed Adventure Lists sheet settles it: its margin reads 1-2, 3-4, 5-6, 7-8, 9-10 beside the five sections. The app's pairing matches. |
 | A22 | Underlings before an organization | Allowed. The organization's contribution counts as 0 and the breakdown says "organization not rolled yet" rather than implying the modifier is complete. |
 
 **End Goal Roll thresholds** (the arithmetic the whole app turns on):
@@ -244,7 +246,8 @@ Storage is plain JSON, exported and re-imported in one tap, round-trip tested.
 | `data-villain-crafter.js` | Third source (MM41): villain archetypes with their modifiers, organizations, lieutenants and minions |
 | `data-elements.js` | Fourth source (GME2e): the twelve Elements meaning tables, and which seven MM41 names for villain details |
 | `data-scenes.js` | GME2e: the Chaos Factor and its variants, the scene test, bookkeeping, the two lists, the Thread Progress Track |
-| `data-fate-chart.js` | Sixth source (GME2e, photograph): the Fate Chart's 81 cells, plus the ladder the harness checks them against |
+| `data-fate-chart.js` | GME2e: the Fate Chart's 81 cells, plus the ladder the harness checks them against |
+| `data-fate-check.js` | GME2e: the Fate Check — 2d10, the odds and chaos modifier ladders, the Mid-Chaos ladder, the answer thresholds |
 | `data-actions.js` | Sixth source (GME2e, photograph): Action 1 & 2, the Random Event Focus table, the Scene Adjustment Table, and the list-selection procedure |
 | `data-library.js` | Rules-library entries + tutorial steps + the two worked examples |
 | `firebase-config.js` | Placeholder + `FIREBASE_ENABLED` flag (Phase 5, not built) |
@@ -404,6 +407,9 @@ box means no UI may be built against it.
 | The focus thread carries plot armour until its track fills | Gate | `PROGRESS_TRACK` | `derived.plotArmoured` | Track card + a refusal on crossing it out | `plot armour until it is full`, `only covers the focus thread` |
 | Progress and flashpoints are 2 points each | Escalation | `PROGRESS_TRACK.awards` | `store.awardTrack` | Two buttons on the track card | `two points a time` |
 | The Conclusion is an event with an automatic Current Context focus | — | `EVENT_FOCUS` | `oracle.rollEvent({ focusKey })` | Conclusion block | `an automatic Current Context focus` |
+| The Fate Check: 2d10 + odds + chaos, read as thresholds | Lookup | `FATE_CHECK` | `rules.checkResult` | Ask screen when the resolution is the Check | `the modifier tables match the page`, `reads as thresholds`, `random event is doubles at or under chaos` |
+| Mid-Chaos trims chaos to +2..−2, on the Check only | — | `FATE_CHECK.midChaosModifiers` | `rules.checkChaosModifier`, `chaosModeAvailable` | Chaos-mode chips, refused on the chart with the reason | `Mid-Chaos is the standard ladder compressed`, `only selectable on the Fate Check` |
+| Discovery Check: ask ≥50/50, then 1d10 + points | Lookup | `PROGRESS_TRACK.discovery` | `scenes.discoveryBlock` | Track card | `covers its range and only awards what the source states` |
 | The oracle is one toggle, on by default | — | `Settings.mythicOracle` | `router` tab gating | Settings + a gated route that explains itself | `the oracle toggle hides its tab and its routes explain themselves` |
 
 ## 10. Process rules

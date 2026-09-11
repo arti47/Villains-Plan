@@ -227,6 +227,15 @@ export function updateScene(advId, sceneId, patch) {
   return scene;
 }
 
+export function setResolution(advId, mode) {
+  const adv = adventure(advId);
+  if (!adv) return null;
+  adv.resolution = mode;
+  adv.updatedAt = now();
+  save();
+  return adv.resolution;
+}
+
 export function setChaosMode(advId, mode) {
   const adv = adventure(advId);
   if (!adv) return null;

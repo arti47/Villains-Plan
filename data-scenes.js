@@ -80,16 +80,17 @@ export const LISTS = {
 };
 
 // T28 — the Chaos Factor variants. GME2e, quoted.
-// Mid-Chaos is NOT here: the rule as supplied is expressed as Fate CHECK modifiers
-// (CF 9 = +2, 7-8 = +1, 4-6 = 0, 2-3 = -1, CF 1 = -2), and this app asks on the Fate
-// CHART. Applying those numbers to the chart would be inventing a conversion, so it is
-// listed in NOT_SUPPLIED instead (ruling A32).
+// Mid-Chaos works on the Fate CHECK, where its modifiers are quoted. The book also has a
+// Mid-Chaos Fate CHART, but its cells were not supplied - only that its columns read
+// 1, 2-3, 4-6, 7-8, 9 - so the app does not offer Mid-Chaos on the chart (ruling A32).
 export const CHAOS_MODES = [
   { key: "standard", label: "Standard", cite: "GME2e", default: true,
     text: "The Chaos Factor moves by whether the characters were in control, and the Fate Chart is read at it." },
   { key: "no-chaos", label: "No-Chaos", cite: "GME2e",
     text: "Answers come purely from the odds: the chart is read at its middle column and chaos never skews a question. The Chaos Factor is still tracked in the background, because scenes are still tested against it and random events still trigger.",
     readsChartAt: 5 },
+  { key: "mid-chaos", label: "Mid-Chaos", cite: "GME2e", checkOnly: true,
+    text: "The extremes are trimmed: the Chaos Factor's pull on a question runs +2 down to -2 instead of +5 down to -5. Available on the Fate Check, where the book's modifiers are known; the Mid-Chaos chart was not supplied." },
   { key: "random-chaos", label: "Random Chaos", cite: "GME2e",
     text: "The pacing is taken out of your hands. At the end of a scene, roll a d10: equal to the Chaos Factor or under and it drops by one, over it and it rises by one - the same floor and ceiling.",
     rollsAtSceneEnd: true }
@@ -107,7 +108,33 @@ export const PROGRESS_TRACK = {
   ],
   plotArmor: "Until the track is full the focus thread carries plot armour: it cannot be finally resolved, however close things look.",
   conclusion: "Reaching the end of the track is a flashpoint with the plot armour removed. Generate a random event with an automatic Event Focus of Current Context, read toward an event that can finally end this thread - now, or in the next scene if that sits better.",
-  notSupplied: "The Discovery Check, which the book offers when progress stalls, is named but its procedure and its point values are not in what was supplied here - so the app does not roll it."
+  discovery: {
+    cite: "GME2e",
+    when: "Make one when forward momentum has stalled and you are out of ideas for how to proceed - and your character has to do something that presents an opportunity for a discovery.",
+    gate: "Ask the Game Master \"Is something discovered?\" at odds of no less than 50/50. Only on a Yes do you roll on the table.",
+    minimumOdds: "50-50",
+    die: 10,
+    addProgress: true,
+    rows: [
+      { min: -Infinity, max: 9, key: "progress-2", label: "Progress +2", award: { kind: "progress", points: 2 },
+        text: "You discover something that moves you closer to the focus thread." },
+      { min: 10, max: 10, key: "flashpoint-2", label: "Flashpoint +2", award: { kind: "flashpoint", points: 2 },
+        text: "You discover something that involves the focus thread in an important and dramatic way." },
+      { min: 11, max: 14, key: "track-1", label: "Track +1", award: null,
+        text: "Track +1. What that does is not in the source this app was built from, so the app records the result and leaves it to you." },
+      { min: 15, max: 17, key: "progress-3", label: "Progress +3", award: { kind: "progress", points: 3 },
+        text: "You discover something that moves you closer to the focus thread." },
+      { min: 18, max: 18, key: "flashpoint-3", label: "Flashpoint +3", award: { kind: "flashpoint", points: 3 },
+        text: "You discover something that involves the focus thread in an important and dramatic way." },
+      { min: 19, max: 19, key: "track-2", label: "Track +2", award: null,
+        text: "Track +2. Same as Track +1: the effect is not in the source, so the app does not apply one." },
+      { min: 20, max: 24, key: "strengthen-1", label: "Strengthen Progress +1", award: null,
+        text: "Strengthen Progress +1. The effect is not in the source, so the app records it and leaves it to you." },
+      { min: 25, max: Infinity, key: "strengthen-2", label: "Strengthen Progress +2", award: null,
+        text: "Strengthen Progress +2. The effect is not in the source, so the app records it and leaves it to you." }
+    ],
+    undefinedResults: "Track +1, Track +2, Strengthen Progress +1 and Strengthen Progress +2 are printed in the table, but what they do is not stated in what was supplied. The app rolls them, names them, and applies nothing - it does not guess."
+  }
 };
 
 // T22 — the bookkeeping phase. GME2e, via summary.
@@ -127,7 +154,6 @@ export const BOOKKEEPING = {
 // Event Focus and Scene Adjustment tables (data-actions.js) and the list selection
 // procedure. What is still missing:
 export const NOT_SUPPLIED = [
-  "The Fate Check. The edition does have one - the Mid-Chaos rule is written in its modifiers - but its dice and its procedure were not supplied, so the app asks on the Fate Chart only.",
-  "Mid-Chaos. Its modifiers are given for the Fate Check (+2 at chaos 9 down to -2 at chaos 1); converting those to Fate Chart columns would be inventing a rule, so the app does not offer it.",
-  "The Discovery Check, which pushes a stalled Thread Progress Track along. Named, with example point values, but not its procedure."
+  "The Mid-Chaos Fate CHART. The book has one - its columns read 1, 2-3, 4-6, 7-8, 9 - but its cells were not supplied. Mid-Chaos therefore works here on the Fate Check, where its modifiers are quoted, and not on the chart.",
+  "What Track +1, Track +2 and Strengthen Progress do on a Discovery Check. The table's ranges and its Progress and Flashpoint awards are quoted; those four results are named with no stated effect, so the app rolls them and applies nothing."
 ];

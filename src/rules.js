@@ -20,6 +20,7 @@ import {
   PROGRESS_TRACK
 } from "../data-scenes.js";
 import { FATE_CHART, FATE_LADDER, FATE_LADDER_OFFSETS } from "../data-fate-chart.js";
+import { FATE_CHECK } from "../data-fate-check.js";
 import {
   ACTION_TABLES, EVENT_FOCUS, SCENE_ADJUSTMENT_TABLE, LIST_SELECTION
 } from "../data-actions.js";
@@ -91,6 +92,11 @@ export function sceneOutcome(d10, chaos) {
 }
 
 export const chaosModes = () => CHAOS_MODES;
+/** Mid-Chaos is a Check rule here: its chart was not supplied (ruling A32). */
+export function chaosModeAvailable(key, resolutionKey) {
+  if (key !== "mid-chaos") return true;
+  return resolutionKey === "check";
+}
 export function chaosMode(key) {
   return CHAOS_MODES.find((m) => m.key === key) || CHAOS_MODES.find((m) => m.default) || CHAOS_MODES[0];
 }
@@ -193,6 +199,52 @@ export function askResult(oddsKey, roll, chaos = 5) {
     odds: bands.row, chaos: bands.chaos, bands, roll,
     answer: ASK_ANSWERS.find((a) => a.key === answerKey),
     double: isDouble(roll)
+  };
+}
+
+// ---------------------------------------------------------------- the Fate Check
+export const fateCheck = () => FATE_CHECK;
+export const RESOLUTIONS = [
+  { key: "chart", label: "Fate Chart", text: "One d100 read against a cell of the chart at your Chaos Factor." },
+  { key: "check", label: "Fate Check", text: "2d10 added, modified by the odds and by the Chaos Factor." }
+];
+export function resolution(key) { return RESOLUTIONS.find((r) => r.key === key) || RESOLUTIONS[0]; }
+
+/** The Chaos Factor modifier for a check: the quoted ladder, or the Mid-Chaos one. */
+export function checkChaosModifier(chaos, mode = "standard") {
+  const level = clampChaos(chaos);
+  if (mode === "mid-chaos") return FATE_CHECK.midChaosModifiers[level];
+  if (mode === "no-chaos") return 0;               // answers come purely from the odds
+  return FATE_CHECK.chaosModifiers[level];
+}
+
+/**
+ * Resolve a Fate Check: 2d10 added, plus the odds modifier, plus the chaos modifier.
+ * Doubles whose face is at or under the Chaos Factor also fire a random event.
+ */
+export function checkResult(oddsKey, dice, chaos, { mode = "standard", forMechanic = false } = {}) {
+  const [a, b] = dice;
+  for (const value of dice) {
+    if (!Number.isInteger(value) || value < 1 || value > FATE_CHECK.dice.sides) {
+      throw new Error(`Fate Check: ${value} is not a d10 result`);
+    }
+  }
+  const row = oddsRow(oddsKey);
+  const oddsMod = FATE_CHECK.oddsModifiers[row.key];
+  const level = forMechanic ? CHAOS.fixedForMechanics : clampChaos(chaos);
+  const chaosMod = checkChaosModifier(level, forMechanic ? "standard" : mode);
+  const total = a + b + oddsMod + chaosMod;
+
+  const answerRow = FATE_CHECK.answers.find((ans) => {
+    if (ans.atLeast !== undefined) return total >= ans.atLeast;
+    if (ans.atMost !== undefined) return total <= ans.atMost;
+    return true;
+  });
+  return {
+    odds: row, chaos: level, dice, oddsMod, chaosMod, total,
+    answer: ASK_ANSWERS.find((x) => x.key === answerRow.key),
+    printed: answerRow.printed,
+    double: a === b && a <= level
   };
 }
 

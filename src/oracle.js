@@ -2,16 +2,18 @@
 // The engine and its two screens. Dice come from core; every roll is logged once and
 // rendered from what was stored (§5.1).
 
-import { el, add, d100 as rollD100, uid, now, formatTime, formatDate } from "./core.js";
+import { el, add, d100 as rollD100, die, uid, now, formatTime, formatDate } from "./core.js";
 import {
-  explain, actionBar, sectionTitle, citeLink, diePill, emptyState, showToast, checkRow
+  explain, actionBar, sectionTitle, citeLink, diePill, emptyState, showToast, checkRow,
+  inlineRow
 } from "./ui.js";
 import {
   askResult, defaultOdds, oddsRow, fateChart, fateBands, meaningWord, meaningTables,
   meaningTable, askProcedure, randomEventRule, mythicGuidance, mythicSource,
-  elementsSource, eventFocus, eventFocusTable, chartChaos, chaosMode as chaosModeRule
+  elementsSource, eventFocus, eventFocusTable, chartChaos, chaosMode as chaosModeRule,
+  checkResult, fateCheck, resolution as resolutionRule, RESOLUTIONS, checkChaosModifier
 } from "./rules.js";
-import { chaos as chaosOf, chaosMode as chaosModeOf } from "./derived.js";
+import { chaos as chaosOf, chaosMode as chaosModeOf, resolutionMode } from "./derived.js";
 import * as store from "./store.js";
 import { Settings } from "./settings.js";
 import { refresh, go } from "./router.js";
@@ -24,12 +26,22 @@ import { refresh, go } from "./router.js";
 export function ask({ question = "", odds = defaultOdds(), expectation = "", forMechanic = false } = {}) {
   const adv = store.active();
   const mode = chaosModeOf(adv);
-  const level = chartChaos(chaosOf(adv), { mode, forMechanic });
-  const roll = rollD100();
-  const result = askResult(odds, roll, level);
-  const event = result.double ? rollEvent() : null;
+  const how = resolutionMode(adv);
 
-  const dice = [{ die: "d100", value: roll, table: `Fate Chart - ${result.odds.label} at chaos ${level}` }];
+  let result;
+  let dice;
+  if (how === "check") {
+    const pair = [die(fateCheck().dice.sides), die(fateCheck().dice.sides)];
+    result = checkResult(odds, pair, chaosOf(adv), { mode, forMechanic });
+    dice = pair.map((value) => ({ die: "d10", value, table: `Fate Check - ${result.odds.label} at chaos ${result.chaos}` }));
+  } else {
+    const level = chartChaos(chaosOf(adv), { mode, forMechanic });
+    const roll = rollD100();
+    result = askResult(odds, roll, level);
+    dice = [{ die: "d100", value: roll, table: `Fate Chart - ${result.odds.label} at chaos ${level}` }];
+  }
+  const level = result.chaos;
+  const event = result.double ? rollEvent() : null;
   if (event) {
     if (event.focus.roll) dice.push({ die: "d100", value: event.focus.roll, table: "Random Event Focus" });
     for (const word of event.words) dice.push({ die: "d100", value: word.roll, table: word.table });
@@ -45,9 +57,9 @@ export function ask({ question = "", odds = defaultOdds(), expectation = "", for
   });
   if (adv) {
     store.record(adv.id, "ask",
-      `Asked${question ? ` "${String(question).trim()}"` : ""} at ${result.odds.label}, chaos ${level}: ${result.answer.label} (${roll})${event ? `, and a random event - ${event.focus.label}: ${event.words.map((w) => w.word).join(", ")}` : ""}.`);
+      `Asked${question ? ` "${String(question).trim()}"` : ""} at ${result.odds.label}, chaos ${level}: ${result.answer.label} (${result.dice ? `2d10 total ${result.total}` : result.roll})${event ? `, and a random event - ${event.focus.label}: ${event.words.map((w) => w.word).join(", ")}` : ""}.`);
   }
-  return { ...result, question: String(question || "").trim(), expectation, event, forMechanic, mode, id: uid("ask"), at: now() };
+  return { ...result, question: String(question || "").trim(), expectation, event, forMechanic, mode, how, id: uid("ask"), at: now() };
 }
 
 /** One word from one meaning table. Nothing rolls a second on your behalf (ruling A15). */
@@ -125,8 +137,13 @@ export function renderAsk() {
 
   const odds = oddsRow(draft.odds);
   const mode = chaosModeOf(store.active());
-  const level = chartChaos(chaosOf(store.active()), { mode, forMechanic: draft.forMechanic });
-  add(content, mechanicRow(mode, level), oddsCard(odds, level), procedureCard());
+  const how = resolutionMode(store.active());
+  const level = how === "check"
+    ? (draft.forMechanic ? 5 : chaosOf(store.active()))
+    : chartChaos(chaosOf(store.active()), { mode, forMechanic: draft.forMechanic });
+  add(content, resolutionRow(how), mechanicRow(mode, level),
+    how === "check" ? checkCard(odds, level, mode, draft.forMechanic) : oddsCard(odds, level),
+    procedureCard());
 
   if (lastAsk) add(content, sectionTitle("The answer"), askCard(lastAsk));
   add(content, guidanceNote(mythicGuidance("odds"), "ask-odds"), guidanceNote(mythicGuidance("expectations"), "ask-odds"), focusTableCard());
@@ -166,6 +183,37 @@ function mechanicRow(mode, level) {
   return wrap;
 }
 
+function resolutionRow(how) {
+  const wrap = el("div", { class: "field" });
+  add(wrap, el("span", { class: "field-label", text: "How questions are answered" }));
+  const chips = el("div", { class: "chip-row" });
+  for (const option of RESOLUTIONS) {
+    add(chips, el("button", {
+      class: `chip ${how === option.key ? "on" : ""}`, type: "button",
+      "aria-pressed": how === option.key ? "true" : "false",
+      onclick: () => { store.setResolution(store.active().id, option.key); refresh(); showToast(`${option.label}.`); }
+    }, option.label));
+  }
+  add(wrap, chips, el("small", { class: "field-hint", text: `${resolutionRule(how).text} The two are alternatives; the book uses one or the other.` }));
+  return wrap;
+}
+
+/** What a Fate Check needs, before it is rolled. */
+function checkCard(odds, level, mode, forMechanic) {
+  const check = fateCheck();
+  const oddsMod = check.oddsModifiers[odds.key];
+  const chaosMod = checkChaosModifier(level, forMechanic ? "standard" : mode);
+  const box = el("div", { class: "card" });
+  add(box, el("h2", { class: "card-title" }, `${odds.label} at chaos ${level}`, citeLink("fate-check", "rule")));
+  add(box, inlineRow("Dice", "2d10, added"));
+  add(box, inlineRow("Odds", oddsMod >= 0 ? `+${oddsMod}` : String(oddsMod)));
+  add(box, inlineRow(mode === "mid-chaos" ? "Chaos (Mid-Chaos)" : mode === "no-chaos" ? "Chaos (No-Chaos)" : "Chaos", chaosMod >= 0 ? `+${chaosMod}` : String(chaosMod)));
+  const need = 11 - oddsMod - chaosMod;
+  add(box, inlineRow("Yes needs", `${need} or more on the dice`));
+  add(box, el("p", { class: "block-note", text: "18 or more is an Exceptional Yes, 4 or less an Exceptional No. Both dice the same, at or under the Chaos Factor, also throws a random event." }));
+  return box;
+}
+
 function oddsCard(odds, level) {
   const bands = fateBands(odds.key, level);
   const box = el("div", { class: "card" });
@@ -194,8 +242,13 @@ function askCard(result) {
       el("span", { class: "phase-date", text: formatTime(result.at) })));
   if (result.question) add(box, el("p", { class: "ask-question", text: `"${result.question}"` }));
   const dice = el("div", { class: "dice-row" });
-  add(dice, diePill({ die: "d100", value: result.roll, table: `Fate Chart - ${result.odds.label}` }),
-    el("span", { class: "arith", text: `${result.odds.label} at chaos ${result.chaos}` }));
+  if (result.dice) {
+    for (const value of result.dice) add(dice, diePill({ die: "d10", value, table: "Fate Check" }));
+    add(dice, el("span", { class: "arith", text: `${result.dice[0]} + ${result.dice[1]} ${result.oddsMod >= 0 ? "+" : ""}${result.oddsMod} ${result.chaosMod >= 0 ? "+" : ""}${result.chaosMod} = ${result.total}` }));
+  } else {
+    add(dice, diePill({ die: "d100", value: result.roll, table: `Fate Chart - ${result.odds.label}` }));
+  }
+  add(dice, el("span", { class: "arith", text: `${result.odds.label} at chaos ${result.chaos}` }));
   add(box, dice, el("p", { class: "block-text", text: result.answer.text }));
 
   if (!result.answer.yes) {

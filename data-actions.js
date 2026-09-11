@@ -96,5 +96,5 @@ export const LIST_SELECTION = {
     { min: 7, max: 8, line: 4 }, { min: 9, max: 10, line: 5 }
   ],
   chooseText: "The line is blank. Take whichever entry on the list fits what is happening, or roll again until you land on a filled line.",
-  inferred: "The summary gives the section die but not how its faces map to sections. The app pairs them the way the line roll is paired - two faces per section - because that is what makes a d4 cover two sections and a d10 cover five. Confirm from the page."
+  inferred: "No quoted rule maps the section die's faces onto the sections, but the printed Adventure Lists sheet settles it: its left margin reads 1-2 beside the first section, 3-4 beside the second, then 5-6, 7-8 and 9-10. The app pairs them that way."
 };
