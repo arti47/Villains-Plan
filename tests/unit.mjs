@@ -369,6 +369,57 @@ test("the modified tables are open-ended, so a big modifier cannot fall off them
   }
 });
 
+test("every archetype modifier matches the page (MM41:p6-7, transcribed from photographs)", () => {
+  // Transcribed independently from page photographs, not from the data file. This is what
+  // retires the reconstruction risk: the first extraction paired 22 ranges with 22 modifier
+  // rows by ORDER, because the transcript de-interleaved them, and only three rows could be
+  // checked against the article's worked examples (docs/AUDIT.md F33).
+  const page = {
+    "revenge": [0, 0, 0], "master-of-domain": [10, 10, 10], "domination": [10, 5, 5],
+    "serves-another": [5, 5, 5], "conquest": [5, 5, 10], "schemer": [0, 0, 5],
+    "brute": [-5, -5, 0], "doing-their-job": [5, 0, 0], "killer": [-5, -5, -5],
+    "money": [-5, -5, -5], "inscrutable": [5, 0, 0], "thrill": [-10, -5, -5],
+    "one-of-the-people": [0, 5, 5], "class-act": [5, 10, 10], "higher-purpose": [5, 5, 5],
+    "personal-need": [-5, -5, -5], "no-choice": [10, 0, 5], "i-am-the-best": [-10, -10, 0],
+    "making-a-point": [0, 5, 5], "power": [10, 5, 10], "duty-bound": [-5, -5, 5],
+    "meaning-table": [0, 0, 0], "double": [0, 0, 0]
+  };
+  equal(Object.keys(page).length, vc.VILLAIN_ARCHETYPES.rows.length, "every row is accounted for");
+  for (const row of vc.VILLAIN_ARCHETYPES.rows) {
+    const expected = page[row.key];
+    assert(expected, `${row.key} is on the page`);
+    deepEqual([row.mods.o, row.mods.l, row.mods.m], expected, `${row.label} modifiers`);
+  }
+});
+
+test("every organization modifier matches the page (MM41:p10-11, transcribed from photographs)", () => {
+  const page = {
+    "none": [-10, -10], "gang": [-5, -10], "hired-hands": [0, -5], "followers": [-10, -5],
+    "family": [-5, -10], "cult": [0, 0], "organized-crime": [5, 0], "secret-society": [10, 5],
+    "army": [5, 5], "professionals": [5, 10], "company": [10, 10], "corrupted": [10, 5],
+    "syndicate": [10, 5], "sprawling": [10, 10], "government": [10, 10], "upscale": [5, 5],
+    "meaning-table": [0, 0], "double": [0, 0]
+  };
+  equal(Object.keys(page).length, vc.VILLAIN_ORGANIZATIONS.rows.length, "every row is accounted for");
+  for (const row of vc.VILLAIN_ORGANIZATIONS.rows) {
+    const expected = page[row.key];
+    assert(expected, `${row.key} is on the page`);
+    deepEqual([row.mods.l, row.mods.m], expected, `${row.label} modifiers`);
+  }
+});
+
+test("the band boundaries match the page too", () => {
+  const bands = [[1, "revenge"], [6, "revenge"], [7, "master-of-domain"], [16, "master-of-domain"],
+    [17, "domination"], [20, "domination"], [25, "schemer"], [32, "schemer"], [44, "thrill"],
+    [45, "one-of-the-people"], [63, "power"], [70, "power"], [74, "duty-bound"],
+    [75, "meaning-table"], [80, "meaning-table"], [81, "double"], [100, "double"]];
+  for (const [roll, key] of bands) equal(rules.lookupOpen(vc.VILLAIN_ARCHETYPES, roll).key, key, `archetype ${roll}`);
+  const orgBands = [[-30, "none"], [8, "none"], [9, "gang"], [22, "hired-hands"], [23, "followers"],
+    [40, "organized-crime"], [41, "secret-society"], [48, "company"], [53, "company"],
+    [68, "government"], [69, "upscale"], [74, "upscale"], [80, "meaning-table"], [81, "double"], [150, "double"]];
+  for (const [total, key] of orgBands) equal(rules.lookupOpen(vc.VILLAIN_ORGANIZATIONS, total).key, key, `organization ${total}`);
+});
+
 test("the article's own example arithmetic comes out right (MM41:p16)", () => {
   // Has No Choice + One Of The People, then The Company: lieutenants +15, minions +20.
   const noChoice = vc.VILLAIN_ARCHETYPES.rows.find((r) => r.key === "no-choice");

@@ -21,6 +21,8 @@ export const SPECIAL = { meaning: "meaning-table", double: "double", upscale: "u
 
 // T14 — Villain Archetype (d100, rolled with no modifier: the modifiers come from it).
 // MM41:p6-7. mods are carried to the Organization (o), Lieutenant (l) and Minion (m) rolls.
+// Every modifier triple here is verified against a photograph of the page; the unit
+// harness holds an independent transcription of all 23 and fails on any drift.
 export const VILLAIN_ARCHETYPES = {
   id: "villain-archetype",
   name: "Villain Archetype",
@@ -77,6 +79,7 @@ export const VILLAIN_ARCHETYPES = {
 
 // T15 — Villain Organization (d100 + the archetype's o modifier). MM41:p10-11.
 // The top and bottom bands are open-ended, which is what absorbs the modifiers.
+// All 18 rows verified against a photograph of the page, pinned by the unit harness.
 export const VILLAIN_ORGANIZATIONS = {
   id: "villain-organization",
   name: "Villain Organization",

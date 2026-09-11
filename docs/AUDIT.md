@@ -250,6 +250,20 @@ same passes run against it.
   120 resolves to a named minion archetype, and the merged-cell spans are pinned so a future
   edit cannot quietly reintroduce a hole.
 
+### F33 · The Crafter's modifier columns were paired by order, not read
+- **Rule:** MM41:p6-7 and p10-11
+- **Status:** **verified, no corrections.** The transcript de-interleaved the modifier
+  column from its rows, so 22 archetype triples and 18 organization pairs had been matched
+  by position, with only three rows (Has No Choice, One Of The People, The Domination Game)
+  confirmable from the article's own worked examples. Page photographs confirmed all 41.
+- **Fix:** an independent transcription of both tables now lives in the unit harness and is
+  asserted row by row, along with fifteen band boundaries.
+- **Why it mattered:** this was the largest remaining silent-error risk in the app. A wrong
+  modifier does not crash, does not look wrong in play, and skews every downstream roll —
+  the exact profile §11.3 describes as where findings hide. It is also the §2.1 rule paying
+  off twice: the Minion cells were flagged and asked about, and this column, which *looked*
+  recovered, was still worth asking about.
+
 ## Not yet run
 
 - **Cycle 4.** Cycle 3 found four more, so the stopping rule is still not met — and two of

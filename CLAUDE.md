@@ -12,10 +12,14 @@ Sources of record, in precedence order (§2.1):
 3. **The Villain Crafter**, *Mythic Magazine* Vol. 41, pp. 3–16. Cited `MM41:p<page>`.
    Supplies the villain, their organization, and their lieutenants and minions — the thing
    the reveal system reveals. Extracted into `data-villain-crafter.js`.
-   **Blocked data: none outstanding.** Three bands of its Minion column (42–44, 68–69,
-   75–76) were unreadable in the first transcription and shipped marked `unrecovered`;
-   photographs of MM41:p14–15 closed the gap (the Soldier cell is merged across 40–44 and
-   On A Mission across 68–76). Every band is now read from the page.
+   **Blocked data: none outstanding. Every table verified against page photographs.**
+   Three bands of the Minion column (42–44, 68–69, 75–76) were unreadable in the first
+   transcription and shipped marked `unrecovered`; photographs of MM41:p14–15 closed the
+   gap (Soldier is merged across 40–44, On A Mission across 68–76). Photographs of
+   MM41:p6–7 and p10–11 then verified all 41 modifier triples — the transcript had
+   de-interleaved the modifier column, so they had been paired by order with only three
+   rows confirmable from the worked examples. Every one matched; no corrections. The unit
+   harness now holds an independent transcription of both tables and fails on drift.
 
 ---
 
@@ -303,8 +307,8 @@ box means no UI may be built against it.
 | T11 | The four answers + the random-event rule | `data-mythic.js` | `oracle.ask` | 4+1 | [x] |
 | T12 | Discover Meaning (50 rows × 2 columns) | `data-mythic.js` | `rules.discoverWord` | 50 | [x] |
 | T13 | Ask procedure + oracle guidance + what is still unsourced | `data-mythic.js` | `oracle`, `screens` | 4+5+5 | [x] |
-| T14 | Villain Archetype (d100) with o/l/m modifiers | `data-villain-crafter.js` | `crafter.rollArchetype` | 23 | [x] |
-| T15 | Villain Organization (d100 + mod) with l/m modifiers | `data-villain-crafter.js` | `crafter.rollOrganization` | 18 | [x] |
+| T14 | Villain Archetype (d100) with o/l/m modifiers | `data-villain-crafter.js` | `crafter.rollArchetype` | 23 | [x] all 23 modifier triples verified against page photographs |
+| T15 | Villain Organization (d100 + mod) with l/m modifiers | `data-villain-crafter.js` | `crafter.rollOrganization` | 18 | [x] all 18 modifier pairs verified against page photographs |
 | T16 | Lieutenants & Minions (d100 + mod), both columns | `data-villain-crafter.js` | `crafter.rollUnderling` | 23 | [x] all bands verified against page photographs |
 | T17 | Crafter guidance: staging, interpretation, modifiers, statistics, the gap | `data-villain-crafter.js` | `crafter` | 6 | [x] |
 
@@ -335,7 +339,7 @@ box means no UI may be built against it.
 | An event is read from one Action word, more on request | Permission | `DISCOVER_MEANING` | `oracle.discover` | Event block + "add another word" | `an ask writes one log row, and a double writes the event die with it` |
 | Discover Meaning: one word at a time, unbounded | Permission | `DISCOVER_MEANING` | `oracle.discover` | Meaning screen reading | `rolls one word at a time and logs each` |
 | The pivot question can be rolled, and binds | Gate | `ASK_ODDS`, `FATE_ANSWERS` | `oracle.askPivot` → `derived.canRevealPivot` | Arc screen ask row | `asking the pivot question writes the answer the gate reads` |
-| Archetype emits the modifiers everything else carries | Escalation | `VILLAIN_ARCHETYPES[].mods` | `crafter.modifierBreakdown` | Villain screen, arithmetic printed | `the article's own example arithmetic comes out right` |
+| Archetype emits the modifiers everything else carries | Escalation | `VILLAIN_ARCHETYPES[].mods` | `crafter.modifierBreakdown` | Villain screen, arithmetic printed | `the article's own example arithmetic comes out right`, `every archetype modifier matches the page` |
 | Organization is rolled at the archetype's modifier | Gate | `VILLAIN_ORGANIZATIONS` | `crafter.canRollOrganization` | Disabled control + refusal naming the rule | `the organization roll is gated on the archetype` |
 | Double Archetypes: roll two, combine; a nested Double is re-rolled | Cascade | `SPECIAL.double` | `crafter.expand` banned set | Both archetypes shown with a note | `a nested Double is re-rolled, not expanded`, `every crafter cascade terminates` |
 | Upscale: roll again bigger, both sets of modifiers | Cascade | `SPECIAL.upscale` | `crafter.expand` | Upscale note on the organization card | `Upscale rolls again and keeps both sets of modifiers` |
@@ -382,5 +386,6 @@ see README. Repository stays private while it carries a transcription.
 | 2026-09-11 | Second source extracted (One-Page Mythic): `data-mythic.js`, `src/oracle.js`, an Oracle tab with Ask and Meaning, random events, and the pivot question wired to the gate that already honoured it | The user supplied the page; it unblocks everything ruling A7 had marked not-in-source | `npm test` 81, `npm run smoke` 403, `npm run interaction` 286, probes read, screenshots checked | `schemer-v2` |
 | 2026-09-11 | Third source extracted (The Villain Crafter): `data-villain-crafter.js`, `src/crafter.js`, a Villain screen under the Dossier tab, modifiers carried between the three tables, and the three cascades | The user supplied the pages; MM41 was the last thing `STILL_NOT_IN_SOURCE` named that the app could use | `npm test` 98, `npm run smoke` 436, `npm run interaction` 331, probes read, screenshot checked | `schemer-v3` |
 | 2026-09-11 | Minion column completed from page photographs; `unrecovered` handling and its UI removed with the gap | The user supplied MM41:p14–15; merged cells explain all three bands | `npm test` 99, `npm run smoke` 436, `npm run interaction` 331 | `schemer-v4` |
+| 2026-09-11 | MM41:p6–7 and p10–11 photographs verified all 41 Crafter modifier triples against the shipped data: zero corrections. An independent transcription of both tables now lives in the harness | The modifier column had been de-interleaved and paired by order, with only three rows confirmable from worked examples — the largest silent-error risk left in the app | `npm test` 102 | `schemer-v4` |
 | 2026-09-11 | Audit cycle 3: F28–F31 (Double Archetypes expanded recursively and diverged at large modifiers; the villain roster hit 8.7 viewports; the seeds did not cover the crafted state; the citation check was a source behind) | New source, new passes | all harnesses green; a cascade-termination test now runs at a hostile modifier | `schemer-v3` |
 | 2026-09-11 | Audit cycle 2: F24–F27 (six tabs collided at 320px and the harness could not see it; the Settings gear was inert on Settings; a card written and never mounted; the citation check assumed one source) | New source, new passes | all harnesses green; `fixedBarFit` added so the tab bar is measured on every route | `schemer-v2` |

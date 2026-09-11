@@ -15,6 +15,16 @@ modifier; the engine refuses and names the rule rather than silently rolling at 
 Underlings may be rolled before the organization exists — the breakdown then says
 "organization not rolled yet" instead of pretending the modifier is complete (A22).
 
+## Provenance of the modifiers
+
+Both modifier columns are verified against photographs of MM41:p6–7 and p10–11. This
+mattered more than it looks: the original transcript flattened the modifier column away
+from its rows, so all 22 archetypes and 18 organizations had been paired **by order**, with
+only three rows confirmable from the article's worked examples. A wrong modifier is the
+worst kind of error in this app — it silently skews every downstream roll and nothing in
+play would ever look wrong. All 41 matched; the harness now holds an independent
+transcription of both tables and fails on any drift.
+
 ## Modifiers — Escalation carried between tables
 
 Every archetype and organization row carries its modifiers in the data; nothing is inlined.
