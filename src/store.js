@@ -258,7 +258,8 @@ export function awardTrack(advId, award) {
   const adv = adventure(advId);
   if (!adv || !adv.track) return null;
   const next = Math.min(adv.track.length, adv.track.points + award.points);
-  adv.track = { ...adv.track, points: next, awards: [...(adv.track.awards || []), { ...award, at: now() }] };
+  adv.track = { ...adv.track, points: next,
+    awards: [...(adv.track.awards || []), { kind: award.kind || award.key, ...award, at: now() }] };
   adv.updatedAt = now();
   save();
   return adv.track;

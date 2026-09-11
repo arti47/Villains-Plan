@@ -513,6 +513,29 @@ summary-only rule left and keeps its flag and its recorded inference (A28).
 - **Mode persistence.** Every chaos mode now survives a switch of resolution, where
   Mid-Chaos used to be forced back to standard.
 
+## Cycle 9 — the Progress Track chapter
+
+No defects. The chapter closed the app's last gap and added four rules, all built and
+tested; what follows is what the passes confirmed.
+
+## Verified clean (cycle 9)
+
+- **All eight Discovery results award points**, 2/2/1/3/3/2/1/2 reading down, each with
+  the kind the book names. The kind is not decoration: only a flashpoint satisfies a phase,
+  so a Track or Strengthen result scoring 2 points must *not* count as one.
+- **Phases of five.** Asserted on a 10-point track: two phases, the boundaries right, a
+  phase that completes without a flashpoint is owed one, and a flashpoint anywhere inside
+  the phase satisfies it. The second case is the book's own worked example — 6 points with
+  a flashpoint already had, and no trigger — which is why it is a test rather than a note.
+- **The delayed conclusion's scene is not tested.** At chaos 9, where a tested scene almost
+  never holds, the conclusion's scene comes back `untested`, with no die and an `expected`
+  outcome; the scene after it is tested normally, so the guarantee is spent once.
+- **Plot armour against Close A Thread.** The event still plays out; the block says the
+  thread does not actually close while the track is unfinished.
+- **`NOT_SUPPLIED` is empty, and the suite asserts it is empty.** That assertion is the
+  F45 lesson applied in the other direction: the list was wrong for four sources because
+  nothing checked it. It is checked now, in both directions.
+
 ## Not yet run
 
 - **Cycle 8.** The rules read-through is now overdue by six sources and is the next

@@ -19,31 +19,57 @@ import {
 } from "./rules.js";
 import {
   chaos, currentScene, scenes, sceneCount, listItems, listLines, listFull, listNeedsCleanup,
-  chaosMode as chaosModeOf, track as trackOf, focusThread, trackComplete, plotArmoured
+  chaosMode as chaosModeOf, track as trackOf, focusThread, trackComplete, plotArmoured,
+  trackPhases, owedFlashpoint
 } from "./derived.js";
-import { rollEvent, eventBlock, ask } from "./oracle.js";
+import { rollEvent, eventBlock, ask, discover } from "./oracle.js";
 import * as store from "./store.js";
 import { refresh, go } from "./router.js";
+
+// the words the last Discovery Check turned up, shown until the screen is left
+let lastDiscovery = null;
+
+/**
+ * A conclusion rolled but not yet played, waiting for the next scene. The book: come up
+ * with the expected scene including the conclusion, and do NOT test it against the Chaos
+ * Factor, because the track guarantees it begins as imagined.
+ */
+function carriedConclusion(adv) {
+  const t = trackOf(adv);
+  return Boolean(t && t.conclusion && !t.conclusionPlayed && trackComplete(adv) && !currentScene(adv));
+}
 
 // ------------------------------------------------------------------ engine
 /**
  * Test the expected scene. One d10 against the Chaos Factor: over it and the scene runs
  * as you pictured; at or under it, odd alters and even interrupts.
+ *
+ * One exception, and it is the Progress Track's: a conclusion delayed to this scene is
+ * NOT tested. The track has already guaranteed the scene begins as you imagine it, so
+ * there is no die to roll.
  */
 export function testScene(adv, { expectation = "" } = {}) {
-  const d10 = die(sceneTestRule().die);
   const level = chaos(adv);
-  const outcome = sceneOutcome(d10, level);
+  const carries = carriedConclusion(adv);
+  const d10 = carries ? null : die(sceneTestRule().die);
+  const outcome = carries
+    ? { key: "expected", label: sceneOutcome(10, 1).label }
+    : sceneOutcome(d10, level);
   const scene = {
     id: uid("scene"),
     n: sceneCount(adv) + 1,
-    test: { d10, chaos: level, kind: outcome.key, label: outcome.label },
+    test: { d10, chaos: level, kind: outcome.key, label: outcome.label, untested: carries },
     expectation: String(expectation || "").trim(),
     notes: "", adjustments: [], words: [], control: null,
     discoveryClosed: false,
     startedAt: now(), endedAt: null
   };
   const saved = store.addScene(adv.id, scene);
+  if (carries) {
+    store.setTrack(adv.id, { conclusionPlayed: true });   // the guarantee is spent
+    store.record(adv.id, "scene", `Scene ${scene.n} begins as expected, untested: the Progress Track's conclusion guarantees it.`);
+    return saved;
+  }
   store.pushLog({
     adventureId: adv.id,
     kind: "scene",
@@ -506,6 +532,26 @@ function trackCard(adv) {
   }
   add(box, bar, inlineRow("Progress", `${current.points} of ${current.length}`));
 
+  // The book's per-phase question, which is what makes a flashpoint compulsory
+  const phases = trackPhases(adv);
+  const phaseRow = el("div", { class: "chip-row phase-row" });
+  for (const phase of phases) {
+    const state = phase.flashpoint ? "on" : (phase.complete ? "warn" : "");
+    add(phaseRow, el("span", { class: `chip static ${state}`,
+      title: `Points ${phase.from}-${phase.to}. ${phase.flashpoint ? "A flashpoint happened." : phase.complete ? "No flashpoint happened, so the track triggered one." : "Did a flashpoint happen?"}` },
+      `${phase.from}-${phase.to}${phase.flashpoint ? " ✓" : ""}`));
+  }
+  add(box, el("p", { class: "field-label", text: "Did a flashpoint happen?" }), phaseRow,
+    el("small", { class: "field-hint", text: rule.phaseFlashpoint.text }));
+
+  if (current.pendingFlashpoint) {
+    add(box, el("p", { class: "block-note warn", text: "A phase ended without a flashpoint during bookkeeping, so the track owes you one: it lands at the start of the next scene. Generate and test that scene as normal - it carries the flashpoint either way." }));
+  }
+  if (current.flashpoint) {
+    add(box, el("p", { class: "block-note", text: "The track triggered this flashpoint. It involves the focus thread dramatically, but does not resolve it." }),
+      eventBlock(current.flashpoint));
+  }
+
   if (!complete) {
     add(box, el("p", { class: "block-note", text: rule.plotArmor }));
     const actions = el("div", { class: "row-actions" });
@@ -513,17 +559,18 @@ function trackCard(adv) {
       add(actions, el("button", {
         class: "btn btn-quiet", type: "button", title: award.text,
         onclick: () => {
-          store.awardTrack(adv.id, { key: award.key, label: award.label, points: award.points });
+          const fired = scoreTrack(adv, { key: award.key, kind: award.key, label: award.label, points: award.points });
           store.record(adv.id, "track", `${award.label}: +${award.points} on the focus thread's track.`);
           refresh();
-          showToast(`${award.label}: +${award.points}.`);
+          showToast(`${award.label}: +${award.points}.${fired ? (fired.pending ? " A phase flashpoint is owed next scene." : " The phase ended without one, so the track triggered a flashpoint.") : ""}`);
         }
       }, `${award.label} +${award.points}`));
     }
     add(box, actions, discoveryBlock(adv, current));
   } else if (current.conclusion) {
-    add(box, el("p", { class: "block-note", text: "The plot armour is off. Read this event toward something that can finally end the thread - now, or in the next scene if that sits better." }),
-      eventBlock(current.conclusion));
+    add(box, el("p", { class: "block-note", text: "The plot armour is off. Read this event toward something that can finally end the thread." }),
+      eventBlock(current.conclusion),
+      el("p", { class: "block-note", text: rule.conclusionDelay }));
   } else {
     add(box, el("p", { class: "block-note", text: rule.conclusion }),
       el("button", {
@@ -557,6 +604,36 @@ function trackCard(adv) {
   return box;
 }
 
+/**
+ * Score points on the track, then honour the phase rule: the track is phases of five
+ * points, each asking "did a flashpoint happen?", and a phase that completes without one
+ * makes one happen.
+ *
+ * Timing is the book's: cross the threshold while a scene is running and the flashpoint
+ * fires now; cross it during end-of-scene bookkeeping and it waits for the next scene.
+ */
+function scoreTrack(adv, award) {
+  store.awardTrack(adv.id, award);
+  const owed = owedFlashpoint(store.active());
+  if (!owed || trackComplete(store.active())) return null;   // the Conclusion supersedes it
+  const scene = currentScene(store.active());
+  if (!scene) {
+    store.setTrack(adv.id, { pendingFlashpoint: true });
+    store.record(adv.id, "track", `Phase ${owed.index + 1} ended with no flashpoint: one is owed, and lands at the start of the next scene.`);
+    return { pending: true, phase: owed };
+  }
+  const event = rollEvent({ focusKey: "current-context" });
+  store.setTrack(adv.id, { flashpoint: event, pendingFlashpoint: false });
+  store.pushLog({
+    adventureId: adv.id, kind: "track",
+    dice: event.words.map((w) => ({ die: "d100", value: w.roll, table: w.table })),
+    summary: event.words.map((w) => w.word).join(", "),
+    outcome: `Phase ${owed.index + 1} flashpoint`
+  });
+  store.record(adv.id, "track", `Phase ${owed.index + 1} ended with no flashpoint, so the track triggered one: ${event.words.map((w) => w.word).join(", ")}.`);
+  return { event, phase: owed };
+}
+
 /** One roll on the Thread Discovery Check table, applied and logged. */
 function rollDiscovery(adv, rule) {
   const roll = die(rule.die);
@@ -569,15 +646,13 @@ function rollDiscovery(adv, rule) {
     summary: row.label,
     outcome: `Discovery Check ${total}: ${row.label}`
   });
-  if (row.award) {
-    store.awardTrack(adv.id, { key: "discovery", label: row.label, points: row.award.points, note: row.text });
-  } else {
-    store.setTrack(adv.id, {
-      awards: [...(trackOf(store.active()).awards || []), { key: "discovery", label: row.label, points: 0, note: row.text, at: Date.now() }]
-    });
-  }
-  store.record(adv.id, "track", `Discovery Check (d10 ${roll} + ${points}): ${row.label}.`);
-  return row;
+  // A successful Discovery Check IS a random event - this table stands in for the Event
+  // Focus table - so it gets meaning words to read, like any other event.
+  const words = [discover("action-1", { logAs: "track" }), discover("action-2", { logAs: "track" })];
+  scoreTrack(adv, { key: "discovery", kind: row.award.kind, label: row.label, points: row.award.points, note: row.text });
+  store.record(adv.id, "track",
+    `Discovery Check (d10 ${roll} + ${points}): ${row.label} - ${words.map((w) => w.word).join(", ")}.`);
+  return { ...row, words };
 }
 
 /**
@@ -606,6 +681,15 @@ function discoveryBlock(adv, current) {
   if (last) {
     add(box, el("p", { class: "block-text" }, el("strong", { text: `${last.label}. ` }), last.note || ""));
   }
+  if (lastDiscovery) {
+    for (const result of lastDiscovery) {
+      add(box, el("p", { class: "block-note" },
+        el("strong", { text: `${result.label}: ` }),
+        result.words.map((w) => w.word).join(", "),
+        " — read it as you would any random event."));
+    }
+  }
+  add(box, el("p", { class: "block-note", text: rule.asRandomEvent }));
 
   const scene = currentScene(adv);
   const closed = Boolean(scene && scene.discoveryClosed);
@@ -633,15 +717,15 @@ function discoveryBlock(adv, current) {
       }
       const rolled = [];
       for (let i = 0; i < answer.rolls; i += 1) rolled.push(rollDiscovery(adv, rule));
+      lastDiscovery = rolled;
       if (answer.rolls > 1) {
         store.record(adv.id, "track", `${asked.answer.label}: rolled twice and combined - ${rolled.map((r) => r.label).join(" + ")}.`);
       }
       refresh();
-      const named = rolled.map((r) => r.label).join(" + ");
-      showToast(`${named}${rolled.every((r) => r.award) ? "" : " - some effects are not stated"}.`);
+      showToast(rolled.map((r) => `${r.label}: ${r.words.map((w) => w.word).join(", ")}`).join(" · "));
     }
   }, "Make a Discovery Check"));
-  add(box, el("p", { class: "block-note", text: rule.undefinedResults }),
+  add(box, el("p", { class: "block-note", text: rule.allDefined }),
     el("p", { class: "source-cite", text: rule.cite }));
   return box;
 }

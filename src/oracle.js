@@ -2,7 +2,7 @@
 // The engine and its two screens. Dice come from core; every roll is logged once and
 // rendered from what was stored (§5.1).
 
-import { el, add, d100 as rollD100, die, uid, now, formatTime, formatDate } from "./core.js";
+import { el, add, d100 as rollD100, die, uid, now, formatTime, formatDate, truncate } from "./core.js";
 import {
   explain, actionBar, sectionTitle, citeLink, diePill, emptyState, showToast, checkRow,
   inlineRow
@@ -14,7 +14,15 @@ import {
   elementsSource, eventFocus, eventFocusTable, chartChaos, chaosMode as chaosModeRule,
   checkResult, fateCheck, resolution as resolutionRule, RESOLUTIONS, checkChaosModifier
 } from "./rules.js";
-import { chaos as chaosOf, chaosMode as chaosModeOf, resolutionMode } from "./derived.js";
+import { chaos as chaosOf, chaosMode as chaosModeOf, resolutionMode, focusThread,
+  trackComplete } from "./derived.js";
+
+/** The focus thread while its track still protects it, or null. */
+function armouredFocusThread() {
+  const adv = store.active();
+  if (!adv || trackComplete(adv)) return null;
+  return focusThread(adv);
+}
 import * as store from "./store.js";
 import { Settings } from "./settings.js";
 import { refresh, go } from "./router.js";
@@ -323,6 +331,13 @@ export function eventBlock(event) {
     add(box, el("p", { class: "block-note" },
       `This focus points at the ${event.focus.list} list. `,
       el("a", { class: "cite", href: "#/lists" }, "Roll for an entry there"), "."));
+  }
+  // Plot armour reaches this far: a Close A Thread event cannot close the focus thread
+  // while its track is unfinished. The event still plays out - it just does not land.
+  if (event.focus.key === "close-thread" && armouredFocusThread()) {
+    add(box, el("p", { class: "block-note warn" },
+      el("strong", { text: "Plot armour. " }),
+      `The focus thread "${truncate(armouredFocusThread().text, 40)}" cannot close until its track is full. If this event invokes that thread, play it out with the extra context that it does not actually close - it may look as though it will, and then it does not.`));
   }
   add(box, el("button", {
     class: "btn btn-quiet", type: "button",

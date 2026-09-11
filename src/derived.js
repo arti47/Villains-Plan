@@ -134,6 +134,39 @@ export function focusThread(adv) {
   return listItems(adv, "threads").find((item) => item.id === t.threadId) || null;
 }
 export const trackComplete = (adv) => { const t = track(adv); return !!t && t.points >= t.length; };
+
+/**
+ * The track in phases of five points, each asking the book's question: did a flashpoint
+ * happen in it? Replaying the awards in order is what answers that - a flashpoint counts
+ * for the phase the running total was in when it was scored.
+ */
+export function trackPhases(adv) {
+  const t = track(adv);
+  if (!t) return [];
+  const size = PROGRESS_TRACK.phaseSize;
+  const count = Math.ceil(t.length / size);
+  const phases = Array.from({ length: count }, (_, i) => ({
+    index: i, from: i * size + 1, to: Math.min(t.length, (i + 1) * size),
+    flashpoint: false, complete: t.points >= Math.min(t.length, (i + 1) * size)
+  }));
+  let running = 0;
+  for (const award of t.awards) {
+    // the phase a score lands in is the one holding the point it started from
+    const phase = phases[Math.min(count - 1, Math.floor(running / size))];
+    if (phase && award.kind === "flashpoint") phase.flashpoint = true;
+    running += award.points;
+  }
+  return phases;
+}
+
+/**
+ * A phase that is finished and never had a flashpoint: the track owes you one. The book
+ * triggers it at the moment the threshold is crossed, so this reads the earliest such
+ * phase rather than all of them.
+ */
+export function owedFlashpoint(adv) {
+  return trackPhases(adv).find((p) => p.complete && !p.flashpoint) || null;
+}
 /** Plot armour: the focus thread cannot be resolved until the track is full. */
 export function plotArmoured(adv, threadId) {
   const t = track(adv);
@@ -287,10 +320,20 @@ function normalizeTrack(raw, threads) {
     length,
     points: Math.min(length, Math.max(0, Math.round(Number(raw.points)) || 0)),
     awards: (Array.isArray(raw.awards) ? raw.awards : []).filter((a) => a && a.key).map((a) => ({
-      key: a.key, label: a.label || a.key, points: Number(a.points) || 0, note: a.note || "", at: a.at || now()
+      key: a.key, label: a.label || a.key, points: Number(a.points) || 0,
+      // `kind` is what the book counts: only a flashpoint satisfies a phase. Older
+      // records predate the field, so fall back to the key, which was the kind then.
+      kind: a.kind || a.key,
+      note: a.note || "", at: a.at || now()
     })),
     concluded: !!raw.concluded,
-    conclusion: raw.conclusion && raw.conclusion.focus ? raw.conclusion : null
+    conclusion: raw.conclusion && raw.conclusion.focus ? raw.conclusion : null,
+    // the untested scene the conclusion guarantees is a one-use thing
+    conclusionPlayed: raw.conclusionPlayed === true,
+    // A phase flashpoint the track owes you, when bookkeeping crossed the threshold: the
+    // book says it lands at the start of the next scene, not retroactively in the last.
+    pendingFlashpoint: raw.pendingFlashpoint === true,
+    flashpoint: raw.flashpoint && raw.flashpoint.focus ? raw.flashpoint : null
   };
 }
 

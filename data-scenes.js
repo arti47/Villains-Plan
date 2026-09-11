@@ -107,8 +107,20 @@ export const PROGRESS_TRACK = {
     { key: "flashpoint", label: "Flashpoint", points: 2,
       text: "A dramatic, important event directly involving the focus thread. Also 2 points." }
   ],
-  plotArmor: "Until the track is full the focus thread carries plot armour: it cannot be finally resolved, however close things look.",
-  conclusion: "Reaching the end of the track is a flashpoint with the plot armour removed. Generate a random event with an automatic Event Focus of Current Context, read toward an event that can finally end this thread - now, or in the next scene if that sits better.",
+  focusThread: "Copy a thread you want to focus on. It is a copy, not a move: the thread stays on the Threads List and random events can still call on it.",
+  // The track is phases of 5 points each, and each phase asks whether a flashpoint
+  // happened in it. If one has not by the time you cross out of the phase, the track
+  // makes one happen.
+  phaseSize: 5,
+  phaseFlashpoint: {
+    text: "If a flashpoint has not happened by the end of a phase, the track triggers one: a random event with an automatic Event Focus of Current Context, involving the focus thread dramatically but without resolving it.",
+    timing: "Cross the threshold while playing a scene and the flashpoint happens right then. Cross it during end-of-scene bookkeeping and it happens at the start of the next scene - you still generate and test that scene as normal, but it carries the flashpoint.",
+    both: "A moment can be both progress and a flashpoint; call it whichever you like, because either is 2 points. Calling it a flashpoint means the phase has had one, so the track will not trigger another."
+  },
+  plotArmor: "Until the track is full the focus thread carries plot armour: it cannot be finally resolved, however close things look. Plot armour also covers a random event whose focus is Close A Thread - play the event out, but the thread does not actually close.",
+  plotArmorClosesThread: "Close A Thread",
+  conclusion: "Reaching the end of the track is a flashpoint with the plot armour removed. Generate a random event with an automatic Event Focus of Current Context, read toward an event that can finally end this thread.",
+  conclusionDelay: "If the conclusion can happen in the scene that triggered it, have it happen right then. If it cannot, delay it to the next scene: imagine that scene as usual, with the conclusion in it, and do NOT test it against the Chaos Factor - the track guarantees it begins as you imagine it.",
   discovery: {
     cite: "GME2e",
     when: "Make one when forward momentum has stalled and you are out of ideas for how to proceed - and your character has to do something that presents an opportunity for a discovery.",
@@ -134,20 +146,23 @@ export const PROGRESS_TRACK = {
         text: "You discover something that moves you closer to the focus thread." },
       { min: 10, max: 10, key: "flashpoint-2", label: "Flashpoint +2", award: { kind: "flashpoint", points: 2 },
         text: "You discover something that involves the focus thread in an important and dramatic way." },
-      { min: 11, max: 14, key: "track-1", label: "Track +1", award: null,
-        text: "Track +1. The table names it; what it does is not stated in what this app was built from, so the app records the result and leaves it to you." },
+      { min: 11, max: 14, key: "track-1", label: "Track +1", award: { kind: "track", points: 1 },
+        text: "You discover nothing useful, but the act of trying moves you 1 point along the track." },
       { min: 15, max: 17, key: "progress-3", label: "Progress +3", award: { kind: "progress", points: 3 },
         text: "You discover something that moves you closer to the focus thread." },
       { min: 18, max: 18, key: "flashpoint-3", label: "Flashpoint +3", award: { kind: "flashpoint", points: 3 },
         text: "You discover something that involves the focus thread in an important and dramatic way." },
-      { min: 19, max: 19, key: "track-2", label: "Track +2", award: null,
-        text: "Track +2. Same as Track +1: the effect is not stated, so the app does not apply one." },
-      { min: 20, max: 24, key: "strengthen-1", label: "Strengthen Progress +1", award: null,
-        text: "Strengthen Progress +1. The table names it; what it does is not stated in what this app was built from, so the app records it and leaves it to you." },
-      { min: 25, max: Infinity, key: "strengthen-2", label: "Strengthen Progress +2", award: null,
-        text: "Strengthen Progress +2. Same again: the effect is not stated, so the app does not apply one." }
+      { min: 19, max: 19, key: "track-2", label: "Track +2", award: { kind: "track", points: 2 },
+        text: "You discover nothing useful, but the act of trying moves you 2 points along the track." },
+      { min: 20, max: 24, key: "strengthen-1", label: "Strengthen Progress +1", award: { kind: "strengthen", points: 1 },
+        text: "Progress already made is reinforced, for 1 point. Read it as a discovery that ties back into an earlier one." },
+      { min: 25, max: Infinity, key: "strengthen-2", label: "Strengthen Progress +2", award: { kind: "strengthen", points: 2 },
+        text: "Progress already made is reinforced, for 2 points. Read it as a discovery that ties back into an earlier one." }
     ],
-    undefinedResults: "Track +1, Track +2, Strengthen Progress +1 and Strengthen Progress +2 are printed in the table, but what they do is not stated in what was supplied. The app rolls them, names them, and applies nothing - it does not guess."
+    // A roll here IS a random event, with this table standing in for the Event Focus
+    // table; the meaning words are rolled the same way and read the same way.
+    asRandomEvent: "A successful Discovery Check is a random event that uses this table instead of the Event Focus table. It tells you what to hone in on and what the track gains; roll on a meaning table as usual to read what it actually was.",
+    allDefined: "All eight results award points - 2, 2, 1, 3, 3, 2, 1, 2 reading down. Track means you found nothing useful but the act of trying moved you along; Strengthen Progress means earlier progress was reinforced, tied back to a discovery you already made."
   }
 };
 
@@ -167,6 +182,9 @@ export const BOOKKEEPING = {
 // Named by the summary and since supplied: the Fate Chart (data-fate-chart.js), the
 // Event Focus and Scene Adjustment tables (data-actions.js) and the list selection
 // procedure. What is still missing:
-export const NOT_SUPPLIED = [
-  "What Track +1, Track +2, Strengthen Progress +1 and Strengthen Progress +2 actually do. All four are printed on the Thread Discovery Check table - their ranges are exact and shipped - but the page that defines the terms was not supplied. The app rolls them, names them, and applies nothing rather than guessing at whether Track +1 lengthens the track, advances a marker, or something else."
-];
+// Nothing. Every rule this app automates is read from a page or a direct quotation.
+//
+// This list has been wrong in the other direction before (docs/AUDIT.md F45), so: if a
+// rule arrives that the app cannot build, add it HERE, and add an assertion for it in the
+// same change. An empty list is a claim, and the suite checks it.
+export const NOT_SUPPLIED = [];

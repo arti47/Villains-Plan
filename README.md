@@ -69,10 +69,11 @@ them works under either resolution. The Discovery Check is in, including the par
 catches people out: an Exceptional Yes rolls its table twice, and an Exceptional No shuts
 Discovery down for the rest of the scene.
 
-One gap is left in the whole app: four results on the Thread Discovery Check table — Track
-+1, Track +2, Strengthen Progress +1 and +2 — are printed with exact ranges but no stated
-effect anywhere that was supplied. The app rolls them, names them, and applies nothing
-rather than guessing. The Chaos Factor (which the one-page edition drops by
+Nothing in the app is approximated, and nothing it automates is missing: the last gap —
+what Track +1/+2 and Strengthen Progress +1/+2 do on a Discovery Check — closed with the
+Thread Progress Track chapter, which also brought the phase rule (five points a phase, and
+a phase that ends without a flashpoint gets one), plot armour against a Close A Thread
+event, and the conclusion's untested scene. The Chaos Factor (which the one-page edition drops by
 design), scene setup, the Bookkeeping phase and the Threads and Characters lists are in
 none of them, so the app does not roll them and does not approximate them. Villain
 statistics are also left alone: no game system is attached here.

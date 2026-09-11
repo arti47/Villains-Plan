@@ -703,7 +703,8 @@ test("a list roll lands on a real entry or reports Choose, and is logged either 
 
 test("what is still unsupplied is recorded, and what arrived is no longer listed", () => {
   const missing = rules.notSupplied().join(" ");
-  assert(/Track \+1/i.test(missing), "what four Discovery results do is still not supplied");
+  equal(rules.notSupplied().length, 0,
+    "nothing is unsupplied any more: every rule the app automates is read from a page or a quotation");
   // F45: this only ever read notSupplied(), so the OTHER gap list - the one the Rules
   // screen prints first - stayed four sources out of date. Read both.
   const both = missing + " " + rules.stillNotInSource().join(" ");
@@ -881,6 +882,62 @@ test("the Low-Chaos Fate Check modifiers match the page", () => {
   }
 });
 
+test("the track is phases of five, and a phase without a flashpoint is owed one", () => {
+  const adv = freshAdventure();
+  store.addListItem(adv.id, "threads", "Find the mole");
+  const thread = derived.listItems(store.active(), "threads")[0];
+  store.setTrack(adv.id, { threadId: thread.id, length: 10, points: 0, awards: [], concluded: false, conclusion: null });
+
+  let phases = derived.trackPhases(store.active());
+  equal(phases.length, 2, "a 10-point track is two phases");
+  deepEqual(phases.map((p) => [p.from, p.to]), [[1, 5], [6, 10]], "of five points each");
+  assert(phases.every((p) => !p.flashpoint && !p.complete), "and starts empty");
+  equal(derived.owedFlashpoint(store.active()), null, "nothing owed yet");
+
+  // three lots of progress: 6 points, so the first phase is finished with no flashpoint
+  for (let i = 0; i < 3; i += 1) {
+    store.awardTrack(adv.id, { key: "progress", kind: "progress", label: "Progress", points: 2 });
+  }
+  phases = derived.trackPhases(store.active());
+  equal(phases[0].complete, true, "the first phase is crossed");
+  equal(phases[0].flashpoint, false, "and no flashpoint happened in it");
+  equal(derived.owedFlashpoint(store.active()).index, 0, "so the track owes one");
+});
+
+test("a flashpoint inside a phase satisfies it, so the track triggers nothing", () => {
+  const adv = freshAdventure();
+  store.addListItem(adv.id, "threads", "Find the mole");
+  const thread = derived.listItems(store.active(), "threads")[0];
+  store.setTrack(adv.id, { threadId: thread.id, length: 10, points: 0, awards: [], concluded: false, conclusion: null });
+  // 2 progress + 1 flashpoint = 6 points, crossing the same threshold
+  store.awardTrack(adv.id, { key: "progress", kind: "progress", label: "Progress", points: 2 });
+  store.awardTrack(adv.id, { key: "flashpoint", kind: "flashpoint", label: "Flashpoint", points: 2 });
+  store.awardTrack(adv.id, { key: "progress", kind: "progress", label: "Progress", points: 2 });
+  const phases = derived.trackPhases(store.active());
+  equal(phases[0].complete, true, "the phase is crossed");
+  equal(phases[0].flashpoint, true, "and it had its flashpoint");
+  equal(derived.owedFlashpoint(store.active()), null,
+    "so nothing is owed - the book's own worked example, where a flashpoint at 6 points stops the trigger");
+});
+
+test("a delayed conclusion is not tested against the Chaos Factor", () => {
+  const adv = freshAdventure();
+  store.addListItem(adv.id, "threads", "Find the mole");
+  const thread = derived.listItems(store.active(), "threads")[0];
+  store.setTrack(adv.id, { threadId: thread.id, length: 10, points: 10, awards: [], concluded: true,
+    conclusion: { focus: { key: "current-context", label: "Current Context" }, words: [] } });
+  store.setChaos(adv.id, 9);                      // at chaos 9 a tested scene almost never holds
+  const scene = sceneEngine.testScene(store.active(), { expectation: "the confrontation" });
+  equal(scene.test.untested, true, "the conclusion's scene is not tested");
+  equal(scene.test.d10, null, "no die is rolled");
+  equal(scene.test.kind, "expected", "it begins as imagined, which is what the track guarantees");
+  // and the guarantee is spent: the next scene is tested again
+  sceneEngine.endScene(store.active(), "in");
+  const next = sceneEngine.testScene(store.active(), {});
+  equal(next.test.untested, false, "the scene after it is tested normally");
+  assert(Number.isInteger(next.test.d10), "with a real die");
+});
+
 test("an Exceptional No shuts Discovery down for the rest of the scene, and only that scene", () => {
   const adv = freshAdventure();
   sceneEngine.testScene(store.active(), {});
@@ -924,13 +981,13 @@ test("the Discovery Check table covers its range and only awards what the source
   equal(at(24).key, "strengthen-1", "20-24");
   equal(at(99).key, "strengthen-2", "25+");
   for (let total = -5; total <= 60; total += 1) assert(at(total), `total ${total} has a row`);
-  // the four results with no stated effect award nothing, and say so
-  for (const key of ["track-1", "track-2", "strengthen-1", "strengthen-2"]) {
-    const row = rule.rows.find((r) => r.key === key);
-    equal(row.award, null, `${key} applies nothing`);
-    assert(/not stated/i.test(row.text), `${key} says why`);
-  }
-  deepEqual(rule.rows.filter((r) => r.award).map((r) => r.award.points), [2, 2, 3, 3], "and the stated awards are the quoted ones");
+  // all eight results award points; the four that were once undefined are defined now
+  deepEqual(rule.rows.map((r) => r.award.points), [2, 2, 1, 3, 3, 2, 1, 2],
+    "every result awards the quoted points, reading down the table");
+  deepEqual(rule.rows.map((r) => r.award.kind),
+    ["progress", "flashpoint", "track", "progress", "flashpoint", "track", "strengthen", "strengthen"],
+    "and each is the kind the book names - which matters, because only a flashpoint satisfies a phase");
+  for (const row of rule.rows) assert(!/not stated|not in the source/i.test(row.text), `${row.key} no longer says the effect is unknown`);
 });
 
 // ---------------------------------------------------------------- chaos modes & the track
@@ -1050,9 +1107,8 @@ test("the track survives a reload, and an old adventure has none", () => {
 
 test("what is still unsupplied, after everything", () => {
   const missing = rules.notSupplied().join(" ");
-  assert(/Track \+1|Strengthen Progress/i.test(missing),
-    "what four Discovery Check results do is the one thing left");
-  equal(rules.notSupplied().length, 1, "and it is the only entry");
+  equal(missing.trim(), "", "nothing is unsupplied: the last gap closed with the Progress Track chapter");
+  equal(rules.stillNotInSource().length, 0, "and the other gap list is empty too");
   // every chaos mode the book prints is now offered, on both resolutions
   const modes = rules.chaosModes().map((m) => m.key);
   for (const key of ["standard", "low-chaos", "mid-chaos", "no-chaos", "random-chaos"]) {

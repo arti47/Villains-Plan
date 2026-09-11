@@ -94,11 +94,31 @@ Pick one active thread as the focus and give it a track of 10, 15 or 20 points. 
 progress toward it in a scene is 2 points; a flashpoint — a dramatic event directly
 involving it — is another 2.
 
+- **Phases of five.** The track is divided into 5-point phases, each carrying the book's
+  question: *did a flashpoint happen in it?* If one has not by the time you cross out of
+  the phase, the track **makes** one happen — a random event with an automatic focus of
+  Current Context, involving the thread dramatically without resolving it. A moment can
+  count as both progress and a flashpoint; either is 2 points, but calling it a flashpoint
+  satisfies the phase, which is the book's own worked example (6 points, flashpoint
+  already had, no trigger).
+  - **Timing matters.** Cross the threshold mid-scene and the flashpoint fires there and
+    then. Cross it during end-of-scene bookkeeping and it lands at the start of the next
+    scene — which you still generate and test as normal; it just carries the flashpoint.
+    The app stores that as `pendingFlashpoint` rather than firing it retroactively.
+  - The app derives each phase's flashpoint from the award history, so there is no
+    checkbox to forget to tick: a flashpoint counts for the phase the running total was
+    in when it was scored.
 - **Plot armour** is a Gate: until the track fills, that thread cannot be resolved. The
-  app refuses to cross it out and says why.
+  app refuses to cross it out and says why. It reaches further than the track screen: a
+  random event whose focus is **Close A Thread** is played out as normal, but with the
+  added context that this thread does not actually close. The event block says so
+  whenever that focus comes up with an unfinished track.
 - **The Conclusion** is "a flashpoint with the plot armour removed": a random event with an
   **automatic** Event Focus of Current Context (no focus die) plus two Action words, read
-  toward something that ends the thread — now, or next scene.
+  toward something that ends the thread. If it fits the scene that triggered it, it happens
+  there. If not it waits for the next scene — and **that scene is not tested against the
+  Chaos Factor**, because the track has already guaranteed it begins as you imagine it.
+  That is the only scene in the app with no test die, and the guarantee is spent once.
 - The **Discovery Check** is for when forward momentum has stalled and you are out of
   ideas: your character does something that gives a discovery a chance, and you ask whether
   something is discovered at odds of **no less than 50/50**. The answer does more than
@@ -115,7 +135,9 @@ involving it — is another 2.
   to leave and come back to in a later scene. The app records it on the scene, so the next
   scene opens Discovery again.
 
-  When you do roll, it is 1d10 plus your current progress points. Four of the eight results — Progress +2, Flashpoint +2,
+  When you do roll, it is 1d10 plus your current progress points — and the roll **is** a
+  random event, with this table standing in for the Event Focus table, so the app rolls
+  meaning words with it to be read the same way. Four of the eight results — Progress +2, Flashpoint +2,
   Progress +3, Flashpoint +3 — award points. **The other four (Track +1, Track +2,
   Strengthen Progress +1 and +2) are printed with no stated effect**, so the app rolls
   them, names them, and applies nothing (ruling A33).
@@ -144,9 +166,11 @@ Quoted: "Treat the Chaos Factor as a value of 5 for these Questions, regardless 
 actual Chaos Factor value is right now." A checkbox on the Ask screen, so a to-hit roll is
 not skewed by the story's tension.
 
-## Still not supplied — so still not built
+## Still not supplied
 
-**What Track +1, Track +2, Strengthen Progress +1 and Strengthen Progress +2 actually do.**
-Their ranges on the Thread Discovery Check table are exact and shipped; the page that
-defines the terms was not supplied, so the app rolls them, names them, and applies nothing.
-This is the only gap left in the app. Listed in the rules library and on the Scene screen.
+Nothing. All eight Discovery results award points — 2, 2, 1, 3, 3, 2, 1, 2 reading down.
+**Track +1/+2** means you found nothing useful but the act of trying moved you along;
+**Strengthen Progress +1/+2** means earlier progress was reinforced, read as a discovery
+that ties back to one already made. `NOT_SUPPLIED` is now empty, and the suite asserts
+that it is — if a rule ever arrives that the app cannot build, it goes there with an
+assertion in the same change (`docs/AUDIT.md` F45). Listed in the rules library and on the Scene screen.
