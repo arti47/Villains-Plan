@@ -740,6 +740,17 @@ three harness-only cross-checks allowed by name.
 
 ## Not yet run
 
+Recorded at the close of the 2026-09-12 review, by the owner's decision to stop there:
+
+- **An accessibility audit beyond focus.** Nothing has checked colour contrast in either
+  theme, that every chip and icon button carries an accessible name, landmark structure,
+  or `prefers-reduced-motion`. The focus work (F55) was one symptom of an area no pass
+  has looked at. Shape: a harness pass over every route in both themes, then fixes.
+- **A test of the service worker itself.** F48 was a delivery failure no harness could
+  see, because every pass runs on a fresh page. Shape: a smoke check that installs the
+  worker, confirms every file in `SHELL` is cached, and that a `CACHE_VERSION` bump
+  actually replaces the old cache — the one part of the app with no coverage at all.
+
 - **Cycle 8.** The rules read-through is now overdue by six sources and is the next
   cycle's first job — F42 showed what it finds that the scans cannot.
 - **Cycle 7 (historical).** Cycle 6 found two, one of them an inert rule that had been sitting in the
