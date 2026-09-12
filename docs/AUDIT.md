@@ -690,6 +690,54 @@ three harness-only cross-checks allowed by name.
   delete — and the delete's backup still holds the adventure. Settings shows the card,
   takes one by hand, and offers restore, save and delete on every row.
 
+## Cycle 12 — density, and two splits
+
+### F56 · The interaction audit could not see a nested fold
+- **Target:** `visibleControls()` let every `<summary>` through, on the reasoning that a
+  closed fold's own summary is visible. True — but a summary inside a fold that is inside
+  a *closed outer* fold is not, and the moment the library's groups and the details
+  picker became folds, 48 inner summaries were enumerated and every click on them timed
+  out.
+- **Fix, in three tries:** the first said "a summary is visible when its nearest closed
+  fold is its parent" — and `closest()` finds the *innermost* closed fold, which for an
+  entry inside a closed group is the entry itself, so the same 48 passed through again.
+  The second walked every closed ancestor and was right, at 422 controls with 0
+  failures — 48 fewer controls than before, because everything behind a fold was now
+  correctly invisible and therefore never pressed. The third is the real fix: the audit
+  **opens every fold** before it enumerates and before each press, so density work that
+  folds a control cannot quietly remove it from the pass. Harness-only; no app change.
+- **Why it matters:** the audit is the pass that caught F44, F47 and F55. A pass that
+  cannot see a class of control is a pass with a hole exactly where the next change goes.
+
+### F57 · A fold that re-rendered forgot it was open
+- **Found by:** the audit's new fold coverage, the same run. Sixteen presses on the
+  details picker's table chips ended with focus on `<body>` and the chip "still on
+  screen" — because it was, inside a fold that had just closed.
+- **What a user saw:** open the picker, tap a table, the picker snaps shut. Tap again
+  to reopen, tap the next table, shut again. The multi-select shipped two days ago was
+  one tap per table *plus one reopen per table* the moment the picker became a fold.
+  The rolled archetype and organization cards had the same fault (edit the note, the
+  card shuts), and so did the collapsed underling cards, which predate today.
+- **Fix:** a small remembered-fold map in `crafter.js`. A fold's open state is recorded
+  on toggle and reapplied on the next render; a remembered-open lazy card fills
+  immediately, since `toggle` does not fire for a property set before mount.
+- **The class:** the density work makes folds, and every fold is a place where the
+  redraw-everything model bites. F47 (scroll), F55 (focus) and F57 (open state) are the
+  same lesson three times: **position is state, and a redraw must carry it.**
+
+## Verified clean (cycle 12)
+
+- **Density.** Under stress the Villain screen went from 5.2 viewports to 3.6 and the
+  Rules library from 4.7 to 2.2, with no control lost: rolled archetype and organization
+  cards collapse to a line with their modifiers and open on demand (the same pattern as a
+  read reveal); the details picker folds once there are details to look at; each library
+  group folds, opening for a search or for the entry a citation points at.
+- **Two splits, no behaviour change.** `scenes.js` (878 lines) became a DOM-free engine,
+  the Scene screen, the Lists screen and the track card; `tests/unit.mjs` (1,900 lines)
+  became twenty files by section. The unit count is identical before and after both, the
+  dead-data scan still finds every export consumed, and the smoke and interaction passes
+  are the proof the screens still do what they did.
+
 ## Not yet run
 
 - **Cycle 8.** The rules read-through is now overdue by six sources and is the next

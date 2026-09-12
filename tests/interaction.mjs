@@ -25,12 +25,29 @@ function visibleControls() {
     const r = n.getBoundingClientRect();
     if (r.width <= 0 || r.height <= 0) return false;
     if (r.right <= 0 || r.left >= document.documentElement.clientWidth) return false;
-    if (n.closest("details:not([open])") && n.tagName !== "SUMMARY") return false;
+    // Inside a closed fold nothing is visible - except that fold's own summary. A summary
+    // whose nearest closed ancestor is some OUTER fold is hidden too; the first version
+    // let every summary through and timed out clicking 48 of them once folds nested.
+    // closest() only finds the INNERMOST closed fold - for an entry inside a closed
+    // group that is the entry itself, which let the second version through too.
+    const closedAncestors = [];
+    for (let p = n.parentElement; p; p = p.parentElement) {
+      if (p.tagName === "DETAILS" && !p.open) closedAncestors.push(p);
+    }
+    if (closedAncestors.length > 1) return false;
+    if (closedAncestors.length === 1 && !(n.tagName === "SUMMARY" && n.parentElement === closedAncestors[0])) return false;
     return true;
   });
 }
 
+/** Open every fold, so what the density work put behind a summary is still exercised. */
+async function openFolds(page) {
+  await page.evaluate(() => { for (const d of document.querySelectorAll("details")) d.open = true; });
+  await page.waitForTimeout(30);   // lazy bodies fill on the toggle event
+}
+
 async function controlsOn(page) {
+  await openFolds(page);
   return page.evaluate((fnBody) => {
     const visibleControls = new Function(`return (${fnBody})`)();
     return visibleControls().map((n, i) => ({
@@ -46,6 +63,7 @@ async function controlsOn(page) {
 
 /** Mark the nth visible control so the click pass hits exactly what the probe saw. */
 async function markControl(page, index) {
+  await openFolds(page);
   return page.evaluate(({ fnBody, index }) => {
     const visibleControls = new Function(`return (${fnBody})`)();
     const node = visibleControls()[index];

@@ -1,8 +1,11 @@
 # Every harness, on every push. A red check here is the only thing standing between a
 # regression and main - nothing else runs unless someone types it (docs/AUDIT.md, cycle 10).
 name: check
+# Once per change: on main (every merge lands here) and on pull requests. A push to a
+# working branch that is then fast-forwarded into main used to run everything twice.
 on:
   push:
+    branches: [main]
   pull_request:
 jobs:
   harnesses:

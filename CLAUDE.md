@@ -271,7 +271,7 @@ Storage is plain JSON, exported and re-imported in one tap, round-trip tested.
 | `firebase-config.js` | Placeholder + `FIREBASE_ENABLED` flag (Phase 5, not built) |
 | `database.rules.json` | RTDB rules for the Phase 5 shape |
 | `manifest.json`, `service-worker.js`, `icon.svg` | PWA |
-| `tests/`, `package.json` | Harnesses A/B/C + probes + fixtures (dev only, not in the SW shell) |
+| `tests/`, `package.json` | Harnesses A/B/C + probes + fixtures (dev only, not in the SW shell). The unit suite is one file per section under `tests/unit/`, sharing the modules under test through `tests/unit/shared.mjs`; `tests/unit.mjs` runs them in order |
 | `docs/villains-plan.md` | The extraction (source of record) |
 | `docs/rules/*.md` | Distilled per-subsystem reference the audit reads against the engine |
 | `docs/AUDIT.md` | Numbered findings + verified-clean list |
@@ -288,7 +288,10 @@ Storage is plain JSON, exported and re-imported in one tap, round-trip tested.
 | `store.js` | Adventures CRUD, active adventure, phases, roll log, session record, export/import, undo stack |
 | `roller.js` | The reveal engine: End Goal Roll, phase reveal, pivot reveal, roll-log writes |
 | `oracle.js` | The Mythic oracle: Ask The Game Master, random events, Discover Meaning, the pivot question, and both oracle screens |
-| `scenes.js` | The scene loop: the scene test, altered/interrupt handling, the bookkeeping boundary, and the Threads & Characters lists |
+| `scene-engine.js` | The scene loop as pure state changes: the scene test, interrupts, adjustments, rolling on a list, ending a scene. No DOM. |
+| `scenes.js` | The Scene screen: expectation, test, the altered/interrupt blocks, bookkeeping |
+| `lists.js` | The Lists screen: Threads and Characters, rolling for an entry, clean-up |
+| `track.js` | The Thread Progress Track card: phases, awards, the owed flashpoint, the Discovery Check, the Conclusion |
 | `crafter.js` | The Villain Crafter: archetype, organization and underling rolls with their cascades and carried modifiers, and the Villain screen |
 | `sheet.js` | The in-play screens: persistent header, dossier (phase timeline, leads, editing), Reveal, Arc |
 | `lifecycle.js` | Arc boundaries with confirmation summary + one-step undo |
@@ -321,10 +324,18 @@ schemer.v1 = {
                 earnedNote, interpretation, leads: [ { id, text, resolved } ],
                 override|null, createdAt, revisedAt } ],
     chaos: 1..9,                         // GME2e, starts at 5
+    chaosMode: "standard"|"low-chaos"|"mid-chaos"|"no-chaos"|"random-chaos",
+    resolution: "chart"|"check",         // the Fate Chart or the Fate Check; alternatives
     threads:    [ { id, text, entries: 1..3, removed, createdAt } ],   // 25 lines each
     characters: [ { …the same shape } ],
-    scenes: [ { id, n, test: { d10, chaos, kind, label }, expectation, notes,
-                adjustments[], words[], control: "in"|"out"|null, startedAt, endedAt } ],
+    scenes: [ { id, n, test: { d10|null, chaos, kind, label, untested }, expectation, notes,
+                adjustments[], event|null, words[], control: "in"|"out"|"random"|null,
+                discoveryClosed,                 // an Exceptional No bars Discovery this scene
+                startedAt, endedAt } ],
+    track: { threadId, length: 10|15|20, points,
+             awards: [ { key, kind: "progress"|"flashpoint"|"track"|"strengthen"|"discovery", label, points, note, at } ],
+             pendingFlashpoint, flashpoint|null,          // the phase rule, and its owed event
+             concluded, conclusion|null, conclusionPlayed } | null,
     pivotEligible: { survived, underlings, failsafe },
     pivotOverride,                       // one use, cleared by use and by normalization
     fateAnswer|null,                     // resolved outside the app; blocks the pivot on a No
@@ -497,6 +508,7 @@ words with all prose paraphrased. Anyone changing that trade-off should start wi
 | 2026-09-11 | Sixth source (GME2e photographs: the Fate Chart, both Action tables, the Random Event Focus table, the Scene Adjustment Table): `data-fate-chart.js`, `data-actions.js`. The Fate Chart replaced One-Page Mythic's as the engine, so the Chaos Factor now moves the odds (A24 revised); the Scene Adjustment cascade arrived with it (A27) | The user supplied the pages; the chart is the one table the whole oracle reads | `npm test` 133, `npm run smoke` 508, `npm run interaction` 424; all 81 cells cross-checked two independent ways | `schemer-v7` |
 | 2026-09-11 | Direct quotations confirmed the scene, chaos, list and bookkeeping rules: provisional flags removed. **They also corrected the clean-up rule** the summary had blurred — two-entry elements carry across at one, not two (`docs/AUDIT.md` F41) | A summary corroborates but never decides (§2.1) | `npm test` 141, `npm run smoke` 523, `npm run interaction` 437 | `schemer-v8` |
 | 2026-09-11 | The Thread Progress Track, the three chaos variants, and the chaos-5 rule for questions standing in for a game rule. F42: that last one had been an inert data field since the scene work | The user supplied the quoted procedures | `npm test` 145, `npm run smoke` 536, `npm run interaction` 452 | `schemer-v9` |
+| 2026-09-12 | Round two of the review: CI runs once per change (main + PRs); the tutorial gained the Progress Track and the Fate Check; the Villain screen's rolled cards and details picker fold, and the library's groups fold (Villain 5.2 → 3.6 viewports under stress, Rules 4.7 → 2.2); `scenes.js` split into engine / screen / lists / track; `tests/unit.mjs` split into one file per section. F56: the interaction audit treated every `<summary>` as visible, including ones inside a closed outer fold, and timed out on 48 of them the moment folds nested; the audit now opens every fold first, which raised its coverage from 468 to 528 controls and found F57 — a fold that re-rendered forgot it was open, so the details picker snapped shut on every tap | The rest of the review's list | `npm test` 169 (unchanged across both splits), `npm run smoke` 549, `npm run interaction`, probes read | `schemer-v20` |
 | 2026-09-12 | F55: keyboard focus fell to `<body>` on every press, because the control was rebuilt; restored by tag and label on in-place redraws, and the interaction audit now fails any press that loses focus while the control is still on screen. Backups: a ring of five full-state snapshots taken before every arc boundary, delete and import, restorable and saveable from Settings | The sibling of F47, and the user's data-safety decision | `npm test` 169 (10 clean flake runs), `npm run smoke` 549, `npm run interaction` 469; disabling the restore fails 65 presses | `schemer-v19` |
 | 2026-09-12 | Delivery: `npm run check` (every harness), `npm run flake` (the unit suite ×20), a GitHub Action running both on every push, and Playwright declared as a devDependency with a lockfile — it had been running off the environment's global install, undeclared | Nothing ran unless someone typed it; every green in this project's history was a human remembering | the Action's first run | — |
 | 2026-09-12 | Truthfulness pass. F50: the reference docs had drifted in nine places (one file contradicted itself on the Discovery Check) because they were updated by insertion, never re-read; all corrected. The overdue rules read-through, run mechanically as a field-level scan, found F51–F53: the list roll's Choose options, the Check's random-event rule and the phase rule's two subtleties were data that no surface read. F54: the unit harness counted an async test as a pass without awaiting it. Two new harness checks — every data field must be read by `src/`, and the spec's claims about gaps must match the data | The spec had named two closed gaps for a whole source; the data-side assertion could not see prose | `npm test` 166, `npm run smoke`, `npm run interaction` | `schemer-v18` |

@@ -261,8 +261,11 @@ function renderLibraryBody(mount, params) {
   for (const group of libraryGroups()) {
     const entries = matches ? group.entries.filter((e) => matches.includes(e)) : group.entries;
     if (!entries.length) continue;
-    const groupBox = el("section", { class: "library-group" });
-    add(groupBox, el("h2", { class: "group-title", text: group.label }));
+    // each group is a fold: open while searching, or when it holds the entry a citation
+    // pointed at. The library was 4.7 viewports under stress with every group flat.
+    const holdsTarget = entries.some((e) => e.id === params.entry);
+    const groupBox = el("details", { class: "library-group", open: matches || holdsTarget ? true : undefined });
+    add(groupBox, el("summary", { class: "group-title", text: `${group.label} (${entries.length})` }));
     for (const entry of entries) {
       const item = el("details", { class: "library-entry", id: `entry-${entry.id}` });
       if (matches || params.entry === entry.id) item.open = true;
@@ -278,6 +281,8 @@ function focusEntry(id) {
   if (!id) return;
   const node = $(`#entry-${id}`);
   if (!node) return;
+  const group = node.closest("details.library-group");
+  if (group) group.open = true;
   node.open = true;
   node.scrollIntoView({ block: "center", behavior: "auto" });
   node.classList.add("flash");

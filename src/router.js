@@ -7,7 +7,8 @@ import { renderAdventures, renderRecord, renderLog, renderLibrary, renderSetting
 import { renderWizard, resetWizard } from "./wizard.js";
 import { renderAsk, renderMeaning } from "./oracle.js";
 import { renderVillain } from "./crafter.js";
-import { renderScene, renderLists } from "./scenes.js";
+import { renderScene } from "./scenes.js";
+import { renderLists } from "./lists.js";
 import { renderTutorial } from "./tutorial.js";
 import * as store from "./store.js";
 import { openLeads, endGoalRevealed, arcStageKey, pivotPhases, canRevealPivot, currentScene } from "./derived.js";

@@ -9,7 +9,7 @@ const store = await import("../src/store.js");
 const roller = await import("../src/roller.js");
 const derived = await import("../src/derived.js");
 const crafter = await import("../src/crafter.js");
-const sceneEngine = await import("../src/scenes.js");
+const sceneEngine = await import("../src/scene-engine.js");
 const oracle = await import("../src/oracle.js");
 
 /** Roll up the villain the way a player would, so the seeds cover the crafted state. */

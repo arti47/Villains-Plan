@@ -202,6 +202,18 @@ const ROSTER_PAGE = 4;    // a roster grows without bound otherwise (§6.5)
  */
 let detailTableIds = new Set(["character-identity"]);
 
+/**
+ * Which folds the reader has opened. Every control re-renders the screen, and a fold
+ * that comes back closed after a press inside it is a fold that snaps shut on the
+ * reader's hand - the details picker did exactly that on every table chip (F57).
+ */
+const foldOpen = {};
+function rememberedFold(key, node, defaultOpen) {
+  node.open = key in foldOpen ? foldOpen[key] : defaultOpen;
+  node.addEventListener("toggle", () => { foldOpen[key] = node.open; });
+  return node;
+}
+
 const selectedTables = () => meaningTables().filter((t) => detailTableIds.has(t.id));
 
 function toggleDetailTable(id) {
@@ -270,8 +282,12 @@ function detailsCard(adv) {
   add(box, el("h2", { class: "card-title" }, "2 · The details", citeLink("villain-details", "rule")),
     el("p", { class: "block-note", text: "Who they actually are: identity, skills, what drives them, how they think, what they look like, their quirks and where they came from. Roll a word and read it against everything above." }));
 
-  add(box, detailPicker());
-  add(box, detailList(adv, { kind: "villain" }, adv.villain.details || []));
+  const details = adv.villain.details || [];
+  // the picker is the tallest thing on the card; once there are details it folds
+  const pickerFold = rememberedFold("details-picker", el("details", { class: "fold" }), !details.length);
+  add(pickerFold, el("summary", { text: `Which tables (${selectionLabel()})` }), detailPicker());
+  add(box, pickerFold);
+  add(box, detailList(adv, { kind: "villain" }, details));
   add(box, el("button", {
     class: "btn btn-primary", type: "button",
     onclick: () => rollDetail(adv, { kind: "villain" })
@@ -325,7 +341,7 @@ function detailPicker() {
     }, "Just one"));
   add(wrap, bulk);
 
-  const more = el("details", { class: "fold" });
+  const more = rememberedFold("details-picker-others", el("details", { class: "fold" }), false);
   add(more, el("summary", { text: "Other meaning tables" }));
   const chips = el("div", { class: "chip-row" });
   for (const table of others) add(chips, tableChip(table));
@@ -394,44 +410,67 @@ function diceRow(rolls, label) {
   return row;
 }
 
+/**
+ * A rolled card collapses to a line - its step, its result, its modifiers - and opens on
+ * demand, the way a read reveal and a read underling do (§6.5). The Villain screen was
+ * the longest in the app under stress, and these two cards were the part of it you had
+ * already read.
+ */
+function rolledCard(step, cite, gist, fill) {
+  const wrap = el("details", { class: "card crafter-card collapsed" });
+  const summary = el("summary", { class: "phase-summary" });
+  add(summary, el("span", { class: "phase-title", text: step }), el("span", { class: "phase-gist", text: gist }), citeLink(cite, "rule"));
+  add(wrap, summary);
+  let filled = false;
+  const fillOnce = () => { if (!wrap.open || filled) return; filled = true; fill(wrap); };
+  wrap.addEventListener("toggle", fillOnce);
+  rememberedFold(`rolled:${step}`, wrap, false);
+  fillOnce();   // a remembered-open card is filled straight away; toggle does not fire for a set property before mount
+  return wrap;
+}
+
 function archetypeCard(adv, c, mods) {
+  if (c.archetype) {
+    const gist = `${c.archetype.parts.filter((p) => !p.scaffold).map((p) => p.label).join(" + ")} · org ${signed(c.archetype.mods.o)} · lt ${signed(c.archetype.mods.l)} · min ${signed(c.archetype.mods.m)}`;
+    return rolledCard("1 · The villain", "villain-archetype", gist, (box) => {
+      add(box, diceRow(c.archetype.rolls, "Villain Archetype"), partList(c.archetype.parts));
+      if (c.archetype.parts.length > 1) {
+        add(box, el("p", { class: "block-note", text: "Two archetypes, combined - their modifiers add together." }));
+      }
+      add(box, inlineRow("Modifiers", `organization ${signed(c.archetype.mods.o)} · lieutenants ${signed(c.archetype.mods.l)} · minions ${signed(c.archetype.mods.m)}`));
+      add(box, noteField(adv, "archetype", c.archetype));
+      add(box, el("button", { class: "btn btn-quiet", type: "button", onclick: () => rerollArchetype(adv) }, "Re-roll the archetype"));
+    });
+  }
   const box = el("section", { class: "card crafter-card" });
   add(box, el("h2", { class: "card-title" }, "1 · The villain", citeLink("villain-archetype", "rule")));
-  if (!c.archetype) {
-    add(box, el("p", { class: "block-note", text: "Who they are and what drives them - and the modifiers everything after this inherits." }),
-      el("button", { class: "btn btn-primary", type: "button", onclick: () => rollArchetypeInto(adv) }, "Roll the archetype"));
-    return box;
-  }
-  add(box, diceRow(c.archetype.rolls, "Villain Archetype"), partList(c.archetype.parts));
-  if (c.archetype.parts.length > 1) {
-    add(box, el("p", { class: "block-note", text: "Two archetypes, combined - their modifiers add together." }));
-  }
-  add(box, inlineRow("Modifiers", `organization ${signed(c.archetype.mods.o)} · lieutenants ${signed(c.archetype.mods.l)} · minions ${signed(c.archetype.mods.m)}`));
-  add(box, noteField(adv, "archetype", c.archetype));
-  add(box, el("button", { class: "btn btn-quiet", type: "button", onclick: () => rerollArchetype(adv) }, "Re-roll the archetype"));
+  add(box, el("p", { class: "block-note", text: "Who they are and what drives them - and the modifiers everything after this inherits." }),
+    el("button", { class: "btn btn-primary", type: "button", onclick: () => rollArchetypeInto(adv) }, "Roll the archetype"));
   return box;
 }
 
 function organizationCard(adv, c, mods) {
+  if (c.organization) {
+    const gist = `${c.organization.parts.filter((p) => !p.scaffold).map((p) => p.label).join(" + ")}${c.organization.upscaled ? " (upscaled)" : ""} · lt ${signed(c.organization.mods.l)} · min ${signed(c.organization.mods.m)}`;
+    return rolledCard("3 · The organization", "villain-organization", gist, (box) => {
+      add(box, diceRow(c.organization.rolls, "Villain Organization"), partList(c.organization.parts));
+      if (c.organization.upscaled) {
+        add(box, el("p", { class: "block-note", text: `Upscaled ${c.organization.upscaled === 1 ? "once" : `${c.organization.upscaled} times`}: read the result bigger in size and scope, and both sets of modifiers count.` }));
+      }
+      add(box, inlineRow("Modifiers", `lieutenants ${signed(c.organization.mods.l)} · minions ${signed(c.organization.mods.m)}`));
+      add(box, noteField(adv, "organization", c.organization));
+      add(box, el("button", { class: "btn btn-quiet", type: "button", onclick: () => rerollOrganization(adv) }, "Re-roll the organization"));
+    });
+  }
   const box = el("section", { class: "card crafter-card" });
   add(box, el("h2", { class: "card-title" }, "3 · The organization", citeLink("villain-organization", "rule")));
   const legality = canRollOrganization(adv);
-  if (!c.organization) {
-    add(box, el("p", { class: "block-note", text: "What stands behind them - or, sometimes, that nothing does." }),
-      el("button", {
-        class: "btn btn-primary", type: "button", disabled: legality.ok ? undefined : true,
-        onclick: () => rollOrganizationInto(adv)
-      }, `Roll the organization (${signed(mods.organization.total)})`),
-      legality.ok ? null : el("p", { class: "refusal", text: legality.reason }));
-    return box;
-  }
-  add(box, diceRow(c.organization.rolls, "Villain Organization"), partList(c.organization.parts));
-  if (c.organization.upscaled) {
-    add(box, el("p", { class: "block-note", text: `Upscaled ${c.organization.upscaled === 1 ? "once" : `${c.organization.upscaled} times`}: read the result bigger in size and scope, and both sets of modifiers count.` }));
-  }
-  add(box, inlineRow("Modifiers", `lieutenants ${signed(c.organization.mods.l)} · minions ${signed(c.organization.mods.m)}`));
-  add(box, noteField(adv, "organization", c.organization));
-  add(box, el("button", { class: "btn btn-quiet", type: "button", onclick: () => rerollOrganization(adv) }, "Re-roll the organization"));
+  add(box, el("p", { class: "block-note", text: "What stands behind them - or, sometimes, that nothing does." }),
+    el("button", {
+      class: "btn btn-primary", type: "button", disabled: legality.ok ? undefined : true,
+      onclick: () => rollOrganizationInto(adv)
+    }, `Roll the organization (${signed(mods.organization.total)})`),
+    legality.ok ? null : el("p", { class: "refusal", text: legality.reason }));
   return box;
 }
 
@@ -490,11 +529,10 @@ function underlingLine(adv, entry) {
     entry.name ? el("span", { class: "phase-gist", text: entry.parts.map((p) => p.label).join(" + ") }) : null);
   add(wrap, summary);
   let filled = false;
-  wrap.addEventListener("toggle", () => {
-    if (!wrap.open || filled) return;
-    filled = true;
-    add(wrap, underlingBody(adv, entry));
-  });
+  const fillOnce = () => { if (!wrap.open || filled) return; filled = true; add(wrap, underlingBody(adv, entry)); };
+  wrap.addEventListener("toggle", fillOnce);
+  rememberedFold(`underling:${entry.id}`, wrap, false);
+  fillOnce();
   return wrap;
 }
 

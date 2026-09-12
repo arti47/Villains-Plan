@@ -185,8 +185,12 @@ export const TUTORIAL = [
     body: "The Scene screen is Mythic's own loop. Write what you expect to happen next, roll the d10 against the Chaos Factor, and take what you get: the scene you pictured, a twisted version, or an interruption that sends you somewhere else. When the scene is done, End the scene - that is bookkeeping: it asks whether you were in control, moves the Chaos Factor, and points you at the lists." },
   { id: "t7c", title: "Keep the two lists",
     body: "Threads are what you are chasing; Characters are who and what can walk into a scene - people, places, a recurring event. Add what a scene introduced, give another line to whatever was prominent (three lines maximum), and cross out what is finished. More lines mean more chance of coming back when you pick at random." },
+  { id: "t7d", title: "Focus a thread with a Progress Track",
+    body: "When you want the adventure to actually close a thread, copy it as the focus on the Lists screen and give it a track of 10, 15 or 20 points. Progress toward it in a scene is 2 points; a flashpoint - a dramatic scene about it - is 2 more, and every phase of five points wants one, or the track makes one happen. Until the track fills the thread has plot armour and cannot end, however close it looks. Stalled? A Discovery Check at no worse than 50/50 gets things moving again. Fill the track and the Conclusion is yours to play." },
   { id: "t9b", title: "Ask when you do not know",
     body: "The Oracle tab is Mythic itself: type a Yes/No question, pick the odds honestly - 50/50 is for not knowing - and roll. Yes and No follow whatever you expected when you asked; the Exceptional results overshoot it. Roll a double and a random event lands in the same moment, on top of the answer. When you want detail rather than an answer, Discover Meaning rolls a word: Action for what something does, Description for what it is like." },
+  { id: "t9c", title: "Or roll the Fate Check instead",
+    body: "The Fate Chart is the default, but the book offers an alternative: 2d10 added, plus a modifier for the odds and one for the Chaos Factor, with 11 or more a Yes, 18 or more an Exceptional Yes, 4 or less an Exceptional No. Switch on the Ask screen - it is per adventure, and the two are alternatives, not a combination. The chaos variants (Mid, Low, No, Random) work under either." },
   { id: "t10", title: "Back it up",
     body: "Settings - Export exports every adventure as plain JSON you can read. Do that before you delete anything, and to carry your adventures to another device." }
 ];

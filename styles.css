@@ -373,6 +373,8 @@ textarea { min-height: 5.5rem; resize: vertical; }
 .underling-card.lieutenant { border-left-color: var(--crimson); }
 .gap-block { border: 1px dashed var(--gold); border-radius: var(--radius); padding: 0.6rem; }
 .underling-card.collapsed { padding: 0.35rem 0.85rem; }
+.crafter-card.collapsed { padding: 0.35rem 0.85rem; }
+.crafter-card.collapsed[open] { padding: 0.85rem; }
 .detail-pill { padding-right: 0.15rem; }
 .detail-remove { min-width: 28px; min-height: 28px; font-size: 0.9rem; padding: 0; }
 .group-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); margin: 0.5rem 0 0.2rem; }
@@ -423,6 +425,7 @@ textarea { min-height: 5.5rem; resize: vertical; }
 
 /* ------------------------------------------------------------ library, tutorial */
 .library-group { margin: 0 0 1rem; }
+summary.group-title { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
 .group-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); border-bottom: 1px solid var(--rule); padding-bottom: 0.2rem; }
 .library-entry { border-bottom: 1px solid var(--rule); }
 .library-entry p { font-size: 0.9rem; }
