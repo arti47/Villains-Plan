@@ -2,9 +2,10 @@
 
 ## Where the rules live
 
-Every number, row and procedure is in `data.js` / `data-library.js` with an `MM69:p<page>`
-citation. No `src/` module may hold a rules value; the unit harness enforces this for the
-threshold and checks that every table, guidance entry and library id reaches a consumer.
+Every number, row and procedure is in a `data*.js` file with a citation to its source. No
+`src/` module may hold a rules value; the unit harness enforces this for the threshold,
+checks that every export reaches a consumer, and — since F51–F53 — that **every field** of
+every export is read by something in `src/`, so a rule cannot sit in the data unread.
 
 ## The dice
 

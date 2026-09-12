@@ -65,9 +65,10 @@ combined and none is invented (§2.2: this app still ships no house aids).
 
 ## Meaning Table results
 
-Both tables can send you to Mythic's Action meaning table. This app has that table, from
-One-Page Mythic, so the result is rolled and a real word comes back (A17) — logged like any
-other die. With the oracle switched off the row is reported without a word.
+Both tables can send you to Mythic's Action meaning tables. This app has them — GME2e's
+Action 1 + Action 2 pair (A17, revised from One-Page Mythic's condensed column) — so the
+result is rolled and real words come back, logged like any other die. With the oracle
+switched off the row is reported without a word.
 
 ## Provenance of the Minion column
 

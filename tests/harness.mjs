@@ -3,7 +3,16 @@
 export const results = { pass: 0, fail: 0, failures: [] };
 
 export function test(name, fn) {
-  try { fn(); results.pass += 1; }
+  try {
+    const out = fn();
+    // F54: an async test returns a promise, the try sees no throw, and it was counted as
+    // a pass whatever happened inside it. Unit tests are synchronous by contract; hoist
+    // any `await import()` to the top level of the file.
+    if (out && typeof out.then === "function") {
+      throw new Error("this test is async, and the harness cannot see whether it passed - make it synchronous");
+    }
+    results.pass += 1;
+  }
   catch (err) { results.fail += 1; results.failures.push({ name, message: err.message }); }
 }
 

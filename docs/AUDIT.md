@@ -602,6 +602,65 @@ tested; what follows is what the passes confirmed.
   Teamwork) rather than waited for. **Never assert on a rare roll; assert on the thing
   that makes it possible.**
 
+## Cycle 10 — the truthfulness pass, and the rules read-through
+
+### F50 · The reference docs had drifted in nine places
+- **Symptom:** `docs/rules/scenes.md` said, in one paragraph, that four Discovery results
+  "are printed with no stated effect, so the app applies nothing", and forty lines later
+  that all eight award points. `arcs-and-pivot.md` said the app does not roll the pivot
+  Fate Question (it has since A14). `elements.md` said four subsystems "remain in
+  `STILL_NOT_IN_SOURCE`". `villain-crafter.md` routed meaning results to One-Page Mythic
+  (A17 revised that). `scenes.md`'s provenance paragraph said everything ships
+  `provisional: true` and nothing does. `CLAUDE.md` §1.2 named two closed gaps; its
+  sources list ran 1, 2, 3, 5, 6, 4. Nine places.
+- **Cause:** every one was updated by *insertion* — a new paragraph beside the old — and
+  never by re-reading the file. The audit reads these docs against the engine, so a doc
+  that lies makes the read-through worthless.
+- **Fix:** all nine corrected, and the guard from F45 extended to prose: the harness now
+  derives a canonical "unsupplied" line from the data and asserts `CLAUDE.md` carries it,
+  and refuses any "still not supplied" passage in the spec or the docs that names a
+  subsystem that ships.
+
+### F51 · The list roll's result was a toast
+- **Target:** rolling on a Threads or Characters list.
+- **Symptom:** the result appeared for 3.2 seconds and was gone; on a blank line it said
+  "Choose" and nothing more. `LIST_SELECTION.chooseText` — the book's two options, take
+  what fits or roll again until you land on an element — was never read.
+- **Fix:** the result stays on the list card with its dice; a blank line shows the two
+  options from the data and offers **Roll again**.
+
+### F52 · The Fate Check's random-event rule was inlined prose
+- `FATE_CHECK.randomEvent.text` and its `note` (a double 10 can never fire one, because
+  chaos stops at 9) were in the data and never read; the check card carried its own
+  sentence. Now read from the data, with the note. The card also names the Mid-/Low-Chaos
+  band the modifier came from, so `midChaosBands`/`lowChaosBands` are read too.
+
+### F53 · The phase rule's two subtleties never reached a surface
+- `phaseFlashpoint.timing` (mid-scene fires now, bookkeeping waits for the next scene) and
+  `.both` (a moment can be both, and calling it a flashpoint satisfies the phase) were
+  extracted and unread; the pending banner had its own inline copy. Both now shown.
+
+### F54 · The unit harness counted an async test as a pass
+- **Cause:** `test(name, fn)` called `fn()` inside a `try` and incremented `pass`. An
+  async `fn` returns a promise; the rejection lands later, nowhere. Two tests written in
+  this cycle were green while one of them should have failed.
+- **Fix:** `test()` refuses a thenable with a message saying why; unit tests are
+  synchronous by contract and hoist their imports. No earlier test was async, so no
+  earlier green was false — but the trap had been open since the harness was written.
+- **Also removed:** five fields nothing read and nothing should — `chaosRange`,
+  `addProgress`, `plotArmorClosesThread`, `alternativeTo` — dead metadata the field scan
+  would otherwise carry forever.
+
+## Verified clean (cycle 10)
+
+The docs' engine claims that could have been inert, each confirmed in code: the re-roll
+keywords control confirms and logs; Discovery cannot be left before the End Goal; the
+pivot override is cleared by use and by reload; bookkeeping snapshots for undo; a No
+prints the Discover Meaning route; the Event Focus reasons show in their fold; the text
+dossier export exists. And the mechanical read-through is now a permanent harness test:
+**every field of every data export must be read by `src/`**, with lookup keys and the
+three harness-only cross-checks allowed by name.
+
 ## Not yet run
 
 - **Cycle 8.** The rules read-through is now overdue by six sources and is the next

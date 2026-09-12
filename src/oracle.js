@@ -218,11 +218,14 @@ function checkCard(odds, level, mode, forMechanic) {
   add(box, inlineRow("Dice", "2d10, added"));
   add(box, inlineRow("Odds", oddsMod >= 0 ? `+${oddsMod}` : String(oddsMod)));
   const variant = chaosModeRule(forMechanic ? "standard" : mode);
-  add(box, inlineRow(variant.key === "standard" ? "Chaos" : `Chaos (${variant.label})`,
+  // a variant reads chaos in bands, so name the band the modifier came from
+  const bands = variant.key === "mid-chaos" ? check.midChaosBands : variant.key === "low-chaos" ? check.lowChaosBands : null;
+  const band = bands ? bands.find((b) => level >= b.min && level <= b.max) : null;
+  add(box, inlineRow(variant.key === "standard" ? "Chaos" : `Chaos (${variant.label}${band ? `, ${band.min === band.max ? band.min : `${band.min}-${band.max}`}` : ""})`,
     chaosMod >= 0 ? `+${chaosMod}` : String(chaosMod)));
   const need = 11 - oddsMod - chaosMod;
   add(box, inlineRow("Yes needs", `${need} or more on the dice`));
-  add(box, el("p", { class: "block-note", text: "18 or more is an Exceptional Yes, 4 or less an Exceptional No. Both dice the same, at or under the Chaos Factor, also throws a random event." }));
+  add(box, el("p", { class: "block-note", text: `${check.answers.find((a) => a.key === "exceptional-yes").atLeast} or more is an Exceptional Yes, ${check.answers.find((a) => a.key === "exceptional-no").atMost} or less an Exceptional No. ${check.randomEvent.text} ${check.randomEvent.note}` }));
   return box;
 }
 

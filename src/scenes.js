@@ -28,6 +28,8 @@ import { refresh, go } from "./router.js";
 
 // the words the last Discovery Check turned up, shown until the screen is left
 let lastDiscovery = null;
+// the last roll on a list, per kind - a toast is not a result (F51)
+const lastListRoll = {};
 
 /**
  * A conclusion rolled but not yet played, waiting for the next scene. The book: come up
@@ -542,10 +544,10 @@ function trackCard(adv) {
       `${phase.from}-${phase.to}${phase.flashpoint ? " ✓" : ""}`));
   }
   add(box, el("p", { class: "field-label", text: "Did a flashpoint happen?" }), phaseRow,
-    el("small", { class: "field-hint", text: rule.phaseFlashpoint.text }));
+    el("small", { class: "field-hint", text: `${rule.phaseFlashpoint.text} ${rule.phaseFlashpoint.both}` }));
 
   if (current.pendingFlashpoint) {
-    add(box, el("p", { class: "block-note warn", text: "A phase ended without a flashpoint during bookkeeping, so the track owes you one: it lands at the start of the next scene. Generate and test that scene as normal - it carries the flashpoint either way." }));
+    add(box, el("p", { class: "block-note warn", text: `A phase ended without a flashpoint during bookkeeping, so the track owes you one. ${rule.phaseFlashpoint.timing}` }));
   }
   if (current.flashpoint) {
     add(box, el("p", { class: "block-note", text: "The track triggered this flashpoint. It involves the focus thread dramatically, but does not resolve it." }),
@@ -730,6 +732,30 @@ function discoveryBlock(adv, current) {
   return box;
 }
 
+/**
+ * What a list roll came back with. On a blank line the book gives two options - take the
+ * element that fits, or roll again until you land on one - and both are offered here,
+ * from the data, rather than flashed in a toast (F51).
+ */
+function listRollResult(adv, kind, picked) {
+  const rule = listSelectionRule();
+  const box = el("div", { class: "block list-roll" });
+  const dice = el("div", { class: "dice-row" });
+  for (const d of picked.dice) add(dice, diePill(d));
+  add(box, el("h4", { class: "block-title", text: picked.choose ? "Choose" : "The list says" }), dice);
+  if (picked.choose) {
+    add(box, el("p", { class: "block-text", text: `Section ${picked.section}, line ${picked.line} is blank. ${rule.chooseText}` }),
+      el("button", {
+        class: "btn btn-quiet", type: "button",
+        onclick: () => { lastListRoll[kind.key] = rollFromList(store.active(), kind.key); refresh(); }
+      }, "Roll again"));
+  } else {
+    add(box, el("p", { class: "block-text" }, el("strong", { text: picked.item.text }),
+      ` (section ${picked.section}, line ${picked.line})`));
+  }
+  return box;
+}
+
 function selectionNote() {
   const rule = listSelectionRule();
   const box = el("details", { class: "guidance provisional" });
@@ -785,14 +811,12 @@ function listCard(adv, kind) {
     items.length ? el("button", {
       class: "btn btn-quiet", type: "button",
       onclick: () => {
-        const picked = rollFromList(store.active(), kind.key);
+        lastListRoll[kind.key] = rollFromList(store.active(), kind.key);
         refresh();
-        showToast(picked.choose
-          ? `Section ${picked.section}, line ${picked.line} is blank: Choose.`
-          : `${picked.item.text} (section ${picked.section}, line ${picked.line})`);
       }
     }, "Roll for an entry") : null);
   add(box, actions);
+  if (lastListRoll[kind.key]) add(box, listRollResult(adv, kind, lastListRoll[kind.key]));
 
   if (listFull(adv, kind.key)) {
     add(box, el("p", { class: "refusal", text: `The ${kind.label.toLowerCase()} list is full at ${rule.lines} lines.` }));

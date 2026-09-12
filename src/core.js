@@ -5,7 +5,7 @@
 // code you are looking at is the code that shipped (docs/AUDIT.md F48).
 export const APP = {
   name: "Schemer", tagline: "a villain's plan, one layer at a time",
-  storeKey: "schemer.v1", build: "schemer-v17"
+  storeKey: "schemer.v1", build: "schemer-v18"
 };
 
 // ---------------------------------------------------------------- dice

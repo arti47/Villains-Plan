@@ -17,7 +17,6 @@ export const FATE_CHART = {
   name: "Fate Chart",
   cite: "GME2e",
   die: 100,
-  chaosRange: [1, 9],
   reading: "Roll 1d100. At or under the first number is an Exceptional Yes; at or under the second is a Yes; at or over the third is an Exceptional No; anything else is a No.",
   // rows are indexed by the odds key; each array is Chaos Factor 1..9
   rows: [

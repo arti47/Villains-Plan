@@ -33,16 +33,16 @@ explicit override, which is logged and cleared by use (and by reload).
 Reveal the pivot in the scene right after the plan falls; keep it to one to three scenes.
 Surfaced on the Arc screen and on every pivot card.
 
-## The surprise route — not in this source
+## The surprise route — a Fate Question, rolled
 
 The alternative is to ask a Fate Question in a cleanup scene: Yes or Exceptional Yes and
-the villain pivots. Fate Question odds are Mythic core, not this article, so the app
-**does not roll it**. It records the answer you resolved elsewhere — and that record is
-load-bearing: a No blocks the pivot roll, with a refusal that cites the answer.
+the villain pivots. The odds are Mythic core, not this article, so this shipped first as a
+recorded answer only; once the oracle arrived the app rolls it (A14, revising A7), and a
+by-hand record stays for physical dice. Either way the answer is load-bearing: a No blocks
+the pivot roll, with a refusal that cites the answer.
 
-## What else is missing from this source
+## What this source does not contain
 
-Chaos Factor · scene setup (Expected / Altered / Interrupt) · the Bookkeeping phase ·
-Discover Meaning (Action and Descriptor tables) · Random Events · Threads and Characters
-lists · The Villain Crafter (Mythic Magazine #41). Listed in the rules library under
-"What this app does not do", and never approximated.
+Everything Mythic-core — the Chaos Factor, scene setup, Bookkeeping, meaning tables,
+random events, the two lists — and the Villain Crafter. All of it has since been supplied
+from its own source and built; see the other files in this directory.

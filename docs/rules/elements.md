@@ -38,8 +38,9 @@ underling. Rolling one goes through the same `oracle.discover` as any other word
 lands in the roll log with its table and its die like everything else — nothing in this app
 rolls in private.
 
-## What is still not taken from GME2e
+## What else GME2e supplied
 
-Only the Elements tables were supplied, and only they ship. The Chaos Factor, scene setup,
-the Bookkeeping phase and the Threads & Characters lists remain in `STILL_NOT_IN_SOURCE`,
-unimplemented and unapproximated.
+The Elements tables were the first GME2e material; the Fate Chart, the Action tables, the
+scene loop, the Chaos Factor and its variants, the two lists and the Thread Progress Track
+followed from the same book, each from its own page or quotation — see `oracle.md` and
+`scenes.md`.

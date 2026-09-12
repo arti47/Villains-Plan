@@ -9,7 +9,7 @@ export const FATE_CHECK = {
   name: "Fate Check",
   cite: "GME2e",
   dice: { count: 2, sides: 10 },
-  alternativeTo: "fate-chart",
+  
 
   // Quoted tables.
   oddsModifiers: {

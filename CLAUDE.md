@@ -12,23 +12,28 @@ Sources of record, in precedence order (§2.1):
 3. **The Villain Crafter**, *Mythic Magazine* Vol. 41, pp. 3–16. Cited `MM41:p<page>`.
    Supplies the villain, their organization, and their lieutenants and minions — the thing
    the reveal system reveals. Extracted into `data-villain-crafter.js`.
-5. **Scenes, the Chaos Factor and Bookkeeping**, *Mythic Game Master Emulator Second
+4. **Scenes, the Chaos Factor and Bookkeeping**, *Mythic Game Master Emulator Second
    Edition*. Cited `GME2e`. Arrived first as a **written summary** and shipped marked
    provisional; since **confirmed by photograph (the scene test) and by direct quotation
    (the Chaos Factor, list and bookkeeping rules)**, so those flags are gone. The quotes
    also **corrected the clean-up rule** the summary had blurred — see `docs/AUDIT.md` F41.
-   In `data-scenes.js`. Still summary-only: how a random event picks an entry from a list.
-6. **The Fate Chart, the Action meaning tables, the Random Event Focus table and the Scene
+   In `data-scenes.js`. Since quoted in full, including how a random event picks an entry
+   from a list — nothing in it rests on the summary any more.
+5. **The Fate Chart, the Action meaning tables, the Random Event Focus table and the Scene
    Adjustment Table**, *GME2e*, supplied as **page photographs**. Cited `GME2e`. In
    `data-fate-chart.js` and `data-actions.js`. The Fate Chart replaces One-Page Mythic's
    chart as the engine, which is why the Chaos Factor now moves the odds (ruling A24,
    revised). **Two independent cross-checks pass:** all 81 cells match the chart's own
    thirteen-rung ladder, and its chaos-5 column is identical to the separately transcribed
-   One-Page Mythic chart. The list-selection procedure came as summary text and is marked
-   provisional, with its one inference (how the section die maps to sections) recorded.
-   All three of the things this entry once listed as unsupplied — the Thread Progress
-   Track, the chaos variants, and the Fate Check — have since arrived and are built.
-4. **Meaning Tables: Elements**, *Mythic Game Master Emulator Second Edition* (Word Mill
+   One-Page Mythic chart. The list-selection procedure has since been quoted; its one
+   inference (the section die's faces) is corroborated by the printed sheet (A28).
+7. **The Fate Check, the three variant Fate Charts, the Discovery Check and the Thread
+   Progress Track chapter**, *GME2e*, supplied as quotations and page photographs. Cited
+   `GME2e`. In `data-fate-check.js`, `data-fate-chart.js` (`CHART_VARIANTS`) and
+   `data-scenes.js` (`PROGRESS_TRACK`). The three variant charts cross-check against the
+   standard chart cell for cell (A36); the Progress Track chapter closed the app's last
+   gap (A33, closed).
+6. **Meaning Tables: Elements**, *Mythic Game Master Emulator Second Edition* (Word Mill
    Games), supplied as page images. Cited `GME2e`. Twelve d100 word tables — the detail
    tables MM41:p5 sends you to for who the villain actually is. Extracted into
    `data-elements.js`. All twelve transcribed from the photographs, 100 unique words each,
@@ -74,12 +79,13 @@ Omitted because neither source has such mechanics (never invented):
 character sheet · attributes/skills/derived stats · health/damage/death · rest · combat &
 initiative · inventory/encumbrance/wealth · powers · advancement · conditions · bestiary ·
 NPCs · pregens · GM tables · safety tools.
-`STILL_NOT_IN_SOURCE` **is now empty**, and that list is itself a lesson: it went on naming
-the Chaos Factor, scene setup, Bookkeeping, the two lists and the Villain Crafter long after
-every one of them had been supplied and built, because the test guarding it read the *other*
-gap list (`docs/AUDIT.md` F45). What is genuinely unsupplied lives in one place now,
-`NOT_SUPPLIED` in `data-scenes.js`: the **Mid-Chaos Fate Chart's cells**, and **what Track
-+1, Track +2 and Strengthen Progress +1/+2 do** on the Discovery Check.
+**Unsupplied (asserted by the harness):** none. Both gap lists — `STILL_NOT_IN_SOURCE`
+in `data-mythic.js` and `NOT_SUPPLIED` in `data-scenes.js` — are empty, the suite asserts
+that they are, **and it asserts that this line agrees with them**: the line is derived from
+the data, and the harness also refuses any "still not supplied" passage here or in
+`docs/rules/` that names a subsystem that ships. That guard exists because this paragraph
+was wrong twice (`docs/AUDIT.md` F45, F50): each time the data-side list was fixed and the
+prose describing it was not.
 Still absent by design: `data-monsters.js`, `data-npcs.js`, `data-pregens.js`,
 `data-solo.js`, `power-automation.js`, `solo.js`, `gm.js`, `combat.js`, `wizard.js`'s
 character path (it builds an adventure dossier instead).
@@ -160,12 +166,12 @@ Oracle tab (Ask · Meaning), gated by one setting that is on by default.
 
 | Shape | Count | Rules |
 |---|---|---|
-| Lookup | 27 | Villain Plan Focus, End Goal Focus, Pivot Plan Focus, Plot Twists, Ask The Game Master (9 rows × 4 bands), Discover Meaning Action, Discover Meaning Description, Villain Archetype, Villain Organization, Lieutenants & Minions, the twelve GME2e Elements tables and both Action tables behind one registry, the Fate Chart (9 odds × 9 chaos), the Random Event Focus table, the Scene Adjustment Table, and the two-step list selection |
+| Lookup | 32 | Villain Plan Focus, End Goal Focus, Pivot Plan Focus, Plot Twists, Ask The Game Master (9 rows × 4 bands), Discover Meaning Action, Discover Meaning Description, Villain Archetype, Villain Organization, Lieutenants & Minions, the twelve GME2e Elements tables and both Action tables behind one registry, the Fate Chart (9 odds × 9 chaos) and its three variant charts, the Fate Check's modifier ladders, the Random Event Focus table, the Scene Adjustment Table, the two-step list selection, and the Thread Discovery Check table |
 | Threshold | 2 | `d10 + 2×phases ≥ 11` reveals the End Goal · `d10 > chaos` runs the scene as expected |
 | Escalation | 3 | +2 per known phase · the Crafter's modifiers carried archetype → organization → underlings · the Chaos Factor moving ±1 per scene within 1–9 |
 | Once-per-X | 2 | End Goal once per adventure; Pivot once per adventure |
-| Gate | 3 | Pivot requires survival / underlings at large / a failsafe · a recorded or rolled No on the pivot question blocks it · the organization roll needs the archetype whose modifier it carries |
-| Exception | 3 | "No Context" branches (81–100 and 84–100) skip the Focus text; a double-digit Ask roll fires a random event as well as the answer |
+| Gate | 5 | Pivot requires survival / underlings at large / a failsafe · a recorded or rolled No on the pivot question blocks it · the organization roll needs the archetype whose modifier it carries · plot armour on the focus thread, including against a Close A Thread event · an Exceptional No on a Discovery Check bars another for the scene |
+| Exception | 6 | "No Context" branches (81–100 and 84–100) skip the Focus text · a double-digit Ask roll fires a random event as well as the answer · an Exceptional Yes on a Discovery Check rolls its table twice · a phase of the track that ends without a flashpoint triggers one · the delayed conclusion's scene is not tested · a question standing in for a game rule reads at chaos 5 |
 | Permission | 5 | Earn a Discovery · interpret & revise freely · override a second Pivot · name the villain behind the villain · keep rolling Discover Meaning words until it comes clear |
 | Guidance only | 4 | every phase opens a lead · End Goal must unify prior phases · Pivot arc ≤3 scenes · reveal the Pivot immediately |
 
@@ -210,7 +216,7 @@ see `docs/AUDIT.md` F28.
 | A30 | A question standing in for a game rule | Quoted: "Treat the Chaos Factor as a value of 5 for these Questions, regardless of what the actual Chaos Factor value is right now." A per-question control on the Ask screen, so the rule fires rather than sitting in the data (it had been an inert field since the scene work — `docs/AUDIT.md` F42). |
 | A31 | *Corroborated by the page.* No-Chaos on the Fate Chart | The rule says answers come "purely from the Odds" with no chaos modifier. On a chart whose columns *are* the modifier, the neutral column is 5 — which the book itself calls the "default, middle of the road percentiles without the Chaos Factor skewing results". So No-Chaos reads column 5, and chaos keeps running for scene tests and events, as the rule requires. **The printed No-Chaos Fate Chart has since arrived and is exactly that column**, so the reasoning was right and the app now reads the chart itself. |
 | A32 | *Superseded by A35, then closed by A36.* Mid-Chaos | Was: not offered. Then: Check only. Now: offered everywhere, from its own chart. |
-| A33 | *Revised.* The Discovery Check | The table arrived: ask at ≥50/50, then 1d10 + current points. The app rolls it. **Four of its eight results — Track +1, Track +2, Strengthen Progress +1 and +2 — are printed with no stated effect**, so the app names them and applies nothing. |
+| A33 | *Closed.* The Discovery Check | Was: four of its eight results printed with no stated effect, so the app named them and applied nothing. The Progress Track chapter then defined them — Track +1/+2 and Strengthen Progress +1/+2 all award points — and every result is applied. |
 | A34 | Fate Check totals outside the printed ranges | The answer table prints 18–20 / 11+ / 10− / 2–4, which are unmodified 2d10 ranges; the modifiers run −10 to +10, so a real total runs −8 to 30. The app reads the table as thresholds (≥18, ≥11, ≤4, else No), the only coherent reading. |
 | A35 | *Closed by A36.* Mid-Chaos, revisited | Was: Check only, with the chart refused and normalization dropping the mode. The hypothesis recorded here — that the Mid-Chaos chart would prove to be a column compression of the standard one — was **confirmed by the page**, and the refusal and the fallback are both gone. |
 | A36 | The variant charts | The page printing the Mid-Chaos, Low-Chaos and No-Chaos charts arrived, so all four modes work under both resolutions and nothing is refused. Every variant column is a column of the standard chart copied whole (Mid-Chaos 3–7, Low-Chaos 4–6, No-Chaos 5 alone) — but the app reads **each chart's own transcribed cells**, never a derivation; the equivalence is a harness cross-check, which is what makes 117 cells check each other. |
@@ -474,6 +480,7 @@ see README. Repository stays private while it carries a transcription.
 | 2026-09-11 | Sixth source (GME2e photographs: the Fate Chart, both Action tables, the Random Event Focus table, the Scene Adjustment Table): `data-fate-chart.js`, `data-actions.js`. The Fate Chart replaced One-Page Mythic's as the engine, so the Chaos Factor now moves the odds (A24 revised); the Scene Adjustment cascade arrived with it (A27) | The user supplied the pages; the chart is the one table the whole oracle reads | `npm test` 133, `npm run smoke` 508, `npm run interaction` 424; all 81 cells cross-checked two independent ways | `schemer-v7` |
 | 2026-09-11 | Direct quotations confirmed the scene, chaos, list and bookkeeping rules: provisional flags removed. **They also corrected the clean-up rule** the summary had blurred — two-entry elements carry across at one, not two (`docs/AUDIT.md` F41) | A summary corroborates but never decides (§2.1) | `npm test` 141, `npm run smoke` 523, `npm run interaction` 437 | `schemer-v8` |
 | 2026-09-11 | The Thread Progress Track, the three chaos variants, and the chaos-5 rule for questions standing in for a game rule. F42: that last one had been an inert data field since the scene work | The user supplied the quoted procedures | `npm test` 145, `npm run smoke` 536, `npm run interaction` 452 | `schemer-v9` |
+| 2026-09-12 | Truthfulness pass. F50: the reference docs had drifted in nine places (one file contradicted itself on the Discovery Check) because they were updated by insertion, never re-read; all corrected. The overdue rules read-through, run mechanically as a field-level scan, found F51–F53: the list roll's Choose options, the Check's random-event rule and the phase rule's two subtleties were data that no surface read. F54: the unit harness counted an async test as a pass without awaiting it. Two new harness checks — every data field must be read by `src/`, and the spec's claims about gaps must match the data | The spec had named two closed gaps for a whole source; the data-side assertion could not see prose | `npm test` 166, `npm run smoke`, `npm run interaction` | `schemer-v18` |
 | 2026-09-12 | F48: the update notice was a 3.2-second toast, so a cached old build could look like a fix that never landed. It is sticky now, the app re-checks on every return to it, and the running build is on Settings with a harness check that it matches `CACHE_VERSION`. F49: the Teamwork test asserted a rule the book does not have and failed one run in ten | The user reported a shipped feature behaving the old way; the feature was fine, the delivery was not | `npm test` 164 (15 consecutive clean runs), `npm run smoke` 548, `npm run interaction` 468 | `schemer-v17` |
 | 2026-09-11 | The details step takes a multi-select: pick some or all tables and one press rolls each on its own d100 (A42) | Asked for from play; rolling seven tables was seven trips through the picker | `npm test` 163, `npm run smoke` 548, `npm run interaction` 467, probes read | `schemer-v15` |
 | 2026-09-11 | F47, reported from play: every control threw the reader to the top of the page, because `refresh()` was a full `render()` and `render()` resets the scroll. In-place redraws now keep the position. The interaction audit gained a position check — no harness had any notion of where the reader was standing | Three harnesses and 1,100 assertions all read content only; position is state too | `npm test` 163, `npm run smoke` 547, `npm run interaction` 465; reverting the fix fails 63 controls | `schemer-v14` |

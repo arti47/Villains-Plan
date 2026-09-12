@@ -8,13 +8,11 @@ From the Mythic Game Master Emulator Second Edition, cited `GME2e`.
 provisional. The scene test, the Scene Adjustment Table and the Event Focus table were then
 confirmed or supplied as photographs; the Chaos Factor, list and bookkeeping rules were
 confirmed by direct quotation — which also **corrected the clean-up rule** (F41). Those
-flags are gone. The only summary-only rule left is how a random event picks an entry from a
-list, which keeps its flag and its recorded inference. Under §2.1 a
-summary corroborates and never decides, so everything below ships marked
-`provisional: true` in `data-scenes.js`, the Scene screen carries a fold saying where the
-rules came from, and a page image can confirm or correct any of it. What the summary
-*names* without specifying is not implemented and not approximated — see the bottom of
-this file.
+flags are gone, and the list-selection procedure — the last summary-only rule — has since
+been quoted too. Nothing below rests on the summary any more; every value is read from a
+page or a direct quotation, and the Scene screen carries a fold saying which. The one
+inference ever recorded (the section die's faces, A28) is corroborated by the printed
+Adventure Lists sheet.
 
 ## The Chaos Factor
 
@@ -84,9 +82,12 @@ should be able to walk into a scene.
   active sections (none / d4 / d6 / d8 / d10), then 1d10 for the line, two faces per line.
   A blank line reads **Choose**: take what fits, or roll again. Weighting still decides how
   often an element comes up, because it holds more lines.
-- One inference is recorded in the data (A28): the summary gives the section die but not
-  how its faces map to sections, so the app pairs them the way the line roll is explicitly
-  paired. Confirm from the page.
+- The one inference ever recorded (A28) — how the section die's faces map to sections —
+  is corroborated by the printed Adventure Lists sheet, whose margin reads 1-2, 3-4, 5-6,
+  7-8, 9-10 beside the five sections.
+- A roll's result stays on screen with its dice, and a blank line offers the book's two
+  options from the data — take what fits, or **roll again** — rather than a toast that
+  vanishes (F51).
 
 ## The Thread Progress Track
 
@@ -137,18 +138,15 @@ involving it — is another 2.
 
   When you do roll, it is 1d10 plus your current progress points — and the roll **is** a
   random event, with this table standing in for the Event Focus table, so the app rolls
-  meaning words with it to be read the same way. Four of the eight results — Progress +2, Flashpoint +2,
-  Progress +3, Flashpoint +3 — award points. **The other four (Track +1, Track +2,
-  Strengthen Progress +1 and +2) are printed with no stated effect**, so the app rolls
-  them, names them, and applies nothing (ruling A33).
+  meaning words with it to be read the same way. All eight results award points (see
+  the end of this file); A33 is closed.
 
 ## Chaos variants
 
 - **Standard** — the Chaos Factor moves by whether the characters held control.
-- **No-Chaos** — questions read the chart's middle column, so the odds alone decide, while
-  chaos keeps running underneath for scene tests and events (ruling A31: on a chart whose
-  columns *are* the modifier, the neutral column is 5 — which the book itself calls the
-  "default, middle of the road percentiles").
+- **No-Chaos** — questions read the No-Chaos Fate Chart, a single column, so the odds
+  alone decide, while chaos keeps running underneath for scene tests and events. That
+  column is the standard chart's column 5 (A31, since corroborated by the printed page).
 - **Random Chaos** — at the end of a scene roll a d10: equal-or-under drops the Chaos
   Factor by one, over raises it. Bookkeeping stops asking about control and rolls instead.
 - **Mid-Chaos** trims the extremes: the nine Chaos Factors collapse into five columns

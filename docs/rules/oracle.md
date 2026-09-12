@@ -1,8 +1,8 @@
 # The Mythic oracle — Ask, events, meaning
 
-Distilled from the One-Page Mythic Game Master Emulator (Word Mill Games), cited `OPM`.
-This is the second source, and it supplies exactly what the Villain's Plan article leans
-on and does not contain.
+Distilled from the One-Page Mythic Game Master Emulator (`OPM`) and, for everything from
+the Fate Chart on, *Mythic Game Master Emulator Second Edition* (`GME2e`). Together they
+supply exactly what the Villain's Plan article leans on and does not contain.
 
 ## Ask The Game Master — the Fate Chart
 

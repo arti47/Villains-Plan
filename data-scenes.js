@@ -118,7 +118,6 @@ export const PROGRESS_TRACK = {
     both: "A moment can be both progress and a flashpoint; call it whichever you like, because either is 2 points. Calling it a flashpoint means the phase has had one, so the track will not trigger another."
   },
   plotArmor: "Until the track is full the focus thread carries plot armour: it cannot be finally resolved, however close things look. Plot armour also covers a random event whose focus is Close A Thread - play the event out, but the thread does not actually close.",
-  plotArmorClosesThread: "Close A Thread",
   conclusion: "Reaching the end of the track is a flashpoint with the plot armour removed. Generate a random event with an automatic Event Focus of Current Context, read toward an event that can finally end this thread.",
   conclusionDelay: "If the conclusion can happen in the scene that triggered it, have it happen right then. If it cannot, delay it to the next scene: imagine that scene as usual, with the conclusion in it, and do NOT test it against the Chaos Factor - the track guarantees it begins as you imagine it.",
   discovery: {
@@ -140,7 +139,6 @@ export const PROGRESS_TRACK = {
         text: "Nothing useful is found, there is no roll, and you cannot make another Discovery Check for the rest of this scene. Your character has hit a dead end and must search again in another scene." }
     ],
     die: 10,
-    addProgress: true,
     rows: [
       { min: -Infinity, max: 9, key: "progress-2", label: "Progress +2", award: { kind: "progress", points: 2 },
         text: "You discover something that moves you closer to the focus thread." },

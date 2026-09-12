@@ -26,6 +26,76 @@ test("the build number on screen is the cache version that shipped", () => {
   equal(build[1], cache[1], "APP.build must equal CACHE_VERSION");
 });
 
+// ---------------------------------------------------------------- inert rules, mechanically
+// The §0 defect class: data extracted, tested, documented - and never read. The dead-data
+// scan sees exports; this sees FIELDS. Every key in every data export must be read
+// somewhere in src/, by property access, destructuring or a quoted string. Harness-only
+// cross-checks are allowed by name; nothing else is. It is a floor, not a ceiling - a key
+// that is also a common word can slip past it - but it is what found F51-F53.
+const DATA_FILES = readdirSync(".").filter((f) => /^data.*\.js$/.test(f));
+const DATA_MODULES = Object.fromEntries(await Promise.all(DATA_FILES.map(async (f) => [f, await import(`../${f}`)])));
+const rulesEarly = await import("../src/rules.js");
+
+test("every field of every data export is read by src/ (the mechanical read-through)", () => {
+  const src = readdirSync("src").map((f) => readFileSync(`src/${f}`, "utf8")).join("\n");
+  const HARNESS_ONLY = ["FATE_LADDER", "FATE_LADDER_OFFSETS", "VARIANT_EQUIVALENCE"];
+  const META = new Set(["provenance", "cite", "provisional"]);   // read by tests and docs, not the app
+  const unread = [];
+  const seen = new Set();
+  const lookupKeys = new Set();   // every row's `key` value: a map keyed by these is read by lookup
+  const walk = (obj, path, depth) => {
+    if (depth > 3 || !obj || typeof obj !== "object") return;
+    if (typeof obj.key === "string") lookupKeys.add(obj.key);
+    for (const [k, v] of Object.entries(obj)) {
+      if (/^\d+$/.test(k)) { walk(v, path, depth + 1); continue; }
+      if (!seen.has(k) && !META.has(k)) {
+        seen.add(k);
+        if (!new RegExp(`[.\\[\\s"'{,]${k}\\b`).test(src)) unread.push({ path: `${path}.${k}`, k });
+      }
+      walk(v, `${path}.${k}`, depth + 1);
+    }
+  };
+  for (const [file, mod] of Object.entries(DATA_MODULES)) {
+    for (const [name, val] of Object.entries(mod)) {
+      if (HARNESS_ONLY.includes(name)) continue;
+      walk(val, `${file}:${name}`, 0);
+    }
+  }
+  const dead = unread.filter((u) => !lookupKeys.has(u.k)).map((u) => u.path);
+  equal(dead.length, 0, `data fields nothing in src/ reads:\n    ${dead.join("\n    ")}`);
+});
+
+// ---------------------------------------------------------------- the spec cannot lie about gaps
+// F45 twice over: the data-side gap lists were asserted, and the PROSE that describes
+// them drifted anyway - CLAUDE.md §1.2 named two closed gaps for a whole source. So the
+// prose is asserted too: the canonical line is derived from the data, and no "still not
+// supplied" passage may name a subsystem that ships.
+test("CLAUDE.md and docs/rules say the same thing about gaps as the data does", () => {
+  const gaps = [...rulesEarly.notSupplied(), ...rulesEarly.stillNotInSource()];
+  const spec = readFileSync("CLAUDE.md", "utf8");
+  const canonical = gaps.length
+    ? `**Unsupplied (asserted by the harness):** ${gaps.length}`
+    : "**Unsupplied (asserted by the harness):** none.";
+  assert(spec.includes(canonical), `CLAUDE.md must carry the line "${canonical}" - it is derived from the data`);
+  const shipped = ["Fate Chart", "Event Focus", "Scene Adjustment", "Thread Progress Track", "Villain Crafter",
+    "Chaos Factor", "scene setup", "Bookkeeping", "Mid-Chaos", "Low-Chaos", "Fate Check", "Track \\+1",
+    "Strengthen Progress", "Discovery Check", "Threads and Characters", "Elements"];
+  const docs = readdirSync("docs/rules").map((f) => `docs/rules/${f}:\n${readFileSync(`docs/rules/${f}`, "utf8")}`);
+  for (const text of [`CLAUDE.md:\n${spec}`, ...docs]) {
+    const name = text.slice(0, text.indexOf(":"));
+    // a passage runs from a "still not supplied" line to the next heading, blank lines
+    // included - the first version stopped at the first blank line and so only ever read
+    // the headings themselves, which is why it was verified by planting a stale sentence
+    const passages = text.match(/still (not|un)[- ]?(supplied|sourced|in|taken)[^\n]*\n[\s\S]*?(?=\n#|$(?![\s\S]))/gi) || [];
+    for (const passage of passages) {
+      for (const sub of shipped) {
+        assert(!new RegExp(`${sub}[^.]{0,80}(not (yet )?(built|supplied|implemented|in)|remain|still (missing|un))`, "i").test(passage),
+          `${name} still says ${sub.replace("\\", "")} is missing: "${passage.trim().slice(0, 120)}..."`);
+      }
+    }
+  }
+});
+
 // ---------------------------------------------------------------- parse gate
 // A missing paren presents as a screen that never renders, not as a thrown error.
 // This check costs a second and has already caught two (docs/AUDIT.md F1).
