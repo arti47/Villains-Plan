@@ -1,10 +1,10 @@
 // screens.js — the adventure list, the roll log, the rules library, the session
 // record and settings.
 
-import { el, add, formatDate, formatTime, plural, truncate, $ } from "./core.js";
+import { el, add, formatDate, formatTime, plural, truncate, $, APP } from "./core.js";
 import {
   explain, actionBar, card, citeLink, diePill, emptyState, confirmModal,
-  showToast, modal, promptModal, checkRow
+  showToast, modal, promptModal, checkRow, inlineRow
 } from "./ui.js";
 import { libraryGroups, searchLibrary, libraryEntry, examples, arcStage, source } from "./rules.js";
 import { headerStats, phaseCount } from "./derived.js";
@@ -393,6 +393,21 @@ export function renderSettings() {
     el("div", { class: "row-actions" },
       el("a", { class: "btn btn-quiet", href: "#/tutorial" }, "Tutorial"),
       el("a", { class: "btn btn-quiet", href: "#/rules" }, "Rules library"))
+  ]));
+
+  add(content, card([
+    el("h2", { class: "card-title", text: "This build" }),
+    inlineRow("Version", APP.build),
+    el("p", { class: "block-note", text: "The app caches itself so it works offline, which means a new version only arrives when the cached copy is replaced. If something you were told is fixed still looks broken, check this number first - and if a reload does not change it, close every copy of the app and open it again." }),
+    el("button", { class: "btn btn-quiet", type: "button", onclick: () => {
+      if (!("serviceWorker" in navigator)) { showToast("No offline cache in this browser - you are always on the newest code."); return; }
+      navigator.serviceWorker.getRegistration().then((reg) => {
+        if (!reg) { showToast("Nothing cached yet - you are on the newest code."); return; }
+        reg.update()
+          .then(() => showToast("Checked. If a new version was waiting you will be offered a reload."))
+          .catch(() => showToast("Could not reach the network to check.", "warn"));
+      });
+    } }, "Check for a new version")
   ]));
 
   add(content, card([

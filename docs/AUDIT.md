@@ -565,6 +565,43 @@ tested; what follows is what the passes confirmed.
   - Clicking the tab or pill you are already on is exempt: that is a navigation to the
     current screen, where going to the top is the familiar behaviour.
 
+### F48 · The update notice vanished in 3.2 seconds
+- **Reported by the user:** a feature that had just shipped still behaved the old way.
+- **Cause:** not the feature. The app caches itself for offline use, and the one signal
+  that new code is waiting was an ordinary toast — auto-dismissed after 3.2 seconds and
+  removed at 3.8. Miss it and you keep running the old build with no way to tell, and the
+  app looks as though the fix never landed.
+- **Fix:** three parts, because one was not enough.
+  1. `showToast` gained `sticky`; the update notice never times out and is an `alert`.
+  2. `reg.update()` on every return to the page. An installed app can stay open for days,
+     so a check only at first load is a check that mostly never happens.
+  3. **The running build is on the Settings screen**, with a "check for a new version"
+     control and a plain sentence about what to do if a reload does not change it.
+- **And a check so the number cannot lie:** `APP.build` must equal the service worker's
+  `CACHE_VERSION`, asserted by the unit harness. A version on screen that drifts from the
+  cache it names is worse than no version at all.
+- **The class:** every harness runs against a *fresh* page, so the cached-old-code state
+  is one no harness can enter by construction. What made it findable was the user
+  reporting behaviour I had verified working — the second time that happened, which is
+  what pointed at delivery rather than at the code.
+
+### F49 · A test that was wrong about the rule, one run in ten
+- **Target:** `Teamwork rolls a partner archetype` asserted exactly **one** Teamwork per
+  underling result.
+- **Cause:** that is not the rule. The underling table's **83 or more is Double
+  Archetypes**, which draws two independent entries and — unlike Upscale — leaves no
+  trace of itself in `parts`. Either of those draws may legitimately be Teamwork (59–60).
+  What the book forbids is narrower: a Teamwork drawn as a Teamwork's *partner*, which
+  "reads as As Expected". The engine had it right; the test did not.
+- **Fix:** assert the actual invariant — a Teamwork is always followed by its partner, and
+  that partner is never itself a Teamwork — over 2000 rolls.
+- **And a trap avoided:** the first rewrite also asserted that two Teamworks *do* occur,
+  to prove the point. That needs a Double and then 59–60 twice, about one roll in
+  fourteen thousand, and it failed eight runs in twelve — the same mistake in a new coat.
+  The table's shape is a fact, so it is asserted as a fact (83+ is Double, 59–60 is
+  Teamwork) rather than waited for. **Never assert on a rare roll; assert on the thing
+  that makes it possible.**
+
 ## Not yet run
 
 - **Cycle 8.** The rules read-through is now overdue by six sources and is the next

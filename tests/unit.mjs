@@ -12,6 +12,20 @@ const SHIPPED = [
   ...readdirSync("src").filter((f) => f.endsWith(".js")).map((f) => `src/${f}`)
 ];
 
+// ---------------------------------------------------------------- the build number
+// F48: the app caches itself, so the version on screen is the only way to tell whether
+// the code in front of you is the code that shipped. A build number that drifts from the
+// cache it names is worse than none at all.
+test("the build number on screen is the cache version that shipped", () => {
+  const sw = readFileSync("service-worker.js", "utf8");
+  const core = readFileSync("src/core.js", "utf8");
+  const cache = sw.match(/CACHE_VERSION\s*=\s*"([^"]+)"/);
+  const build = core.match(/build:\s*"([^"]+)"/);
+  assert(cache, "service-worker.js declares a CACHE_VERSION");
+  assert(build, "core.js declares APP.build");
+  equal(build[1], cache[1], "APP.build must equal CACHE_VERSION");
+});
+
 // ---------------------------------------------------------------- parse gate
 // A missing paren presents as a screen that never renders, not as a thrown error.
 // This check costs a second and has already caught two (docs/AUDIT.md F1).
@@ -1303,16 +1317,36 @@ test("a nested Double is re-rolled, not expanded (the rule, and why it terminate
   }
 });
 
-test("Teamwork rolls a partner archetype, and a second Teamwork is not another pair", () => {
+test("Teamwork rolls a partner archetype, and Teamwork inside Teamwork does not", () => {
+  // F49: this used to assert ONE Teamwork per result, which is not the rule and failed
+  // about one run in ten. The underling table's 83+ is Double Archetypes, which draws two
+  // independent entries and leaves no trace of itself in `parts`; each of those may land
+  // on Teamwork (59-60) entirely legitimately. What the book actually forbids is a
+  // Teamwork drawn as a Teamwork's PARTNER - "Teamwork rolled again reads as As Expected"
+  // - and a partner always sits immediately after its Teamwork in the flattened parts.
+  // Why two Teamworks are possible is a fact about the table, so assert THAT rather than
+  // waiting for the dice to show it - two Teamworks need a Double and then 59-60 twice,
+  // which is roughly one roll in fourteen thousand. Asserting on that would be the very
+  // mistake this test is being fixed for.
+  const rows = vc.UNDERLINGS.rows;
+  const double = rows.find((r) => r.special === "double");
+  const teamwork = rows.find((r) => r.special === "teamwork");
+  assert(double && double.min === 83, "83 or more is Double Archetypes: two independent draws");
+  assert(teamwork && teamwork.min === 59 && teamwork.max === 60, "59-60 is Teamwork");
+
   let sawTeamwork = false;
-  for (let i = 0; i < 400 && !sawTeamwork; i += 1) {
+  for (let i = 0; i < 2000; i += 1) {
     const result = crafter.rollUnderling("lieutenant", 0);
-    if (!result.teamwork) continue;
-    sawTeamwork = true;
-    equal(result.parts.filter((p) => p.special === "teamwork").length, 1, "only one Teamwork in the result");
-    assert(result.parts.length >= 2, "and a partner archetype came with it");
+    const parts = result.parts;
+    if (parts.some((p) => p.special === "teamwork")) sawTeamwork = true;
+    parts.forEach((part, at) => {
+      if (part.special !== "teamwork") return;
+      assert(parts[at + 1], "a Teamwork is always followed by its partner");
+      assert(parts[at + 1].special !== "teamwork",
+        `a Teamwork's partner was another Teamwork: ${parts.map((p) => p.label).join(" | ")}`);
+    });
   }
-  assert(sawTeamwork, "Teamwork occurs in 400 rolls");
+  assert(sawTeamwork, "Teamwork occurs in 2000 rolls");
 });
 
 test("every crafter cascade terminates", () => {

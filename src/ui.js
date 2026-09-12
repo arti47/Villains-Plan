@@ -69,7 +69,11 @@ export function modal({ title, body, actions = [], onClose, size = "" }) {
   return handle;
 }
 
-export function showToast(message, kind = "") {
+/**
+ * A transient message. `sticky` keeps it until it is dismissed - for the one message you
+ * must not miss, which is that the running code is out of date (F48).
+ */
+export function showToast(message, kind = "", { sticky = false } = {}) {
   let region = $("#toast-region");
   if (!region) {
     region = el("div", { id: "toast-region", class: "toast-region", role: "status", "aria-live": "polite" });
@@ -77,8 +81,10 @@ export function showToast(message, kind = "") {
   }
   const toast = el("div", { class: `toast ${kind}`, text: message });
   region.append(toast);
-  setTimeout(() => toast.classList.add("toast-out"), 3200);
-  setTimeout(() => toast.remove(), 3800);
+  if (!sticky) {
+    setTimeout(() => toast.classList.add("toast-out"), 3200);
+    setTimeout(() => toast.remove(), 3800);
+  }
   return toast;
 }
 

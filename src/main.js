@@ -18,12 +18,23 @@ function registerServiceWorker() {
         }
       });
     });
+    // An installed app can stay open for days. Ask again on every return to it, or the
+    // only update check ever made is the one at first load.
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) reg.update().catch(() => {});
+    });
   }).catch(() => { /* offline install is best-effort */ });
 }
 
+/**
+ * The update notice does NOT time out. It used to be an ordinary toast, gone in 3.2
+ * seconds, which meant missing it left you running old code with no way to know
+ * (docs/AUDIT.md F48) - the failure mode being a fix that appears not to have worked.
+ */
 function showUpdateToast() {
-  const toast = showToast("Update available - tap to reload", "update");
+  const toast = showToast("A new version is ready. Tap to reload.", "update", { sticky: true });
   toast.style.cursor = "pointer";
+  toast.setAttribute("role", "alert");
   toast.addEventListener("click", () => location.reload());
 }
 

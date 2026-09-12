@@ -1,6 +1,12 @@
 // core.js — constants, DOM helpers, dice. No imports (CLAUDE.md §6.1).
 
-export const APP = { name: "Schemer", tagline: "a villain's plan, one layer at a time", storeKey: "schemer.v1" };
+// `build` must equal CACHE_VERSION in service-worker.js; the unit harness asserts it,
+// because a build number that lies is worse than none - it is what tells you whether the
+// code you are looking at is the code that shipped (docs/AUDIT.md F48).
+export const APP = {
+  name: "Schemer", tagline: "a villain's plan, one layer at a time",
+  storeKey: "schemer.v1", build: "schemer-v17"
+};
 
 // ---------------------------------------------------------------- dice
 // Cryptographic source only. Math.random is banned app-wide (§5.1) and the unit
