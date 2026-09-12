@@ -1022,6 +1022,57 @@ test("a delayed conclusion is not tested against the Chaos Factor", () => {
   assert(Number.isInteger(next.test.d10), "with a real die");
 });
 
+// ---------------------------------------------------------------- backups
+test("a backup is a ring: newest first, capped, and each one restores", () => {
+  store.__setState(null);
+  try { localStorage.removeItem("schemer.v1.backups"); } catch {}
+  equal(store.backups().length, 0, "starts empty");
+  const adv = freshAdventure();
+  const original = adv.name;   // updateAdventure mutates in place, so keep the value, not the reference
+  for (let i = 0; i < store.BACKUP_KEEP + 2; i += 1) store.backup(`backup ${i}`);
+  const list = store.backups();
+  equal(list.length, store.BACKUP_KEEP, "capped at the keep count");
+  equal(list[0].label, `backup ${store.BACKUP_KEEP + 1}`, "newest first");
+  equal(list[0].adventures, 1, "records how many adventures it holds");
+  // change something, then restore the newest: the change is gone and undo can bring it back
+  store.updateAdventure(adv.id, { name: "renamed after the backup" });
+  const result = store.restoreBackup(list[0].id);
+  assert(result.ok, "restores");
+  equal(store.active().name, original, "the rename is gone");
+  assert(store.undoAvailable(), "and the restore itself left one step of undo");
+  store.undo();
+  equal(store.active().name, "renamed after the backup", "which brings the rename back");
+});
+
+test("a backup is taken before every irreversible thing: an arc boundary, a delete, an import", () => {
+  store.__setState(null);
+  try { localStorage.removeItem("schemer.v1.backups"); } catch {}
+  const adv = freshAdventure();
+  store.setArcStage(adv.id, "foiling", {});
+  const before = store.backups().length;
+  const moved = lifecycle.advance(store.active());
+  assert(moved.ok, `the boundary fired: ${moved.reason || ""}`);
+  equal(store.backups().length, before + 1, "an arc boundary takes one");
+  assert(/^before /.test(store.backups()[0].label), "labelled with what was about to happen");
+  const file = store.exportJSON();
+  store.importJSON(file);
+  equal(store.backups().length, before + 2, "an import takes one");
+  store.deleteAdventure(store.active().id);
+  equal(store.backups().length, before + 3, "a delete takes one");
+  assert(store.backups()[0].data.adventures.length === 1, "and the delete's backup still holds the adventure");
+});
+
+test("a backup exports in the same file shape as an export, so it imports anywhere", () => {
+  store.__setState(null);
+  const adv = freshAdventure();
+  const entry = store.backup("shape check");
+  const parsed = JSON.parse(store.backupJSON(entry.id));
+  assert(Array.isArray(parsed.adventures) && parsed.adventures[0].id === adv.id, "carries the adventures");
+  equal(parsed.backupOf, "shape check", "says what it was a backup of");
+  const imported = store.importJSON(store.backupJSON(entry.id));
+  assert(imported.ok, "and importJSON accepts it");
+});
+
 test("an Exceptional No shuts Discovery down for the rest of the scene, and only that scene", () => {
   const adv = freshAdventure();
   sceneEngine.testScene(store.active(), {});

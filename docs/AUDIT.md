@@ -661,6 +661,35 @@ dossier export exists. And the mechanical read-through is now a permanent harnes
 **every field of every data export must be read by `src/`**, with lookup keys and the
 three harness-only cross-checks allowed by name.
 
+## Cycle 11 — accessibility and data safety
+
+### F55 · Keyboard focus fell to `<body>` on every press
+- **Target:** every control. `refresh()` rebuilds the screen, and the element that had
+  focus no longer exists, so focus went to `<body>` — the top of the tab order. For a
+  keyboard or screen-reader user this was worse than F47: press a chip, lose your place
+  entirely.
+- **Fix:** on an in-place redraw the router records the focused control's tag, label and
+  position among controls with that label, and after mounting focuses the match (label
+  and position; then first of that label; then the same position of that tag, for a press
+  that changed its own label). `preventScroll`, because scroll is restored separately.
+- **The first version missed a third of it.** It was scoped to `#screen`, and the audit
+  caught one press it did not cover: the action bar's "Roll a lieutenant", which lives in
+  `#action-slot`. Controls live in three slots — the screen, the pinned action bar, the
+  resource header — and all three are rebuilt, so the slot is now part of the identity
+  and the action bar's copy restores to the action bar's copy, not the card's.
+- **Now covered:** the interaction audit fails any same-route press after which a control
+  with the same tag and label still exists, in any of the three slots, and does not have
+  focus. A modal taking focus, or a control that removed itself, are the two legitimate
+  exceptions and are exempt. Verified by disabling the restore: **65 presses fail**.
+
+## Verified clean (cycle 11)
+
+- **The backup ring.** Newest first, capped at five, each restorable; the restore itself
+  snapshots so it is one step from undone; a backup exports in the export's own file shape
+  and `importJSON` accepts it. Fires before an arc boundary, before an import and before a
+  delete — and the delete's backup still holds the adventure. Settings shows the card,
+  takes one by hand, and offers restore, save and delete on every row.
+
 ## Not yet run
 
 - **Cycle 8.** The rules read-through is now overdue by six sources and is the next

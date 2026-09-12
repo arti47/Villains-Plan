@@ -395,6 +395,8 @@ export function renderSettings() {
       el("a", { class: "btn btn-quiet", href: "#/rules" }, "Rules library"))
   ]));
 
+  add(content, backupsCard());
+
   add(content, card([
     el("h2", { class: "card-title", text: "This build" }),
     inlineRow("Version", APP.build),
@@ -429,6 +431,51 @@ export function renderSettings() {
   ], "danger-zone"));
 
   return { content };
+}
+
+/**
+ * The backup ring. Taken automatically before every arc boundary, before a delete and
+ * before an import; restorable here, and each one can be saved to a file - which is the
+ * only thing that survives a cleared site, and the note says so.
+ */
+function backupsCard() {
+  const list = store.backups();
+  const body = [
+    el("h2", { class: "card-title", text: "Backups" }),
+    el("p", { class: "block-note", text: `The app keeps its last ${store.BACKUP_KEEP} backups here, taken before anything irreversible - an arc boundary, a delete, an import. They live in this same browser, so clearing its site data removes them too: save one to a file for anything you would hate to lose.` }),
+    el("div", { class: "row-actions" },
+      el("button", { class: "btn btn-quiet", type: "button", onclick: () => {
+        const entry = store.backup("taken by hand");
+        refresh();
+        showToast(entry ? "Backed up." : "Could not write a backup - storage is full. Save to a file instead.", entry ? "" : "warn");
+      } }, "Back up now"))
+  ];
+  if (!list.length) body.push(el("p", { class: "block-note", text: "No backups yet." }));
+  for (const entry of list) {
+    const row = el("div", { class: "def-row backup-row" });
+    add(row,
+      el("span", { class: "def-label" }, el("strong", { text: entry.label }), el("br"),
+        el("small", { text: `${formatDate(entry.at)} ${formatTime(entry.at)} · ${plural(entry.adventures, "adventure", "adventures")}` })),
+      el("span", { class: "def-value row-actions" },
+        el("button", { class: "btn btn-quiet", type: "button", onclick: () => confirmModal({
+          title: "Restore this backup?",
+          message: `Everything goes back to how it was ${entry.label}.`,
+          loss: "Every change since then is replaced. One step of undo is kept until you close the app.",
+          confirmLabel: "Restore",
+          onConfirm: () => {
+            const result = store.restoreBackup(entry.id);
+            refresh();
+            showToast(result.ok ? `Restored: ${plural(result.adventures, "adventure", "adventures")}.` : result.error, result.ok ? "" : "warn");
+          }
+        }) }, "Restore"),
+        el("button", { class: "btn btn-quiet", type: "button", onclick: () => {
+          download(`schemer-backup-${new Date(entry.at).toISOString().slice(0, 10)}.json`, store.backupJSON(entry.id));
+        } }, "Save to file"),
+        el("button", { class: "btn-icon", type: "button", "aria-label": `Delete the backup ${entry.label}`,
+          onclick: () => { store.deleteBackup(entry.id); refresh(); showToast("Backup deleted."); } }, "\u00d7")));
+    body.push(row);
+  }
+  return card(body);
 }
 
 function themeRow() {

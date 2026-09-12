@@ -222,6 +222,7 @@ see `docs/AUDIT.md` F28.
 | A36 | The variant charts | The page printing the Mid-Chaos, Low-Chaos and No-Chaos charts arrived, so all four modes work under both resolutions and nothing is refused. Every variant column is a column of the standard chart copied whole (Mid-Chaos 3–7, Low-Chaos 4–6, No-Chaos 5 alone) — but the app reads **each chart's own transcribed cells**, never a derivation; the equivalence is a harness cross-check, which is what makes 117 cells check each other. |
 | A38 | The phase flashpoint's timing | The book gives two cases: cross a phase threshold mid-scene and the flashpoint fires then; cross it during bookkeeping and it lands at the start of the next scene. The app reads "is a scene open?" as the discriminator, which is exactly what distinguishes the two in play, and stores the second as `pendingFlashpoint` rather than firing it retroactively into a scene that has ended. |
 | A39 | Which phase a flashpoint counts for | The book has a checkbox per phase. The app derives it instead, from the award history: a score counts for the phase its *running total started in*. That makes the book's own worked example come out right — 2 progress + a flashpoint + 2 progress reaches 6, crossing the 5-point threshold, and no second flashpoint triggers — and there is no box to forget to tick. |
+| A44 | Focus across a redraw | Every control rebuilds the screen, so focus is put back on the control with the same tag and label (nth of that label, then nth of that tag when the press changed the label). A control that removed itself hands focus to its neighbour, which is what a list does when you delete from it. |
 | A43 | Telling which build you are running | The app caches itself, so "is this the new code?" is a real question with no obvious answer. `APP.build` is shown on Settings, must equal the service worker's `CACHE_VERSION` (asserted), and the update notice does not time out. |
 | A42 | Rolling several detail tables at once | An interface convenience, **not a house aid** (§2.2 still ships none). The details step takes a multi-select and one press rolls every table picked — but each is its own d100 on its own table, stored and logged separately, exactly as pressing seven times would. Nothing is combined, no table is invented, and the smoke walk asserts seven distinct tables from one press. |
 | A41 | Scroll position on a re-render | A control that redraws the screen leaves the reader where they were; only a navigation goes to the top. Clicking the tab or pill you are already on counts as a navigation, which is the familiar "tap the current tab to go up" behaviour rather than a special case. |
@@ -333,7 +334,13 @@ schemer.v1 = {
                question, summary, outcome } ],   // capped 200; question only on asks
   settings: { theme, textScale, showGuidance, mythicOracle }
 }
+schemer.v1.backups = [ { id, at, label, adventures,          // newest first, capped at 5
+                         data: { version, activeAdventureId, adventures[], rollLog[] } } ]
 ```
+Backups are taken before every arc boundary, delete and import (the user's decision:
+in-app snapshots, restorable from Settings, plus "Save to file"). They share the browser's
+storage with the state they protect: a bad import or a slip is recoverable, a cleared site
+is not, and the Settings card says so.
 Every schema addition ships a normalization path that back-fills old records, and a fixture
 test that loads a hand-written old-shape record (§10.17).
 
@@ -446,7 +453,8 @@ actions confirm and name the loss; every reversible-state action is inventoried 
 **Reversibility inventory (§10.18):** arc advance → undo · delete phase → confirm naming
 the loss + undo · delete adventure → confirm naming the loss (export offered) · clear log →
 confirm naming the loss · import → confirms it replaces everything, previous state pushed
-to the undo stack.
+to the undo stack · **restore a backup** → confirm naming the loss, previous state pushed
+to the undo stack (so even a restore is one step from undone).
 
 ## 11. Audit
 
@@ -484,6 +492,7 @@ see README. Repository stays private while it carries a transcription.
 | 2026-09-11 | Sixth source (GME2e photographs: the Fate Chart, both Action tables, the Random Event Focus table, the Scene Adjustment Table): `data-fate-chart.js`, `data-actions.js`. The Fate Chart replaced One-Page Mythic's as the engine, so the Chaos Factor now moves the odds (A24 revised); the Scene Adjustment cascade arrived with it (A27) | The user supplied the pages; the chart is the one table the whole oracle reads | `npm test` 133, `npm run smoke` 508, `npm run interaction` 424; all 81 cells cross-checked two independent ways | `schemer-v7` |
 | 2026-09-11 | Direct quotations confirmed the scene, chaos, list and bookkeeping rules: provisional flags removed. **They also corrected the clean-up rule** the summary had blurred — two-entry elements carry across at one, not two (`docs/AUDIT.md` F41) | A summary corroborates but never decides (§2.1) | `npm test` 141, `npm run smoke` 523, `npm run interaction` 437 | `schemer-v8` |
 | 2026-09-11 | The Thread Progress Track, the three chaos variants, and the chaos-5 rule for questions standing in for a game rule. F42: that last one had been an inert data field since the scene work | The user supplied the quoted procedures | `npm test` 145, `npm run smoke` 536, `npm run interaction` 452 | `schemer-v9` |
+| 2026-09-12 | F55: keyboard focus fell to `<body>` on every press, because the control was rebuilt; restored by tag and label on in-place redraws, and the interaction audit now fails any press that loses focus while the control is still on screen. Backups: a ring of five full-state snapshots taken before every arc boundary, delete and import, restorable and saveable from Settings | The sibling of F47, and the user's data-safety decision | `npm test` 169 (10 clean flake runs), `npm run smoke` 549, `npm run interaction` 469; disabling the restore fails 65 presses | `schemer-v19` |
 | 2026-09-12 | Delivery: `npm run check` (every harness), `npm run flake` (the unit suite ×20), a GitHub Action running both on every push, and Playwright declared as a devDependency with a lockfile — it had been running off the environment's global install, undeclared | Nothing ran unless someone typed it; every green in this project's history was a human remembering | the Action's first run | — |
 | 2026-09-12 | Truthfulness pass. F50: the reference docs had drifted in nine places (one file contradicted itself on the Discovery Check) because they were updated by insertion, never re-read; all corrected. The overdue rules read-through, run mechanically as a field-level scan, found F51–F53: the list roll's Choose options, the Check's random-event rule and the phase rule's two subtleties were data that no surface read. F54: the unit harness counted an async test as a pass without awaiting it. Two new harness checks — every data field must be read by `src/`, and the spec's claims about gaps must match the data | The spec had named two closed gaps for a whole source; the data-side assertion could not see prose | `npm test` 166, `npm run smoke`, `npm run interaction` | `schemer-v18` |
 | 2026-09-12 | F48: the update notice was a 3.2-second toast, so a cached old build could look like a fix that never landed. It is sticky now, the app re-checks on every return to it, and the running build is on Settings with a harness check that it matches `CACHE_VERSION`. F49: the Teamwork test asserted a rule the book does not have and failed one run in ten | The user reported a shipped feature behaving the old way; the feature was fine, the delivery was not | `npm test` 164 (15 consecutive clean runs), `npm run smoke` 548, `npm run interaction` 468 | `schemer-v17` |

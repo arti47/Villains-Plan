@@ -30,3 +30,15 @@ prove the migration runs.
 
 Export is JSON (round-trip tested) plus a readable per-adventure text dossier. Import
 replaces everything, snapshots first, and refuses anything that is not a backup.
+
+## Backups
+
+A ring of the last five full-state snapshots, under a second storage key, taken
+automatically **before** anything irreversible — an arc boundary, a delete, an import —
+and by hand from Settings. Each restores in one confirmed tap (and the restore itself is
+undoable, because it snapshots first), and each saves to a file in the same shape as an
+export, so it imports anywhere an export does. They live in the same browser storage as
+the state they protect: a bad import or a deleted adventure is recoverable; a cleared site
+is not, which is why "Save to file" sits beside every row. If storage is full the oldest
+is dropped and the write retried once; if that fails the boundary still fires and the
+Settings control says so rather than throwing mid-play.

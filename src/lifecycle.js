@@ -50,6 +50,8 @@ export function advance(adv) {
   if (preview.blocked) return { ok: false, reason: preview.blocked };
 
   store.snapshot(`moving to ${preview.to.label}`);
+  // The moments worth keeping are the irreversible ones (the user's decision on backups).
+  store.backup(`before ${preview.label.toLowerCase()}`);
   const stamps = {};
   if (preview.to.key === "foiling") stamps.endGoalAt = now();
   if (preview.to.key === "pivot") stamps.defeatedAt = now();

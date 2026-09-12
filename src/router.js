@@ -121,11 +121,47 @@ function markCurrent(selector, isCurrent) {
   else node.removeAttribute("aria-current");
 }
 
+/**
+ * Who the focused control is, in terms that survive a redraw: its tag, its label, and
+ * where it sits among controls with the same label (and the same tag, as a fallback for
+ * a label that the press itself changed - "Roll Identity" becoming "Roll 7 tables").
+ * Every control in this app is rebuilt on refresh(), so without this a keyboard user
+ * pressed a chip and landed on <body>, at the top of the tab order (F55).
+ */
+// Controls live in three slots - the screen, the pinned action bar, the resource header
+// - and all three are rebuilt. The slot is part of the identity, so the action bar's
+// "Roll a lieutenant" restores to the action bar's copy, not the card's (the first
+// version was scoped to #screen and missed every action-bar press).
+const SLOTS = "#screen, #action-slot, #resource-header";
+function focusSignature() {
+  const node = document.activeElement;
+  const slot = node && node !== document.body ? node.closest(SLOTS) : null;
+  if (!slot) return null;
+  const tag = node.tagName.toLowerCase();
+  const label = controlLabel(node);
+  const sameTag = Array.from(slot.querySelectorAll(tag));
+  const sameLabel = sameTag.filter((n) => controlLabel(n) === label);
+  return { slot: `#${slot.id}`, tag, label, nthOfTag: sameTag.indexOf(node), nthOfLabel: sameLabel.indexOf(node) };
+}
+function controlLabel(node) {
+  return (node.getAttribute("aria-label") || node.textContent || node.value || "").trim().slice(0, 60);
+}
+function restoreFocus(sig) {
+  if (!sig) return;
+  const slot = $(sig.slot);
+  if (!slot) return;
+  const sameTag = Array.from(slot.querySelectorAll(sig.tag));
+  const sameLabel = sameTag.filter((n) => controlLabel(n) === sig.label);
+  const target = sameLabel[sig.nthOfLabel] || sameLabel[0] || sameTag[sig.nthOfTag] || null;
+  if (target && target.focus) target.focus({ preventScroll: true });   // scroll is restored separately
+}
+
 function render({ inPlace = false } = {}) {
   const { route, params } = parse(location.hash);
   // Read the scroll position BEFORE the screen is emptied: clearing it collapses the
   // page height, and the browser clamps scrollY to the new height immediately.
   const keptScroll = inPlace && location.hash === lastHash ? window.scrollY : null;
+  const keptFocus = keptScroll === null ? null : focusSignature();
   if (current && current.path === "/new" && route.path !== "/new") resetWizard();
   current = route;
 
@@ -162,6 +198,7 @@ function render({ inPlace = false } = {}) {
     // Restore where the reader was. If the re-render made the page shorter the browser
     // clamps this for us, which is the right answer.
     window.scrollTo(0, keptScroll);
+    restoreFocus(keptFocus);
   }
   // afterMount runs last so a deliberate scrollIntoView (a citation link opening its
   // library entry) still wins over the restore.

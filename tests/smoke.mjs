@@ -214,6 +214,22 @@ await check("walk: the details step rolls every table picked, each on its own d1
   await context.close();
 });
 
+await check("walk: Settings keeps a backup ring you can take, restore and save from", async () => {
+  const { page, context } = await openPage(browser, url, { seed: "mid-session", route: "#/settings" });
+  const body = await page.textContent("#screen");
+  assert(/Backups/.test(body) && /No backups yet/.test(body), "the card is there and empty on a fresh seed");
+  const idx = await page.$$eval("#screen button", (n) => n.findIndex((b) => /Back up now/.test(b.textContent)));
+  assert(idx >= 0, "there is a Back up now control");
+  await page.$$eval("#screen button", (n, i) => n[i].click(), idx);
+  await page.waitForSelector(".backup-row", { timeout: 4000 });
+  const rows = await page.$$(".backup-row");
+  assert(rows.length === 1, "one backup row after one press");
+  const labels = await page.$$eval(".backup-row button", (n) => n.map((b) => (b.getAttribute("aria-label") || b.textContent).trim()));
+  assert(labels.some((l) => /Restore/.test(l)) && labels.some((l) => /Save to file/.test(l)) && labels.some((l) => /Delete/.test(l)),
+    `restore, save and delete are offered: ${labels.join(" | ")}`);
+  await context.close();
+});
+
 await check("the oracle toggle hides its tab and its routes explain themselves", async () => {
   const settings = { theme: "system", textScale: 1, showGuidance: true, mythicOracle: false };
   const { page, context } = await openPage(browser, url, { seed: "mid-session", route: "#/dossier", settings });

@@ -6,6 +6,12 @@ import { LOG_CAP } from "../data.js";
 import { SCHEMA_VERSION, normalizeAdventure } from "./derived.js";
 
 const KEY = APP.storeKey;
+// Full-state backups, kept beside the live state (the user's decision: in-app snapshots
+// at arc boundaries, restorable from Settings). They share the browser's storage with
+// the state they protect, so they survive a bad import or a slip of the thumb - not a
+// cleared site. "Save to file" is still the way off the device.
+const BACKUP_KEY = `${KEY}.backups`;
+export const BACKUP_KEEP = 5;
 
 const EMPTY = () => ({
   version: SCHEMA_VERSION,
@@ -91,6 +97,64 @@ export function undo() {
 }
 export function clearUndo() { undoSlot = null; }
 
+// ------------------------------------------------------------------ backups (a ring)
+export function backups() {
+  try {
+    const list = JSON.parse(localStorage.getItem(BACKUP_KEY) || "[]");
+    return Array.isArray(list) ? list.filter((b) => b && b.id && b.data && Array.isArray(b.data.adventures)) : [];
+  } catch { return []; }
+}
+
+function writeBackups(list) {
+  // Backups compete with the live state for the same quota. If a write fails, drop the
+  // oldest and try once more; if that fails too, report it rather than throw mid-boundary.
+  for (const attempt of [list, list.slice(0, Math.max(1, list.length - 1))]) {
+    try { localStorage.setItem(BACKUP_KEY, JSON.stringify(attempt)); return attempt; }
+    catch (err) { console.warn("Schemer: could not write a backup", err); }
+  }
+  return null;
+}
+
+/** Take a full-state backup now, labelled with what is about to happen. Newest first. */
+export function backup(label) {
+  const s = load();
+  const entry = {
+    id: uid("bak"), at: now(), label: String(label || "backup"),
+    adventures: s.adventures.length,
+    data: { version: s.version, activeAdventureId: s.activeAdventureId,
+      adventures: deepClone(s.adventures), rollLog: deepClone(s.rollLog) }
+  };
+  const kept = writeBackups([entry, ...backups()].slice(0, BACKUP_KEEP));
+  return kept && kept[0] && kept[0].id === entry.id ? entry : null;
+}
+
+/** Replace everything with a backup. Snapshots first, so even a restore is undoable. */
+export function restoreBackup(id) {
+  const entry = backups().find((b) => b.id === id);
+  if (!entry) return { ok: false, error: "That backup is no longer here." };
+  snapshot(`restoring the backup "${entry.label}"`);
+  state = normalizeState(entry.data);
+  save();
+  return { ok: true, adventures: state.adventures.length, repairs: state.migrations.slice() };
+}
+
+export function deleteBackup(id) {
+  const rest = backups().filter((b) => b.id !== id);
+  writeBackups(rest);
+  return rest.length;
+}
+
+/** A backup in the same file shape as an export, so it imports anywhere an export does. */
+export function backupJSON(id) {
+  const entry = backups().find((b) => b.id === id);
+  if (!entry) return null;
+  return JSON.stringify({
+    app: APP.name, schema: entry.data.version, exportedAt: new Date(entry.at).toISOString(),
+    backupOf: entry.label,
+    activeAdventureId: entry.data.activeAdventureId, adventures: entry.data.adventures, rollLog: entry.data.rollLog
+  }, null, 2);
+}
+
 // ------------------------------------------------------------------ adventures
 export function adventures() { return load().adventures.slice(); }
 export function activeId() { return load().activeAdventureId; }
@@ -158,6 +222,7 @@ export function deleteAdventure(id) {
   const adv = adventure(id);
   if (!adv) return null;
   snapshot(`deleting "${adv.name}"`);
+  backup(`before deleting "${adv.name}"`);
   s.adventures = s.adventures.filter((a) => a.id !== id);
   s.rollLog = s.rollLog.filter((r) => r.adventureId !== id);
   if (s.activeAdventureId === id) s.activeAdventureId = s.adventures[0] ? s.adventures[0].id : null;
@@ -536,6 +601,7 @@ export function importJSON(text) {
   const list = Array.isArray(parsed.adventures) ? parsed.adventures : (parsed.adventure ? [parsed.adventure] : null);
   if (!list) return { ok: false, error: "No adventures found in that file." };
   snapshot("importing a backup");
+  backup("before importing a file");
   state = normalizeState({
     version: parsed.schema, adventures: list,
     rollLog: parsed.rollLog, activeAdventureId: parsed.activeAdventureId

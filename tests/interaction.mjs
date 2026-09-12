@@ -137,6 +137,23 @@ for (const route of ROUTES) {
           throw new Error(`scrolled back to the top (was at ${scrolled}px, same route, page still ${room}px tall)`);
         }
       }
+
+      // F55: on the same route, with no modal open, if a control with this tag and label
+      // still exists after the press then it - not <body> - must have focus. A keyboard
+      // user who loses focus on every press is back at the top of the tab order each time.
+      const focusLost = await page.evaluate(({ tag, label }) => {
+        if (document.querySelector(".modal-overlay")) return null;          // focus is in the modal, correctly
+        // anywhere a control can live: the screen, the action bar, the resource header
+        const same = Array.from(document.querySelectorAll(`#screen ${tag}, #action-slot ${tag}, #resource-header ${tag}`))
+          .filter((n) => (n.getAttribute("aria-label") || n.textContent || n.value || "").trim().slice(0, 44) === label);
+        if (!same.length) return null;                                        // the control removed itself
+        const active = document.activeElement;
+        return same.includes(active) ? null : (active === document.body ? "body" : active.tagName.toLowerCase());
+      }, { tag: info.tag, label: info.label });
+      const hashNow = await page.evaluate(() => location.hash);
+      if (focusLost && hashNow === hashBefore && !info.current) {
+        throw new Error(`focus fell to <${focusLost}> after the press; the control is still on screen`);
+      }
       results.pass += 1;
     } catch (err) {
       results.fail += 1;
