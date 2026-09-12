@@ -450,9 +450,13 @@ to the undo stack.
 
 ## 11. Audit
 
-Harnesses in `tests/`: `npm test` (parse gate + invariants + dead-data scan),
-`npm run smoke`, `npm run interaction`, `npm run probe`. Findings in `docs/AUDIT.md`.
-Stopping rule: one full cycle of all seven pass types with no finding.
+Harnesses in `tests/`: `npm test` (parse gate + invariants + dead-data scan + the
+field-level read-through + the prose-vs-data check), `npm run smoke`, `npm run interaction`,
+`npm run probe`. **`npm run check` runs all four; `npm run flake` repeats the unit suite
+twenty times**, because three defects here were flakes between 4% and 13% (F46, F49). Both
+run on every push via `.github/workflows/check.yml` — a red check is the only thing that
+runs without someone typing it. Findings in `docs/AUDIT.md`. Stopping rule: one full cycle
+of all seven pass types with no finding.
 
 ## 12. Content & IP
 
@@ -480,6 +484,7 @@ see README. Repository stays private while it carries a transcription.
 | 2026-09-11 | Sixth source (GME2e photographs: the Fate Chart, both Action tables, the Random Event Focus table, the Scene Adjustment Table): `data-fate-chart.js`, `data-actions.js`. The Fate Chart replaced One-Page Mythic's as the engine, so the Chaos Factor now moves the odds (A24 revised); the Scene Adjustment cascade arrived with it (A27) | The user supplied the pages; the chart is the one table the whole oracle reads | `npm test` 133, `npm run smoke` 508, `npm run interaction` 424; all 81 cells cross-checked two independent ways | `schemer-v7` |
 | 2026-09-11 | Direct quotations confirmed the scene, chaos, list and bookkeeping rules: provisional flags removed. **They also corrected the clean-up rule** the summary had blurred — two-entry elements carry across at one, not two (`docs/AUDIT.md` F41) | A summary corroborates but never decides (§2.1) | `npm test` 141, `npm run smoke` 523, `npm run interaction` 437 | `schemer-v8` |
 | 2026-09-11 | The Thread Progress Track, the three chaos variants, and the chaos-5 rule for questions standing in for a game rule. F42: that last one had been an inert data field since the scene work | The user supplied the quoted procedures | `npm test` 145, `npm run smoke` 536, `npm run interaction` 452 | `schemer-v9` |
+| 2026-09-12 | Delivery: `npm run check` (every harness), `npm run flake` (the unit suite ×20), a GitHub Action running both on every push, and Playwright declared as a devDependency with a lockfile — it had been running off the environment's global install, undeclared | Nothing ran unless someone typed it; every green in this project's history was a human remembering | the Action's first run | — |
 | 2026-09-12 | Truthfulness pass. F50: the reference docs had drifted in nine places (one file contradicted itself on the Discovery Check) because they were updated by insertion, never re-read; all corrected. The overdue rules read-through, run mechanically as a field-level scan, found F51–F53: the list roll's Choose options, the Check's random-event rule and the phase rule's two subtleties were data that no surface read. F54: the unit harness counted an async test as a pass without awaiting it. Two new harness checks — every data field must be read by `src/`, and the spec's claims about gaps must match the data | The spec had named two closed gaps for a whole source; the data-side assertion could not see prose | `npm test` 166, `npm run smoke`, `npm run interaction` | `schemer-v18` |
 | 2026-09-12 | F48: the update notice was a 3.2-second toast, so a cached old build could look like a fix that never landed. It is sticky now, the app re-checks on every return to it, and the running build is on Settings with a harness check that it matches `CACHE_VERSION`. F49: the Teamwork test asserted a rule the book does not have and failed one run in ten | The user reported a shipped feature behaving the old way; the feature was fine, the delivery was not | `npm test` 164 (15 consecutive clean runs), `npm run smoke` 548, `npm run interaction` 468 | `schemer-v17` |
 | 2026-09-11 | The details step takes a multi-select: pick some or all tables and one press rolls each on its own d100 (A42) | Asked for from play; rolling seven tables was seven trips through the picker | `npm test` 163, `npm run smoke` 548, `npm run interaction` 467, probes read | `schemer-v15` |

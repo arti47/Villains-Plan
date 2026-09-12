@@ -1,0 +1,22 @@
+# Every harness, on every push. A red check here is the only thing standing between a
+# regression and main - nothing else runs unless someone types it (docs/AUDIT.md, cycle 10).
+name: check
+on:
+  push:
+  pull_request:
+jobs:
+  harnesses:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # The unit suite is repeated, because three of its defects were flakes that a single
+      # green run could not see (F46, F49, and the fix for F49 that was itself a flake).
+      - run: npm run check
+      - run: npm run flake

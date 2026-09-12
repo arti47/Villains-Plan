@@ -9,6 +9,11 @@
     "smoke": "node tests/smoke.mjs",
     "interaction": "node tests/interaction.mjs",
     "probe": "node tests/probe-layout.mjs && node tests/probe-flow.mjs",
-    "serve": "node tests/serve.mjs"
+    "serve": "node tests/serve.mjs",
+    "check": "npm test && npm run smoke && npm run interaction && npm run probe",
+    "flake": "node tests/flake.mjs 20"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
   }
 }
