@@ -56,11 +56,13 @@ account, no server and no telemetry.
 
 ## What it does not do
 
-Six sources are in here: the Villain's Plan article, the One-Page Mythic Game Master
+Seven sources are in here: the Villain's Plan article, the One-Page Mythic Game Master
 Emulator, the Villain Crafter, and from Mythic Second Edition the Elements and Action
-meaning tables, the Fate Chart, the Random Event Focus and Scene Adjustment tables, and the
-scene/Chaos Factor/bookkeeping rules. That last part arrived as a written summary rather
-than pages, so what still rests on it ships marked provisional and the Scene screen says so.
+meaning tables, the Fate Chart and its three variants, the Random Event Focus and Scene
+Adjustment tables, the scene/Chaos Factor/bookkeeping rules, the Fate Check, and the Thread
+Progress Track chapter. The scene rules arrived first as a written summary and shipped
+marked provisional; every one has since been confirmed by a photograph or a direct
+quotation, and nothing in the app rests on a summary any more.
 
 The Fate Check is in: an adventure resolves on the Fate Chart or on the Check, whichever
 you pick. So are all four ways of running chaos — standard, Mid-Chaos, Low-Chaos and
@@ -110,7 +112,10 @@ This is a **personal play aid built from the owner's own copy of the magazine**.
 mechanics and numbers, with every piece of prose rewritten; no setting, adventure or art
 content is included. If you publish or distribute it, the licensing is your
 responsibility — openly licensed material is the safe basis for anything public. The
-repository carries a transcription of a commercial article, so keep it private.
+repository is private and carries transcribed tables from commercial books; the app is
+deployed by GitHub Pages, which serves it at a public URL. That is a deliberate choice for
+a personal aid whose URL is not advertised — not an oversight — and if you fork this, it
+is the first thing to decide for yourself.
 
 "The Villain's Plan" (*Mythic Magazine* vol. 69), "The Villain Crafter" (vol. 41) and the
 One-Page Mythic Game Master Emulator are by Tana Pigeon, published by Word Mill Games. This

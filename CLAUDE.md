@@ -470,7 +470,12 @@ of all seven pass types with no finding.
 
 Mechanics and numbers only; all prose paraphrased. The article's example adventures are
 summarised, not reproduced. Personal play aid built from the user's own magazine issue —
-see README. Repository stays private while it carries a transcription.
+see README. **The repository is private, and the app is deployed by GitHub Pages, which
+serves it publicly at its URL** — an owner's decision (2026-09-12), recorded here rather
+than left claiming a privacy the deployment does not have: the URL is not advertised, the
+app is a personal aid, and what it carries of the books is tables of numbers and single
+words with all prose paraphrased. Anyone changing that trade-off should start with the
+`pages build and deployment` workflow.
 
 ## Changelog
 
